@@ -1,0 +1,479 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id               String      @id @default(uuid())
+  name             String      @unique
+  code             String      @unique
+  description      String?
+  headOfDepartmentId String?
+  isActive         Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  employees        Employee[]
+  tasks            Task[]
+  salesTargets     SalesTarget[]
+}
+
+model Employee {
+  id                   String      @id @default(uuid())
+  employeeId           String      @unique
+  name                 String
+  email                String      @unique
+  password             String      @default("password123")
+  phone                String?
+  avatarUrl            String?
+  designation          String
+  role                 String      @default("EMPLOYEE") // FOUNDER, DIRECTOR, MANAGER, EMPLOYEE, SALES_DIRECTOR, SALES_EMPLOYEE
+  departmentId         String?
+  department           Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  
+  reportingManagerId   String?
+  reportingManager     Employee?   @relation("ManagerSubordinates", fields: [reportingManagerId], references: [id], onDelete: SetNull)
+  subordinates         Employee[]  @relation("ManagerSubordinates")
+
+  reportingDirectorId  String?
+  reportingDirector    Employee?   @relation("DirectorSubordinates", fields: [reportingDirectorId], references: [id], onDelete: SetNull)
+  directorSubordinates Employee[]  @relation("DirectorSubordinates")
+
+  joiningDate          DateTime    @default(now())
+  status               String      @default("ACTIVE") // ACTIVE, INACTIVE, ON_LEAVE
+  responsibilities     String?
+
+  leaveBalanceCasual   Int         @default(12)
+  leaveBalanceSick     Int         @default(10)
+  leaveBalancePrivilege Int        @default(15)
+
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  // Relations
+  tasksAssigned        Task[]      @relation("TaskCreator")
+  tasksReceived        Task[]      @relation("TaskAssignee")
+  taskComments         TaskComment[]
+  dailyReports         DailyReport[]
+  dailyReportsReviewed DailyReport[] @relation("ReportReviewer")
+  meetingsHosted       Meeting[]   @relation("MeetingHost")
+  meetingParticipations MeetingParticipant[]
+  meetingActionItems   MeetingActionItem[]
+  
+  collegeVisits        CollegeVisit[]
+  fdpSessionsConducted FDPSession[]
+  leadsAssigned        SalesLead[]
+  salesFollowups       SalesFollowup[]
+  salesTargets         SalesTarget[]
+
+  attendances          Attendance[]
+  leaveRequests        LeaveRequest[]
+  leaveApprovals       LeaveRequest[] @relation("LeaveApprover")
+  notifications        Notification[]
+  auditLogs            AuditLog[]
+}
+
+model ReportingHistory {
+  id                   String      @id @default(uuid())
+  employeeId           String
+  previousManagerId    String?
+  newManagerId         String?
+  previousDirectorId   String?
+  newDirectorId        String?
+  changeDate           DateTime    @default(now())
+  reason               String?
+  changedById          String?
+}
+
+model Task {
+  id                 String           @id @default(uuid())
+  taskId             String           @unique
+  title              String
+  description        String
+  departmentId       String?
+  department         Department?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  
+  assignedById       String
+  assignedBy         Employee         @relation("TaskCreator", fields: [assignedById], references: [id], onDelete: Cascade)
+
+  assignedToId       String
+  assignedTo         Employee         @relation("TaskAssignee", fields: [assignedToId], references: [id], onDelete: Cascade)
+
+  priority           String           @default("MEDIUM") // CRITICAL, HIGH, MEDIUM, LOW
+  startDate          DateTime         @default(now())
+  deadline           DateTime
+  status             String           @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, ON_HOLD, SUBMITTED_FOR_REVIEW, CHANGES_REQUESTED, COMPLETED, CANCELLED
+  progressPercentage Int              @default(0)
+
+  approvalStatus     String           @default("PENDING") // PENDING, APPROVED, CHANGES_REQUESTED, REJECTED
+  approvalComments   String?
+  completedAt        DateTime?
+
+  attachments        TaskAttachment[]
+  comments           TaskComment[]
+  convertedFromActionItem MeetingActionItem?
+
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+model TaskAttachment {
+  id           String      @id @default(uuid())
+  taskId       String
+  task         Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  fileName     String
+  fileUrl      String
+  fileSize     String?
+  uploadedById String
+  createdAt    DateTime    @default(now())
+}
+
+model TaskComment {
+  id           String      @id @default(uuid())
+  taskId       String
+  task         Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  authorId     String
+  author       Employee    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content      String
+  createdAt    DateTime    @default(now())
+}
+
+model DailyReport {
+  id                    String      @id @default(uuid())
+  employeeId            String
+  employee              Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  reportDate            String      // YYYY-MM-DD
+  tasksWorkedOn         String      // JSON string of task IDs/titles
+  tasksCompleted        String      // JSON string
+  tasksPending          String      // JSON string
+  timeSpentHours        Float       @default(8.0)
+  workDescription       String
+  challengesFaced       String?
+  planForTomorrow       String?
+  supportingAttachments String?     // JSON string of urls
+  
+  status                String      @default("SUBMITTED") // SUBMITTED, REVIEWED, CHANGES_REQUESTED
+  reviewComments        String?
+  reviewedById          String?
+  reviewedBy            Employee?   @relation("ReportReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt            DateTime?
+
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  @@unique([employeeId, reportDate])
+}
+
+model Meeting {
+  id                 String               @id @default(uuid())
+  title              String
+  meetingType        String               // FOUNDER_REVIEW, DIRECTOR_REVIEW, MANAGER_REVIEW, ONE_TO_ONE, DEPARTMENT_MEETING, TASK_REVIEW
+  agenda             String
+  scheduledAt        DateTime
+  durationMinutes    Int                  @default(45)
+  locationOrLink     String               @default("MindLyft Conference Room / Google Meet")
+  
+  hostId             String
+  host               Employee             @relation("MeetingHost", fields: [hostId], references: [id], onDelete: Cascade)
+
+  status             String               @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+  notes              String?
+  decisions          String?
+
+  participants       MeetingParticipant[]
+  actionItems        MeetingActionItem[]
+
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+}
+
+model MeetingParticipant {
+  id               String      @id @default(uuid())
+  meetingId        String
+  meeting          Meeting     @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  employeeId       String
+  employee         Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  attendanceStatus String      @default("INVITED") // INVITED, ATTENDED, ABSENT, EXCUSED
+  notes            String?
+
+  @@unique([meetingId, employeeId])
+}
+
+model MeetingActionItem {
+  id              String      @id @default(uuid())
+  meetingId       String
+  meeting         Meeting     @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  title           String
+  assignedToId    String
+  assignedTo      Employee    @relation(fields: [assignedToId], references: [id], onDelete: Cascade)
+  deadline        DateTime
+  status          String      @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  
+  convertedTaskId String?     @unique
+  convertedTask   Task?       @relation(fields: [convertedTaskId], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+// -------------------------------------------------------------
+// Sales Management Module Submodels
+// -------------------------------------------------------------
+
+model College {
+  id           String             @id @default(uuid())
+  name         String             @unique
+  code         String?            @unique
+  state        String
+  city         String
+  address      String?
+  website      String?
+  tier         String             @default("TIER_2") // TIER_1, TIER_2, TIER_3
+  type         String             @default("ENGINEERING") // ENGINEERING, MANAGEMENT, ARTS_SCIENCE, UNIVERSITY, POLYTECHNIC
+  status       String             @default("ACTIVE")
+  notes        String?
+
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  contacts     CollegeContact[]
+  visits       CollegeVisit[]
+  fdpSessions  FDPSession[]
+  agreements   CollegeAgreement[]
+  leads        SalesLead[]
+}
+
+model CollegeContact {
+  id          String      @id @default(uuid())
+  collegeId   String
+  college     College     @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  name        String
+  designation String
+  department  String?
+  phone       String
+  email       String
+  isPrimary   Boolean     @default(false)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model CollegeVisit {
+  id                 String      @id @default(uuid())
+  collegeId          String
+  college            College     @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  
+  visitedById        String
+  visitedBy          Employee    @relation(fields: [visitedById], references: [id], onDelete: Cascade)
+
+  visitDate          DateTime
+  contactPersonName  String
+  contactDesignation String
+  contactPhone       String?
+  contactEmail       String?
+  
+  purpose            String      // Initial Introduction, FDP Pitch, Agreement Discussion, Placement Tie-up, Follow-up
+  discussionDetails  String
+  outcome            String      @default("FOLLOWUP_REQUIRED") // POSITIVE, NEUTRAL, FOLLOWUP_REQUIRED, CLOSED_DEAL, NOT_INTERESTED
+  interestLevel      String      @default("MEDIUM") // HIGH, MEDIUM, LOW
+  nextFollowupDate   DateTime?
+  photosAndDocs      String?     // JSON array of file objects
+  status             String      @default("COMPLETED") // COMPLETED, SCHEDULED
+
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+}
+
+model FDPSession {
+  id                      String      @id @default(uuid())
+  collegeId               String
+  college                 College     @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+
+  topic                   String
+  sessionDate             DateTime
+  trainerName             String
+  trainerEmployeeId       String?
+  trainer                 Employee?   @relation(fields: [trainerEmployeeId], references: [id], onDelete: SetNull)
+
+  participantsCount       Int         @default(0)
+  durationHours           Float       @default(3.0)
+  attendanceDetails       String?     // Summary or JSON
+  feedbackSummary         String?
+  certificatesIssuedCount Int         @default(0)
+  photosAndDocs           String?     // JSON array
+  status                  String      @default("COMPLETED") // PLANNED, ONGOING, COMPLETED
+
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+}
+
+model CollegeAgreement {
+  id                          String      @id @default(uuid())
+  collegeId                   String
+  college                     College     @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+
+  agreementType               String      // MOU, TRAINING_PARTNERSHIP, PLACEMENT_ASSISTANCE, FDP_AGREEMENT, INSTITUTIONAL_SUBSCRIPTION
+  signingDate                 DateTime
+  validityMonths              Int         @default(12)
+  expiryDate                  DateTime
+  authorizedSignatoryMindLyft String      @default("Founder / Director")
+  authorizedSignatoryCollege  String
+  agreementStatus             String      @default("ACTIVE") // ACTIVE, EXPIRING_SOON, EXPIRED, RENEWED
+  documentUrl                 String?
+  renewalDate                 DateTime?
+  notes                       String?
+
+  createdAt                   DateTime    @default(now())
+  updatedAt                   DateTime    @updatedAt
+}
+
+model SalesLead {
+  id                 String           @id @default(uuid())
+  collegeId          String?
+  college            College?         @relation(fields: [collegeId], references: [id], onDelete: SetNull)
+  clientName         String           // College or Organization name
+  contactPerson      String
+  phone              String
+  email              String
+  interestedService  String           // CAMPUS_TRAINING, FDP, INTERNSHIPS, WORKSHOPS, CERTIFICATION, SOFTWARE_LICENSING
+  leadSource         String           @default("COLLEGE_VISIT") // COLLEGE_VISIT, REFERRAL, COLD_CALL, WEBSITE, EVENT
+  
+  assignedToId       String?
+  assignedTo         Employee?        @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  interestLevel      String           @default("HIGH") // HIGH, MEDIUM, LOW
+  estimatedDealValue Float            @default(0.0)
+  
+  // Pipeline: NEW_LEAD, CONTACTED, INTERESTED, MEETING_SCHEDULED, PROPOSAL_SENT, NEGOTIATION, CONVERTED, LOST
+  currentStage       String           @default("NEW_LEAD")
+  lostReason         String?
+  lastInteractionDate DateTime        @default(now())
+  nextFollowupDate   DateTime?
+  notes              String?
+
+  followups          SalesFollowup[]
+
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+model SalesFollowup {
+  id               String      @id @default(uuid())
+  leadId           String
+  lead             SalesLead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  
+  conductedById    String
+  conductedBy      Employee    @relation(fields: [conductedById], references: [id], onDelete: Cascade)
+
+  followupDate     DateTime    @default(now())
+  interactionType  String      @default("CALL") // CALL, EMAIL, IN_PERSON, ONLINE_MEETING
+  summary          String
+  outcome          String      // POSITIVE, NEUTRAL, RESCHEDULED, CONVERTED, DROPPED
+  nextFollowupDate DateTime?
+
+  createdAt        DateTime    @default(now())
+}
+
+model SalesTarget {
+  id                 String      @id @default(uuid())
+  employeeId         String?
+  employee           Employee?   @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  departmentId       String?
+  department         Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  
+  month              Int         // 1 - 12
+  year               Int         // 2026
+  
+  targetVisits       Int         @default(15)
+  achievedVisits     Int         @default(0)
+  
+  targetFDPs         Int         @default(4)
+  achievedFDPs       Int         @default(0)
+  
+  targetAgreements   Int         @default(2)
+  achievedAgreements Int         @default(0)
+  
+  targetRevenue      Float       @default(500000)
+  achievedRevenue    Float       @default(0)
+
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+}
+
+// -------------------------------------------------------------
+// Attendance, Leave & Operations
+// -------------------------------------------------------------
+
+model Attendance {
+  id           String      @id @default(uuid())
+  employeeId   String
+  employee     Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  date         String      // YYYY-MM-DD
+  checkInTime  DateTime?
+  checkOutTime DateTime?
+  status       String      @default("PRESENT") // PRESENT, LATE, HALF_DAY, ABSENT, ON_LEAVE
+  workHours    Float?      @default(8.5)
+  notes        String?
+  location     String      @default("Headquarters / MindLyft Campus")
+
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@unique([employeeId, date])
+}
+
+model LeaveRequest {
+  id              String      @id @default(uuid())
+  leaveNumber     String      @unique // e.g. LV-2026-001
+  employeeId      String
+  employee        Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  leaveType       String      // CASUAL, SICK, PRIVILEGE, UNPAID
+  startDate       DateTime
+  endDate         DateTime
+  totalDays       Float
+  reason          String
+  status          String      @default("PENDING") // PENDING, APPROVED, REJECTED
+  
+  approvedById    String?
+  approvedBy      Employee?   @relation("LeaveApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedAt      DateTime?
+  rejectionReason String?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Notification {
+  id          String      @id @default(uuid())
+  recipientId String
+  recipient   Employee    @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  title       String
+  message     String
+  type        String      @default("SYSTEM") // TASK, REPORT, MEETING, SALES, AGREEMENT, LEAVE, SYSTEM
+  linkUrl     String?
+  isRead      Boolean     @default(false)
+
+  createdAt   DateTime    @default(now())
+}
+
+model AuditLog {
+  id          String      @id @default(uuid())
+  userId      String?
+  user        Employee?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String      // CREATE, UPDATE, DELETE, APPROVE, REJECT, LOGIN
+  entity      String      // Task, DailyReport, College, Agreement, Leave, Employee
+  entityId    String?
+  details     String?
+  ipAddress   String?     @default("127.0.0.1")
+  createdAt   DateTime    @default(now())
+}
