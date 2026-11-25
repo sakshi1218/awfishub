@@ -3,20 +3,11 @@
 import React from 'react';
 import {
   Settings,
-  ShieldCheck,
-  Lock,
-  Key,
-  Users,
-  Database,
   Check,
   X,
-  Sparkles,
 } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
 
 export default function SettingsPage() {
-  const { currentUser, isFounder } = useAuth();
-
   const permissionMatrix = [
     { module: 'Company Hierarchy & Department Creation', founder: true, director: false, manager: false, employee: false },
     { module: 'Employee Add / Deactivate / Restructure', founder: true, director: true, manager: false, employee: false },
@@ -41,28 +32,28 @@ export default function SettingsPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-                Settings & Role-Based Permissions
+                Settings & Role Preview
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Governance, server-enforced access controls, audit logs, and security parameters
+                Application preferences and an illustrative role capability preview
               </p>
             </div>
           </div>
         </div>
 
         <span className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-          Enforced Server-Side via Prisma ORM
+          UI Preview Only · No Access Enforcement
         </span>
       </div>
 
-      {/* Role-Based Access Control Matrix */}
+      {/* Illustrative role capability preview */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
         <div className="p-5 border-b border-slate-200 dark:border-slate-800">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-            Enterprise RBAC Matrix (Role-Based Access Control)
+            Demo Capability Preview
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Founder has absolute oversight; Directors manage assigned divisions; Managers supervise team delivery; Employees access permitted self-service records.
+            Illustrative interface content only. This prototype does not authenticate users or enforce permissions.
           </p>
         </div>
 

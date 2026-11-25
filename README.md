@@ -1,6 +1,6 @@
-# AWFIS HUB — Central Operating System for MindLyft
+# AWfisHub — Business Management Platform
 
-AWFIS HUB is an enterprise-grade company management and organizational operating platform built for **MindLyft**. It provides centralized visibility and governance across the company's organizational hierarchy, daily deliverables, review meetings, campus sales operations, attendance, and analytics.
+AWfisHub is an enterprise-grade company management and organizational operating platform. It provides centralized visibility and governance across the company's organizational hierarchy, daily deliverables, review meetings, campus sales operations, attendance, and analytics.
 
 ---
 

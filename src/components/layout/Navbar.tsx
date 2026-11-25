@@ -1,31 +1,52 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   Menu,
   Bell,
   Search,
   UserCheck,
   ChevronDown,
-  Sparkles,
   Check,
-  Building,
-  Shield,
-  Layers,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import { flatNavigation } from '@/lib/navigation';
 
 interface NavbarProps {
   onMenuClick: () => void;
+}
+
+interface NotificationItem {
+  id: string;
+  title: string;
+  type: string;
+  isRead: boolean;
+  linkUrl?: string | null;
+  message: string;
 }
 
 export default function Navbar({ onMenuClick }: NavbarProps) {
   const { currentUser, allUsers, switchUser } = useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [search, setSearch] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const searchResults = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return [];
+
+    return flatNavigation
+      .filter((entry) =>
+        `${entry.label} ${entry.section} ${entry.parent ?? ''} ${entry.description ?? ''}`
+          .toLowerCase()
+          .includes(query)
+      )
+      .slice(0, 7);
+  }, [search]);
 
   useEffect(() => {
     fetchNotifications();
@@ -35,9 +56,9 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
     try {
       const res = await fetch('/api/notifications');
       if (res.ok) {
-        const data = await res.json();
+        const data: NotificationItem[] = await res.json();
         setNotifications(data);
-        setUnreadCount(data.filter((n: any) => !n.isRead).length);
+        setUnreadCount(data.filter((notification) => !notification.isRead).length);
       }
     } catch (e) {
       console.error('Failed to fetch notifications', e);
@@ -59,19 +80,60 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
       {/* Left controls */}
       <div className="flex items-center gap-3">
         <button
+          type="button"
+          aria-label="Toggle navigation menu"
           onClick={onMenuClick}
           className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 text-xs w-64 border border-slate-200/80 dark:border-slate-700/60">
-          <Search className="w-4 h-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search tasks, colleges, employees..."
-            className="bg-transparent border-none outline-none w-full text-slate-800 dark:text-slate-200 placeholder-slate-400 text-xs"
-          />
+        <div className="relative hidden sm:block">
+          <div className="flex w-64 items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-100 px-3 py-1.5 text-xs text-slate-500 dark:border-slate-700/60 dark:bg-slate-800/80 dark:text-slate-400">
+            <Search className="h-4 w-4 shrink-0 text-slate-400" />
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              onFocus={() => setSearchOpen(true)}
+              onBlur={() => window.setTimeout(() => setSearchOpen(false), 150)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  setSearch('');
+                  setSearchOpen(false);
+                }
+              }}
+              placeholder="Search AWfisHub modules..."
+              aria-label="Search navigation"
+              className="w-full border-none bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-200"
+            />
+          </div>
+          {searchOpen && search.trim() && (
+            <div className="absolute left-0 top-full z-50 mt-2 max-h-96 w-80 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+              {searchResults.length ? (
+                searchResults.map((result) => (
+                  <Link
+                    key={result.href}
+                    href={result.href ?? '/'}
+                    onClick={() => {
+                      setSearch('');
+                      setSearchOpen(false);
+                    }}
+                    className="block rounded-lg px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/40"
+                  >
+                    <span className="block text-xs font-semibold text-slate-900 dark:text-white">
+                      {result.label}
+                    </span>
+                    <span className="block text-[10px] text-slate-500 dark:text-slate-400">
+                      {result.section}{result.parent ? ` / ${result.parent}` : ''}
+                    </span>
+                  </Link>
+                ))
+              ) : (
+                <p className="px-3 py-4 text-xs text-slate-500">No matching modules.</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -84,7 +146,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200 dark:border-blue-800/60 text-slate-800 dark:text-slate-200 text-xs font-medium hover:border-blue-400 transition-all shadow-sm"
           >
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-slate-500 dark:text-slate-400 hidden md:inline">Viewing as:</span>
+            <span className="text-slate-500 dark:text-slate-400 hidden md:inline">Demo preview:</span>
             <span className="font-bold text-blue-700 dark:text-blue-400 truncate max-w-[140px]">
               {currentUser?.name || 'Select User'}
             </span>
@@ -100,10 +162,10 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
               <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Role & Persona Switcher
+                    Demo Role Preview
                   </h4>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Test permissions across company hierarchy
+                    Not Real Authentication · Preview interface only
                   </p>
                 </div>
                 <UserCheck className="w-4 h-4 text-blue-600" />
@@ -253,13 +315,12 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           )}
         </div>
 
-        {/* Company Badge */}
+        {/* Product preview indicator */}
         <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-slate-800">
           <div className="flex flex-col text-right">
-            <span className="text-xs font-bold text-slate-900 dark:text-white">MindLyft</span>
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 justify-end">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Connected
+            <span className="text-xs font-bold text-slate-900 dark:text-white">AWfisHub</span>
+            <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
+              UI prototype
             </span>
           </div>
         </div>

@@ -1,31 +1,34 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard,
-  GitFork,
-  Users,
-  Building2,
-  CheckSquare,
-  FileSpreadsheet,
-  CalendarDays,
-  TrendingUp,
-  Clock,
   BarChart3,
   Bell,
-  FileText,
-  Settings,
+  BookOpen,
+  Briefcase,
+  Building2,
+  CalendarDays,
+  CheckSquare,
   ChevronDown,
   ChevronRight,
-  Briefcase,
-  GraduationCap,
-  FileCheck2,
+  Clock3,
+  Code2,
+  FileSpreadsheet,
+  FileText,
+  FolderKanban,
+  GitFork,
+  LayoutDashboard,
+  Megaphone,
+  Package,
   PhoneCall,
-  PieChart,
-  ShieldAlert,
+  Settings,
+  Users,
+  Wallet,
+  type LucideIcon,
 } from 'lucide-react';
+import { navigationSections, type NavigationEntry } from '@/lib/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 interface SidebarProps {
@@ -35,270 +38,259 @@ interface SidebarProps {
   setMobileOpen: (open: boolean) => void;
 }
 
-export default function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }: SidebarProps) {
-  const pathname = usePathname();
-  const { currentUser, isFounder, isDirector, isManager, isSalesRole } = useAuth();
-  const [salesOpen, setSalesOpen] = useState(pathname.startsWith('/sales'));
+const iconByName: Record<string, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  workspace: FolderKanban,
+  tasks: CheckSquare,
+  reports: FileSpreadsheet,
+  notifications: Bell,
+  people: Users,
+  organization: Building2,
+  hierarchy: GitFork,
+  projects: Briefcase,
+  meetings: CalendarDays,
+  attendance: Clock3,
+  leave: Clock3,
+  media: Megaphone,
+  learning: BookOpen,
+  calls: PhoneCall,
+  technical: Code2,
+  sales: BarChart3,
+  operations: Settings,
+  events: CalendarDays,
+  finance: Wallet,
+  assets: Package,
+  documents: FileText,
+  settings: Settings,
+};
 
-  const navItems = [
-    {
-      label: 'Dashboard',
-      href: '/',
-      icon: LayoutDashboard,
-      badge: null,
-      visible: true,
-    },
-    {
-      label: 'Org & Hierarchy',
-      href: '/hierarchy',
-      icon: GitFork,
-      badge: null,
-      visible: true,
-    },
-    {
-      label: 'Employee Management',
-      href: '/employees',
-      icon: Users,
-      badge: null,
-      visible: isFounder || isDirector || isManager,
-    },
-    {
-      label: 'Department Management',
-      href: '/departments',
-      icon: Building2,
-      badge: null,
-      visible: isFounder || isDirector,
-    },
-    {
-      label: 'Task Management',
-      href: '/tasks',
-      icon: CheckSquare,
-      badge: 'Live',
-      visible: true,
-    },
-    {
-      label: 'Daily Work Reports',
-      href: '/daily-reports',
-      icon: FileSpreadsheet,
-      badge: null,
-      visible: true,
-    },
-    {
-      label: 'Meetings & Sessions',
-      href: '/meetings',
-      icon: CalendarDays,
-      badge: null,
-      visible: true,
-    },
-    {
-      label: 'Sales Management',
-      isGroup: true,
-      icon: TrendingUp,
-      visible: isSalesRole || isFounder,
-      subItems: [
-        { label: 'College Visits', href: '/sales/visits', icon: Briefcase },
-        { label: 'FDP Sessions', href: '/sales/fdp', icon: GraduationCap },
-        { label: 'College Agreements', href: '/sales/agreements', icon: FileCheck2 },
-        { label: 'CRM & Clients', href: '/sales/leads', icon: PhoneCall },
-        { label: 'Sales Performance', href: '/sales/performance', icon: PieChart },
-      ],
-    },
-    {
-      label: 'Attendance & Leave',
-      href: '/attendance',
-      icon: Clock,
-      badge: null,
-      visible: true,
-    },
-    {
-      label: 'Reports & Analytics',
-      href: '/reports',
-      icon: BarChart3,
-      badge: null,
-      visible: isFounder || isDirector || isManager,
-    },
-    {
-      label: 'Notifications',
-      href: '/notifications',
-      icon: Bell,
-      badge: '3',
-      visible: true,
-    },
-    {
-      label: 'Documents Vault',
-      href: '/documents',
-      icon: FileText,
-      badge: null,
-      visible: true,
-    },
-    {
-      label: 'Settings & Security',
-      href: '/settings',
-      icon: Settings,
-      badge: null,
-      visible: isFounder,
-    },
-  ];
+function isPathActive(pathname: string, href?: string) {
+  if (href === '/sales') return pathname === href;
+  return Boolean(href && (pathname === href || pathname.startsWith(`${href}/`)));
+}
+
+export default function Sidebar({
+  collapsed,
+  setCollapsed,
+  mobileOpen,
+  setMobileOpen,
+}: SidebarProps) {
+  const pathname = usePathname();
+  const { currentUser } = useAuth();
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({ Overview: true });
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const activeSection = navigationSections.find((section) =>
+      section.entries.some((entry) => {
+        if (isPathActive(pathname, entry.href)) return true;
+        return entry.children?.some((child) => isPathActive(pathname, child.href)) ?? false;
+      })
+    );
+
+    if (!activeSection) return;
+
+    setOpenSections((current) => ({ ...current, [activeSection.label]: true }));
+    const activeGroup = activeSection.entries.find((entry) =>
+      entry.children?.some((child) => isPathActive(pathname, child.href))
+    );
+
+    if (activeGroup) {
+      setOpenGroups((current) => ({
+        ...current,
+        [`${activeSection.label}:${activeGroup.label}`]: true,
+      }));
+    }
+  }, [pathname]);
+
+  const toggleSection = (section: string) => {
+    if (collapsed) {
+      setCollapsed(false);
+      setOpenSections((current) => ({ ...current, [section]: true }));
+      return;
+    }
+    setOpenSections((current) => ({ ...current, [section]: !current[section] }));
+  };
+
+  const toggleGroup = (section: string, group: string) => {
+    const key = `${section}:${group}`;
+    if (collapsed) {
+      setCollapsed(false);
+      setOpenGroups((current) => ({ ...current, [key]: true }));
+      setOpenSections((current) => ({ ...current, [section]: true }));
+      return;
+    }
+    setOpenGroups((current) => ({ ...current, [key]: !current[key] }));
+  };
+
+  const renderEntry = (entry: NavigationEntry, section: string, depth = 0) => {
+    if (entry.children) {
+      const key = `${section}:${entry.label}`;
+      const expanded = Boolean(openGroups[key]);
+      const groupActive = entry.children.some((child) => isPathActive(pathname, child.href));
+      const Icon = iconByName[entry.icon ?? ''] ?? Building2;
+
+      return (
+        <div key={key} className={depth ? 'ml-2' : undefined}>
+          <button
+            type="button"
+            aria-expanded={expanded}
+            onClick={() => toggleGroup(section, entry.label)}
+            className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors ${
+              groupActive
+                ? 'bg-indigo-50 text-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-200'
+                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
+          >
+            <span className="flex min-w-0 items-center gap-2.5">
+              <Icon className="h-4 w-4 shrink-0" />
+              {!collapsed && <span className="truncate">{entry.label}</span>}
+            </span>
+            {!collapsed &&
+              (expanded ? (
+                <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+              ))}
+          </button>
+          {expanded && !collapsed && (
+            <div className="ml-4 mt-1 space-y-0.5 border-l border-slate-200 pl-2 dark:border-slate-700">
+              {entry.children.map((child) => renderEntry(child, section, depth + 1))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (!entry.href) return null;
+
+    const Icon = iconByName[entry.icon ?? ''] ?? LayoutDashboard;
+    const active = isPathActive(pathname, entry.href);
+
+    return (
+      <Link
+        key={entry.href}
+        href={entry.href}
+        onClick={() => setMobileOpen(false)}
+        title={collapsed ? entry.label : undefined}
+        aria-current={active ? 'page' : undefined}
+        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs transition-colors ${
+          active
+            ? 'bg-indigo-600 font-semibold text-white shadow-sm shadow-indigo-600/20'
+            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+        }`}
+      >
+        {depth === 0 && <Icon className="h-4 w-4 shrink-0" />}
+        {!collapsed && <span className="truncate">{entry.label}</span>}
+      </Link>
+    );
+  };
 
   return (
     <>
-      {/* Mobile Backdrop */}
       {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden backdrop-blur-sm"
+        <button
+          type="button"
+          aria-label="Close navigation"
+          className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
-      {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 flex flex-col bg-slate-900 text-slate-200 border-r border-slate-800 transition-all duration-300 ease-in-out ${
-          collapsed ? 'w-20' : 'w-64'
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-slate-200 bg-white text-slate-800 shadow-xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 lg:shadow-none ${
+          collapsed ? 'w-[76px]' : 'w-[288px]'
         } ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
-        {/* Brand Header */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-slate-800 bg-slate-950/60">
-          <Link href="/" className="flex items-center gap-3 overflow-hidden">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 text-white font-extrabold text-xl shadow-lg shadow-blue-500/20 shrink-0">
-              M
-            </div>
+        <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-slate-100 px-4 dark:border-slate-800">
+          <Link href="/" className="flex min-w-0 items-center gap-3" onClick={() => setMobileOpen(false)}>
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-700 via-indigo-600 to-blue-600 text-sm font-black text-white shadow-lg shadow-indigo-600/20">
+              A
+            </span>
             {!collapsed && (
-              <div className="flex flex-col min-w-0">
-                <span className="font-bold text-base tracking-tight text-white flex items-center gap-1.5 truncate">
-                  AWFIS HUB
-                  <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                    Pro
-                  </span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-extrabold tracking-tight text-slate-950 dark:text-white">
+                  AWfisHub
                 </span>
-                <span className="text-xs text-slate-400 font-medium truncate">MindLyft Operating OS</span>
-              </div>
+                <span className="block truncate text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                  Business workspace
+                </span>
+              </span>
             )}
           </Link>
         </div>
 
-        {/* User Mini Profile Badge */}
         {!collapsed && currentUser && (
-          <div className="px-4 py-3 mx-3 my-2 rounded-xl bg-slate-800/60 border border-slate-700/50 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 text-white font-bold flex items-center justify-center text-sm shadow shrink-0">
+          <div className="mx-3 mt-3 flex items-center gap-3 rounded-xl border border-indigo-100 bg-indigo-50/70 px-3 py-2.5 dark:border-indigo-900/50 dark:bg-indigo-950/30">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
               {currentUser.name.charAt(0)}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-white truncate">{currentUser.name}</p>
-              <p className="text-[10px] font-medium text-slate-400 truncate">{currentUser.designation}</p>
-              <span className="inline-block mt-0.5 px-1.5 py-0.2 text-[9px] rounded font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                {currentUser.role.replace('_', ' ')}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-xs font-semibold text-slate-900 dark:text-white">
+                {currentUser.name}
               </span>
-            </div>
+              <span className="block truncate text-[10px] text-slate-500 dark:text-slate-400">
+                Demo preview · {currentUser.role.replace('_', ' ')}
+              </span>
+            </span>
           </div>
         )}
 
-        {/* Navigation list */}
-        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
-          {navItems
-            .filter((item) => item.visible)
-            .map((item, idx) => {
-              if (item.isGroup && item.subItems) {
-                const isGroupActive = item.subItems.some((s) => pathname.startsWith(s.href));
-                return (
-                  <div key={idx} className="pt-1">
-                    <button
-                      onClick={() => setSalesOpen(!salesOpen)}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold tracking-wide transition-colors ${
-                        isGroupActive
-                          ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30'
-                          : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <item.icon className="w-5 h-5 shrink-0 text-slate-400" />
-                        {!collapsed && <span>{item.label}</span>}
-                      </div>
-                      {!collapsed && (
-                        <div>
-                          {salesOpen ? (
-                            <ChevronDown className="w-4 h-4 text-slate-400" />
-                          ) : (
-                            <ChevronRight className="w-4 h-4 text-slate-400" />
-                          )}
-                        </div>
-                      )}
-                    </button>
+        <nav aria-label="Main navigation" className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
+          {navigationSections.map((section) => {
+            const expanded = Boolean(openSections[section.label]);
+            const sectionActive = section.entries.some((entry) => {
+              if (isPathActive(pathname, entry.href)) return true;
+              return entry.children?.some((child) => isPathActive(pathname, child.href)) ?? false;
+            });
 
-                    {/* Submenu */}
-                    {salesOpen && !collapsed && (
-                      <div className="mt-1 pl-6 space-y-1 border-l-2 border-slate-800 ml-5">
-                        {item.subItems.map((sub, sIdx) => {
-                          const isSubActive = pathname === sub.href;
-                          return (
-                            <Link
-                              key={sIdx}
-                              href={sub.href}
-                              onClick={() => setMobileOpen(false)}
-                              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                                isSubActive
-                                  ? 'bg-blue-600 text-white font-semibold shadow-sm shadow-blue-500/30'
-                                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-                              }`}
-                            >
-                              <sub.icon className="w-4 h-4 shrink-0" />
-                              <span className="truncate">{sub.label}</span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-
-              const Icon = item.icon;
-              const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href || '');
-
-              return (
-                <Link
-                  key={idx}
-                  href={item.href || '#'}
-                  onClick={() => setMobileOpen(false)}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all group ${
-                    isActive
-                      ? 'bg-blue-600 text-white font-semibold shadow-md shadow-blue-600/30'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+            return (
+              <section key={section.label}>
+                <button
+                  type="button"
+                  aria-expanded={expanded}
+                  onClick={() => toggleSection(section.label)}
+                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left ${
+                    sectionActive
+                      ? 'text-indigo-700 dark:text-indigo-300'
+                      : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
                   }`}
-                  title={collapsed ? item.label : undefined}
                 >
-                  <div className="flex items-center gap-3 truncate">
-                    <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`} />
-                    {!collapsed && <span className="truncate">{item.label}</span>}
-                  </div>
-                  {!collapsed && item.badge && (
-                    <span
-                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                        item.badge === 'Live'
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse'
-                          : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                      }`}
-                    >
-                      {item.badge}
+                  {!collapsed && (
+                    <span className="text-[10px] font-bold uppercase tracking-[0.12em]">
+                      {section.label}
                     </span>
                   )}
-                </Link>
-              );
-            })}
-        </div>
+                  {collapsed ? (
+                    <span className="mx-auto h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                  ) : expanded ? (
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  ) : (
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  )}
+                </button>
+                {expanded && (
+                  <div className="mt-1 space-y-0.5">
+                    {section.entries.map((entry) => renderEntry(entry, section.label))}
+                  </div>
+                )}
+              </section>
+            );
+          })}
+        </nav>
 
-        {/* Footer Collapse Toggle */}
-        <div className="p-3 border-t border-slate-800 flex items-center justify-between bg-slate-950/40">
+        <div className="flex shrink-0 items-center justify-between border-t border-slate-100 px-3 py-3 dark:border-slate-800">
           {!collapsed && (
-            <div className="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
-              <span>MindLyft v2.4.0</span>
-            </div>
+            <span className="text-[10px] font-medium text-slate-400">AWfisHub · UI preview</span>
           )}
           <button
+            type="button"
             onClick={() => setCollapsed(!collapsed)}
-            className="hidden lg:flex items-center justify-center p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors mx-auto"
+            className="hidden rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-white lg:flex"
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronDown className="w-4 h-4 rotate-90" />}
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4 rotate-90" />}
           </button>
         </div>
       </aside>

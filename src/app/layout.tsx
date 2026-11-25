@@ -4,8 +4,8 @@ import { AuthProvider } from '@/context/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 
 export const metadata: Metadata = {
-  title: 'AWFIS HUB | MindLyft Operating System',
-  description: 'Centralized company management platform for MindLyft hierarchy, operations, tasks, meetings, sales, and analytics.',
+  title: 'AWfisHub | Business Management Platform',
+  description: 'A unified workspace for organization, operations, learning, sales, and administration.',
 };
 
 export default function RootLayout({

@@ -96,7 +96,7 @@ export default function ReportsAnalyticsPage() {
     XLSX.utils.book_append_sheet(workbook, visitsSheet, 'College Visits');
 
     // Download file
-    XLSX.writeFile(workbook, `MindLyft_AWFIS_HUB_Report_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    XLSX.writeFile(workbook, `AWfisHub_Report_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   const handlePrintPDF = () => {

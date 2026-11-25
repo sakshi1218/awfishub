@@ -21,7 +21,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main content viewport */}
       <div
         className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
-          collapsed ? 'lg:ml-20' : 'lg:ml-64'
+          collapsed ? 'lg:ml-[76px]' : 'lg:ml-72'
         }`}
       >
         <Navbar onMenuClick={() => setMobileOpen(!mobileOpen)} />
