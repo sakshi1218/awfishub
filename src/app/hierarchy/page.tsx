@@ -36,6 +36,40 @@ interface HierarchyNode {
   children?: HierarchyNode[];
 }
 
+const leadershipNamesByEmployeeId: Record<string, string> = {
+  'ML-F01': 'Pooja Ahire',
+  'ML-D01': 'Anchal Agawane',
+  'ML-D02': 'Rutuja Botre',
+  'ML-D03': 'Shubham Jadhav',
+};
+
+const leadershipNamesByDesignation: Record<string, string> = {
+  'Founder & Managing Director': 'Pooja Ahire',
+  'Director of Sales & Partnerships': 'Anchal Agawane',
+  'Director of Technology & Product': 'Rutuja Botre',
+  'Director of Operations & People': 'Shubham Jadhav',
+};
+
+function applyLeadershipDisplayNames(node: HierarchyNode): HierarchyNode {
+  return {
+    ...node,
+    name: leadershipNamesByEmployeeId[node.employeeId] ?? node.name,
+    reportingManager: node.reportingManager
+      ? {
+          ...node.reportingManager,
+          name: leadershipNamesByDesignation[node.reportingManager.designation] ?? node.reportingManager.name,
+        }
+      : node.reportingManager,
+    reportingDirector: node.reportingDirector
+      ? {
+          ...node.reportingDirector,
+          name: leadershipNamesByDesignation[node.reportingDirector.designation] ?? node.reportingDirector.name,
+        }
+      : node.reportingDirector,
+    children: node.children?.map(applyLeadershipDisplayNames),
+  };
+}
+
 export default function HierarchyPage() {
   const [tree, setTree] = useState<HierarchyNode | null>(null);
   const [allEmployees, setAllEmployees] = useState<any[]>([]);
@@ -53,7 +87,7 @@ export default function HierarchyPage() {
       const res = await fetch('/api/hierarchy');
       if (res.ok) {
         const data = await res.json();
-        setTree(data.tree);
+        setTree(data.tree ? applyLeadershipDisplayNames(data.tree) : null);
         setAllEmployees(data.allEmployees);
         // Expand top levels by default
         if (data.tree) {

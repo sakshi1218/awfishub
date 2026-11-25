@@ -103,7 +103,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
                   setSearchOpen(false);
                 }
               }}
-              placeholder="Search AWfisHub modules..."
+              placeholder="Search AWSFISHUB modules..."
               aria-label="Search navigation"
               className="w-full border-none bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-200"
             />
@@ -318,7 +318,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
         {/* Product preview indicator */}
         <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-slate-800">
           <div className="flex flex-col text-right">
-            <span className="text-xs font-bold text-slate-900 dark:text-white">AWfisHub</span>
+            <span className="text-xs font-bold text-slate-900 dark:text-white">AWSFISHUB</span>
             <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
               UI prototype
             </span>

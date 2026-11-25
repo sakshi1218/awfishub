@@ -210,7 +210,7 @@ export default function Sidebar({
             {!collapsed && (
               <span className="min-w-0">
                 <span className="block truncate text-sm font-extrabold tracking-tight text-slate-950 dark:text-white">
-                  AWfisHub
+                  AWSFISHUB
                 </span>
                 <span className="block truncate text-[10px] font-medium text-slate-500 dark:text-slate-400">
                   Business workspace
@@ -281,7 +281,7 @@ export default function Sidebar({
 
         <div className="flex shrink-0 items-center justify-between border-t border-slate-100 px-3 py-3 dark:border-slate-800">
           {!collapsed && (
-            <span className="text-[10px] font-medium text-slate-400">AWfisHub · UI preview</span>
+            <span className="text-[10px] font-medium text-slate-400">AWSFISHUB · UI preview</span>
           )}
           <button
             type="button"

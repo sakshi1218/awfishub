@@ -16,7 +16,7 @@ export const navigationSections: NavigationSection[] = [
     label: 'Overview',
     entries: [
       { label: 'Main Dashboard', href: '/', description: 'Organization-wide overview and activity.', icon: 'dashboard' },
-      { label: 'My Workspace', href: '/workspace', description: 'Your personal AWfisHub workspace.', icon: 'workspace' },
+      { label: 'My Workspace', href: '/workspace', description: 'Your personal AWSFISHUB workspace.', icon: 'workspace' },
       { label: 'My Tasks', href: '/my-tasks', description: 'A personal view of assigned tasks.', icon: 'tasks' },
       { label: 'My Reports', href: '/my-reports', description: 'Your submitted reports and updates.', icon: 'reports' },
       { label: 'Notifications', href: '/notifications', description: 'Updates and reminders from across the platform.', icon: 'notifications' },
@@ -159,7 +159,6 @@ export const navigationSections: NavigationSection[] = [
     entries: [
       { label: 'LMS Dashboard', href: '/learning/dashboard', description: 'Learning management overview.', icon: 'learning' },
       { label: 'Programmes', href: '/learning/programmes', description: 'Browse programme providers and catalogue.', icon: 'learning' },
-      { label: 'Specializations', href: '/learning/specializations', description: 'Programme specialization overview.', icon: 'learning' },
       { label: 'Courses', href: '/learning/courses', description: 'Course catalogue and course detail entry points.', icon: 'learning' },
       { label: 'Batches', href: '/learning/batches', description: 'Batch overview and management entry point.', icon: 'learning' },
       { label: 'Faculty', href: '/learning/faculty', description: 'Faculty overview and assignment entry point.', icon: 'people' },

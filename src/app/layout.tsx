@@ -4,7 +4,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 
 export const metadata: Metadata = {
-  title: 'AWfisHub | Business Management Platform',
+  title: 'AWSFISHUB | Business Management Platform',
   description: 'A unified workspace for organization, operations, learning, sales, and administration.',
 };
 
