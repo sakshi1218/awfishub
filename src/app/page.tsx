@@ -121,7 +121,7 @@ export default function MasterDashboardPage() {
               <span className="text-xs text-slate-400 font-mono">MindLyft EdTech</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-              Welcome back, {currentUser?.name || 'Dr. Arvind Sharma'}
+              Welcome back, {currentUser?.name || 'Pooja Ahire'}
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
               {effectiveRole === 'FOUNDER' &&

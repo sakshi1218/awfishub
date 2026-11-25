@@ -35,7 +35,7 @@ export default function CollegeAgreementsPage() {
     signingDate: '2026-01-15',
     validityMonths: 12,
     expiryDate: '2027-01-14',
-    authorizedSignatoryMindLyft: 'Dr. Arvind Sharma (Founder)',
+    authorizedSignatoryMindLyft: 'Pooja Ahire (Founder)',
     authorizedSignatoryCollege: '',
     notes: '',
   });

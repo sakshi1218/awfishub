@@ -92,8 +92,8 @@ async function main() {
   const founder = await prisma.employee.create({
     data: {
       employeeId: 'ML-F01',
-      name: 'Dr. Arvind Sharma',
-      email: 'arvind.sharma@mindlyft.in',
+      name: 'Pooja Ahire',
+      email: 'pooja.ahire@mindlyft.in',
       phone: '+91 98200 11001',
       designation: 'Founder & Managing Director',
       role: 'FOUNDER',
@@ -107,8 +107,8 @@ async function main() {
   const dirSales = await prisma.employee.create({
     data: {
       employeeId: 'ML-D01',
-      name: 'Rajesh Varma',
-      email: 'rajesh.varma@mindlyft.in',
+      name: 'Anchal Agawane',
+      email: 'anchal.agawane@mindlyft.in',
       phone: '+91 98200 22002',
       designation: 'Director of Sales & Partnerships',
       role: 'SALES_DIRECTOR',
@@ -123,8 +123,8 @@ async function main() {
   const dirTech = await prisma.employee.create({
     data: {
       employeeId: 'ML-D02',
-      name: 'Priya Nair',
-      email: 'priya.nair@mindlyft.in',
+      name: 'Rutuja Botre',
+      email: 'rutuja.botre@mindlyft.in',
       phone: '+91 98200 33003',
       designation: 'Director of Technology & Product',
       role: 'DIRECTOR',
@@ -139,8 +139,8 @@ async function main() {
   const dirOps = await prisma.employee.create({
     data: {
       employeeId: 'ML-D03',
-      name: 'Vikram Malhotra',
-      email: 'vikram.malhotra@mindlyft.in',
+      name: 'Shubham Jadhav',
+      email: 'shubham.jadhav@mindlyft.in',
       phone: '+91 98200 44004',
       designation: 'Director of Operations & People',
       role: 'DIRECTOR',
@@ -543,7 +543,7 @@ async function main() {
       signingDate: new Date('2025-01-15'),
       validityMonths: 24,
       expiryDate: new Date('2027-01-14'),
-      authorizedSignatoryMindLyft: 'Dr. Arvind Sharma (Founder)',
+      authorizedSignatoryMindLyft: 'Pooja Ahire (Founder)',
       authorizedSignatoryCollege: 'Dr. Sunita Jahagirdar',
       agreementStatus: 'ACTIVE',
       documentUrl: '/agreements/COEP_MindLyft_Partnership_2025.pdf',
@@ -558,7 +558,7 @@ async function main() {
       signingDate: new Date('2025-11-20'),
       validityMonths: 12,
       expiryDate: new Date('2026-11-19'), // Expired recently or renewal
-      authorizedSignatoryMindLyft: 'Rajesh Varma (Director)',
+      authorizedSignatoryMindLyft: 'Anchal Agawane (Director)',
       authorizedSignatoryCollege: 'Dr. Sudhir Agashe',
       agreementStatus: 'RENEWED',
       documentUrl: '/agreements/VJTI_MoU_Renewed_2026.pdf',
@@ -574,7 +574,7 @@ async function main() {
       signingDate: new Date('2025-12-10'),
       validityMonths: 12,
       expiryDate: new Date('2026-12-10'), // Expiring in 15 days!
-      authorizedSignatoryMindLyft: 'Rajesh Varma (Director)',
+      authorizedSignatoryMindLyft: 'Anchal Agawane (Director)',
       authorizedSignatoryCollege: 'Prof. Milind Pande',
       agreementStatus: 'EXPIRING_SOON',
       documentUrl: '/agreements/MIT_WPU_FDP_2025.pdf',
@@ -1048,7 +1048,7 @@ async function main() {
     data: {
       recipientId: empSales1.id,
       title: 'New Task Assignment: TSK-1001',
-      message: 'Rajesh Varma assigned you a critical task: Finalize and Sign MoU with VJTI Mumbai.',
+      message: 'Anchal Agawane assigned you a critical task: Finalize and Sign MoU with VJTI Mumbai.',
       type: 'TASK',
       linkUrl: '/tasks',
     },

@@ -25,7 +25,7 @@ export default function DocumentsVaultPage() {
       format: 'PDF',
       size: '2.4 MB',
       updatedAt: '2026-11-20',
-      uploadedBy: 'Rajesh Varma (Sales Director)',
+      uploadedBy: 'Anchal Agawane (Sales Director)',
     },
     {
       id: 'DOC-02',

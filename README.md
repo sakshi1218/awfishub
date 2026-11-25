@@ -84,9 +84,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## 👤 Sample Personas for Testing
 
 Use the **"Viewing as: [Name]"** dropdown in the top navbar to switch between personas:
-- **Founder & CEO:** Dr. Arvind Sharma (`ML-F01`)
-- **Director of Sales:** Rajesh Varma (`ML-D01`)
-- **Director of Technology:** Priya Nair (`ML-D02`)
+- **Founder & CEO:** Pooja Ahire (`ML-F01`)
+- **Director of Sales & Partnerships:** Anchal Agawane (`ML-D01`)
+- **Director of Technology & Product:** Rutuja Botre (`ML-D02`)
+- **Director of Operations & People:** Shubham Jadhav (`ML-D03`)
 - **Sales Manager:** Ananya Iyer (`ML-M01`)
 - **Senior Sales Executive:** Amit Patel (`ML-E01`)
 - **Software Engineer:** Neha Gupta (`ML-E03`)
