@@ -113,10 +113,10 @@
     .container {
       max-width: 1120px;
       margin: 0 auto;
-      padding: 28px 20px 56px;
+      padding: 28px 20px 64px;
     }
 
-    /* 1. Header */
+    /* Header */
     .header {
       display: flex;
       align-items: center;
@@ -126,12 +126,29 @@
       margin-bottom: 18px;
     }
 
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .title {
       margin: 0;
       font-size: 1.875rem;
       font-weight: 700;
       letter-spacing: -0.02em;
       color: var(--brand);
+    }
+
+    .founder-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      border: 1px solid var(--border);
     }
 
     .count-line {
@@ -156,7 +173,65 @@
       background: var(--brand-hover);
     }
 
-    /* 2. Warning line */
+    .btn-secondary {
+      min-height: 44px;
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--brand);
+    }
+
+    /* Quick Assign Box */
+    .quick-assign {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .quick-assign-title {
+      margin: 0 0 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .quick-assign-row {
+      display: grid;
+      grid-template-columns: 2fr 1.25fr 1fr 0.9fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .control {
+      width: 100%;
+      min-height: 44px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg);
+    }
+
+    .quick-msg {
+      margin: 10px 0 0;
+      font-size: 0.875rem;
+      color: var(--st-returned);
+      font-weight: 500;
+    }
+
+    .quick-msg[hidden] {
+      display: none;
+    }
+
+    /* Overload Warning */
     .warning-line {
       display: flex;
       align-items: center;
@@ -164,7 +239,7 @@
       gap: 12px;
       flex-wrap: wrap;
       padding: 10px 16px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       border-radius: 12px;
       background: var(--warn-bg);
       border: 1px solid var(--warn-border);
@@ -188,14 +263,14 @@
       text-decoration: underline;
     }
 
-    /* 3. Filter bar */
+    /* Filter bar */
     .filter-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     .segmented {
@@ -216,7 +291,6 @@
       color: var(--text-muted);
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.15s ease, color 0.15s ease;
     }
 
     .seg-btn.active {
@@ -233,25 +307,22 @@
       justify-content: flex-end;
     }
 
-    .control {
-      min-height: 44px;
-      padding: 0 12px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
+    .filter-controls .control {
       background: var(--surface);
+      width: auto;
     }
 
     .search-input {
       min-width: 210px;
-      flex: 0 1 260px;
+      flex: 0 1 250px;
     }
 
-    /* 4. Status buttons row */
+    /* Status buttons row */
     .status-row {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     .status-btn {
@@ -265,7 +336,6 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      transition: border-color 0.15s ease, background 0.15s ease;
     }
 
     .status-dot {
@@ -306,10 +376,10 @@
       }
     }
 
-    /* 5. Task cards grid */
+    /* Task cards grid */
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 16px;
     }
 
@@ -323,7 +393,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 14px;
+      gap: 12px;
       cursor: pointer;
       transition: transform 0.12s ease, box-shadow 0.15s ease;
     }
@@ -354,6 +424,12 @@
       line-height: 1.35;
     }
 
+    .copy-note {
+      margin: 4px 0 0;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
     .priority-badge {
       flex-shrink: 0;
       font-size: 0.75rem;
@@ -367,18 +443,15 @@
     .priority-Medium { background: var(--pri-medium-bg); color: var(--pri-medium-text); }
     .priority-Low { background: var(--pri-low-bg); color: var(--pri-low-text); }
 
-    .assignee {
+    .assignee-row {
       display: flex;
       align-items: center;
-      gap: 9px;
-      font-size: 0.9rem;
-      color: var(--text);
-      font-weight: 500;
+      gap: 8px;
     }
 
     .avatar {
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
       border-radius: 999px;
       background: var(--brand-soft);
       color: var(--brand);
@@ -388,6 +461,21 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+    }
+
+    .assignee-select {
+      flex: 1;
+      min-height: 40px;
+      padding: 0 10px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      background: var(--surface-muted);
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .assignee-select:hover {
+      border-color: var(--border);
     }
 
     .card-meta {
@@ -425,6 +513,25 @@
     .card-status-select[data-status="Approved"] { border-color: var(--st-approved); background: var(--st-approved-bg); color: var(--st-approved); }
     .card-status-select[data-status="Returned"] { border-color: var(--st-returned); background: var(--st-returned-bg); color: var(--st-returned); }
 
+    .btn-also-assign {
+      width: 100%;
+      min-height: 40px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1.5px dashed var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-also-assign:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+
     .empty-state {
       grid-column: 1 / -1;
       text-align: center;
@@ -435,7 +542,7 @@
       color: var(--text-muted);
     }
 
-    /* 6. Modal */
+    /* Modals */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -462,10 +569,16 @@
     }
 
     .modal-title {
-      margin: 0 0 18px;
+      margin: 0 0 6px;
       font-size: 1.25rem;
       font-weight: 700;
       color: var(--text);
+    }
+
+    .modal-sub {
+      margin: 0 0 16px;
+      font-size: 0.875rem;
+      color: var(--text-muted);
     }
 
     .form-grid {
@@ -497,6 +610,30 @@
       background: var(--bg);
     }
 
+    .people-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .person-chip {
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-muted);
+      font-size: 0.84rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .person-chip.selected {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #ffffff;
+    }
+
     .modal-actions {
       display: flex;
       align-items: center;
@@ -512,16 +649,6 @@
       margin-left: auto;
     }
 
-    .btn-secondary {
-      min-height: 44px;
-      padding: 0 16px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--surface);
-      font-weight: 600;
-      cursor: pointer;
-    }
-
     .btn-danger {
       min-height: 44px;
       padding: 0 16px;
@@ -533,12 +660,47 @@
       cursor: pointer;
     }
 
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 60;
+      background: var(--text);
+      color: var(--bg);
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      box-shadow: var(--modal-shadow);
+    }
+
+    .toast[hidden] {
+      display: none;
+    }
+
+    @media (max-width: 860px) {
+      .quick-assign-row {
+        grid-template-columns: 1fr 1fr;
+      }
+      .quick-assign-row .qa-title {
+        grid-column: 1 / -1;
+      }
+      .quick-assign-row .btn-primary {
+        grid-column: 1 / -1;
+      }
+    }
+
     @media (max-width: 600px) {
+      .quick-assign-row {
+        grid-template-columns: 1fr;
+      }
       .filter-controls {
         width: 100%;
         justify-content: stretch;
       }
-      .control, .search-input {
+      .filter-controls .control,
+      .search-input {
         flex: 1 1 100%;
       }
       .form-row-2 {
@@ -552,19 +714,58 @@
     <!-- Header -->
     <header class="header">
       <div>
-        <h1 class="title">Team Tasks</h1>
+        <div class="title-row">
+          <h1 class="title">Team Tasks</h1>
+          <span class="founder-badge">Founder view</span>
+        </div>
         <p class="count-line" id="countLine">11 of 11 tasks</p>
       </div>
-      <button type="button" class="btn-primary" id="newTaskBtn">+ New task</button>
+      <button type="button" class="btn-secondary" id="assignDetailsBtn">Assign with details</button>
     </header>
 
-    <!-- Warning line -->
+    <!-- Quick Assign Box -->
+    <section class="quick-assign" aria-label="Assign a task">
+      <h2 class="quick-assign-title">Assign a task</h2>
+      <form id="quickAssignForm" class="quick-assign-row" novalidate>
+        <input
+          id="qaTitle"
+          class="control qa-title"
+          type="text"
+          placeholder="What needs to be done?"
+          aria-label="Task description"
+        />
+        <input
+          id="qaAssignee"
+          class="control"
+          type="text"
+          list="peopleSuggestions"
+          placeholder="Assign to..."
+          aria-label="Assign to"
+        />
+        <input
+          id="qaDueDate"
+          class="control"
+          type="date"
+          aria-label="Due date"
+        />
+        <select id="qaPriority" class="control" aria-label="Priority">
+          <option value="Critical">Critical</option>
+          <option value="High" selected>High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+        <button type="submit" class="btn-primary">Assign task</button>
+      </form>
+      <p class="quick-msg" id="quickMsg" hidden></p>
+    </section>
+
+    <!-- Overload Warning -->
     <div class="warning-line" id="warningLine" hidden>
       <span id="warningText"></span>
       <button type="button" class="warning-link" id="warningFilterBtn">Show tasks</button>
     </div>
 
-    <!-- Filter bar -->
+    <!-- Filters (one row) -->
     <section class="filter-bar" aria-label="Task filters">
       <div class="segmented" role="group" aria-label="Quick filter">
         <button type="button" class="seg-btn active" data-seg="All">All</button>
@@ -586,7 +787,7 @@
       </div>
     </section>
 
-    <!-- Status buttons row -->
+    <!-- Status Buttons -->
     <section class="status-row" role="tablist" aria-label="Task status">
       <button type="button" class="status-btn active" data-status="Assigned" role="tab" aria-selected="true">
         <span class="status-dot"></span> Assigned <span class="status-count" id="count-Assigned">0</span>
@@ -605,25 +806,27 @@
       </button>
     </section>
 
-    <!-- Task cards grid -->
+    <!-- Task Cards Grid -->
     <section class="cards-grid" id="cardsGrid" aria-live="polite"></section>
   </main>
 
-  <!-- Add / Edit Popup Form -->
+  <datalist id="peopleSuggestions"></datalist>
+
+  <!-- Full Assign / Edit Popup -->
   <div class="modal-backdrop" id="modalBackdrop" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <h2 class="modal-title" id="modalTitle">New task</h2>
+      <h2 class="modal-title" id="modalTitle">Assign with details</h2>
+      <p class="modal-sub" id="modalSub"></p>
       <form id="taskForm">
         <div class="form-grid">
           <div class="field">
-            <label for="fTitle">Task name</label>
+            <label for="fTitle">Task</label>
             <input id="fTitle" type="text" required placeholder="e.g. Prepare college MoU deck" />
           </div>
 
           <div class="field">
             <label for="fAssignee">Assigned to</label>
             <input id="fAssignee" type="text" list="peopleSuggestions" required placeholder="Type or choose a name" />
-            <datalist id="peopleSuggestions"></datalist>
           </div>
 
           <div class="form-row-2">
@@ -665,9 +868,34 @@
     </div>
   </div>
 
+  <!-- Also Assign To Someone Else Popup -->
+  <div class="modal-backdrop" id="copyBackdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="copyTitle">
+      <h2 class="modal-title" id="copyTitle">Also assign to someone else</h2>
+      <p class="modal-sub" id="copySub">Each person gets their own copy of this task.</p>
+      <form id="copyForm">
+        <div class="field">
+          <label for="copyInput">People (pick below or type names separated by commas)</label>
+          <input id="copyInput" type="text" placeholder="e.g. Amit Verma, Rohan Kulkarni" />
+          <div class="people-chips" id="copyChips"></div>
+        </div>
+        <p class="quick-msg" id="copyMsg" hidden></p>
+        <div class="modal-actions">
+          <div class="modal-actions-right">
+            <button type="button" class="btn-secondary" id="cancelCopyBtn">Cancel</button>
+            <button type="submit" class="btn-primary">Create copies</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
   <script>
     (function () {
-      const STORAGE_KEY = 'awfis_team_tasks_v1';
+      const STORAGE_KEY = 'awfis_founder_tasks_v1';
       const STATUSES = ['Assigned', 'Ongoing', 'Submitted', 'Approved', 'Returned'];
 
       function todayISO() {
@@ -694,10 +922,10 @@
         { id: 'TSK-104', title: 'Schedule COEP college follow-up call', assignee: 'Rutuja Botre', priority: 'Medium', status: 'Assigned', dueDate: offsetDate(5) },
         { id: 'TSK-105', title: 'Fix API gateway webhook timeout', assignee: 'Sneha Shinde', priority: 'Critical', status: 'Ongoing', dueDate: offsetDate(1) },
         { id: 'TSK-106', title: 'Edit MindLyft Leaders podcast reel', assignee: 'Rohan Kulkarni', priority: 'Medium', status: 'Ongoing', dueDate: offsetDate(4) },
-        { id: 'TSK-107', title: 'Prepare CDAC batch readiness report', assignee: 'Anchal Agawane', priority: 'Low', status: 'Ongoing', dueDate: offsetDate(6) },
+        { id: 'TSK-107', title: 'Conduct CDAC mock interview bootcamp', assignee: 'Amit Verma', priority: 'Low', status: 'Ongoing', dueDate: offsetDate(6) },
         { id: 'TSK-108', title: 'Submit Pune Expo booth logistics plan', assignee: 'Jayendra Walunj', priority: 'High', status: 'Submitted', dueDate: offsetDate(2) },
         { id: 'TSK-109', title: 'Send student counseling follow-up summary', assignee: 'Neha Gupta', priority: 'Medium', status: 'Submitted', dueDate: offsetDate(3) },
-        { id: 'TSK-110', title: 'Publish Q4 partner college MoU list', assignee: 'Ritesh Deshmukh', priority: 'Low', status: 'Approved', dueDate: offsetDate(-1) },
+        { id: 'TSK-110', title: 'Publish Q4 partner college MoU list', assignee: 'Anchal Agawane', priority: 'Low', status: 'Approved', dueDate: offsetDate(-1) },
         { id: 'TSK-111', title: 'Revise mobile wireframe dark contrast', assignee: 'Aarav Sharma', priority: 'Medium', status: 'Returned', dueDate: offsetDate(-3) }
       ];
 
@@ -707,6 +935,8 @@
       let personFilter = 'Everyone';
       let searchQuery = '';
       let editingId = null;
+      let copyingTaskId = null;
+      let toastTimer = null;
 
       function loadTasks() {
         try {
@@ -725,17 +955,35 @@
         } catch (e) {}
       }
 
+      function nextTaskId() {
+        const maxNum = tasks.reduce((max, t) => {
+          const n = parseInt(String(t.id).replace(/\D/g, ''), 10);
+          return Number.isFinite(n) && n > max ? n : max;
+        }, 117);
+        return `TSK-${maxNum + 1}`;
+      }
+
+      function showToast(message) {
+        const el = document.getElementById('toast');
+        el.textContent = message;
+        el.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          el.hidden = true;
+        }, 3500);
+      }
+
       function isOverdue(task) {
         return task.dueDate < todayISO() && task.status !== 'Approved';
       }
 
       function initials(name) {
-        return name
+        return String(name || '')
           .trim()
           .split(/\s+/)
           .slice(0, 2)
           .map((p) => p[0].toUpperCase())
-          .join('');
+          .join('') || '?';
       }
 
       function formatDue(dateStr) {
@@ -752,13 +1000,22 @@
           .replace(/"/g, '&quot;');
       }
 
+      function getAllPeople() {
+        return Array.from(new Set(tasks.map((t) => t.assignee).filter(Boolean))).sort();
+      }
+
       function getFilteredTasks() {
         const q = searchQuery.trim().toLowerCase();
         return tasks.filter((t) => {
           if (segmentFilter === 'Urgent' && t.priority !== 'Critical' && t.priority !== 'High') return false;
           if (segmentFilter === 'Overdue' && !isOverdue(t)) return false;
           if (personFilter !== 'Everyone' && t.assignee !== personFilter) return false;
-          if (q && !t.title.toLowerCase().includes(q) && !t.assignee.toLowerCase().includes(q) && !t.id.toLowerCase().includes(q)) {
+          if (
+            q &&
+            !t.title.toLowerCase().includes(q) &&
+            !t.assignee.toLowerCase().includes(q) &&
+            !t.id.toLowerCase().includes(q)
+          ) {
             return false;
           }
           return true;
@@ -766,10 +1023,11 @@
       }
 
       function updatePeopleControls() {
-        const names = Array.from(new Set(tasks.map((t) => t.assignee).filter(Boolean))).sort();
+        const names = getAllPeople();
         const select = document.getElementById('personSelect');
         const current = personFilter;
-        select.innerHTML = '<option value="Everyone">Everyone</option>' +
+        select.innerHTML =
+          '<option value="Everyone">Everyone</option>' +
           names.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
         select.value = names.includes(current) ? current : 'Everyone';
         personFilter = select.value;
@@ -828,6 +1086,7 @@
         updatePeopleControls();
         updateWarning();
 
+        const names = getAllPeople();
         const filtered = getFilteredTasks();
         document.getElementById('countLine').textContent = `${filtered.length} of ${tasks.length} tasks`;
 
@@ -855,18 +1114,29 @@
         grid.innerHTML = visible.map((t) => {
           const overdue = isOverdue(t);
           const dueLabel = overdue ? `Overdue · ${formatDue(t.dueDate)}` : `Due ${formatDue(t.dueDate)}`;
+          const peopleOpts = names.includes(t.assignee) ? names : [t.assignee, ...names];
+
           return `
             <article class="card" data-id="${escapeHtml(t.id)}" data-status="${escapeHtml(t.status)}" tabindex="0">
               <div>
                 <div class="card-top">
-                  <h3 class="card-title">${escapeHtml(t.title)}</h3>
+                  <div>
+                    <h3 class="card-title">${escapeHtml(t.title)}</h3>
+                    ${t.copiedFrom ? `<p class="copy-note">Same task as ${escapeHtml(t.copiedFrom)}</p>` : ''}
+                  </div>
                   <span class="priority-badge priority-${escapeHtml(t.priority)}">${escapeHtml(t.priority)}</span>
                 </div>
               </div>
 
-              <div class="assignee">
+              <div class="assignee-row">
                 <span class="avatar" aria-hidden="true">${escapeHtml(initials(t.assignee))}</span>
-                <span>${escapeHtml(t.assignee)}</span>
+                <select
+                  class="assignee-select"
+                  data-task-id="${escapeHtml(t.id)}"
+                  aria-label="Reassign ${escapeHtml(t.title)}"
+                >
+                  ${peopleOpts.map((p) => `<option value="${escapeHtml(p)}" ${p === t.assignee ? 'selected' : ''}>${escapeHtml(p)}</option>`).join('')}
+                </select>
               </div>
 
               <div class="card-meta">
@@ -882,24 +1152,86 @@
               >
                 ${STATUSES.map((s) => `<option value="${s}" ${s === t.status ? 'selected' : ''}>${s}</option>`).join('')}
               </select>
+
+              <button
+                type="button"
+                class="btn-also-assign"
+                data-copy-id="${escapeHtml(t.id)}"
+              >
+                Also assign to someone else
+              </button>
             </article>
           `;
         }).join('');
       }
 
-      // Modal controls
+      // Quick Assign Box
+      const qaDue = document.getElementById('qaDueDate');
+      qaDue.value = todayISO();
+
+      document.getElementById('quickAssignForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const titleEl = document.getElementById('qaTitle');
+        const assigneeEl = document.getElementById('qaAssignee');
+        const dueEl = document.getElementById('qaDueDate');
+        const priorityEl = document.getElementById('qaPriority');
+        const msgEl = document.getElementById('quickMsg');
+
+        const title = titleEl.value.trim();
+        const assignee = assigneeEl.value.trim();
+        const dueDate = dueEl.value || todayISO();
+        const priority = priorityEl.value;
+
+        if (!title || !assignee) {
+          msgEl.textContent = !title ? 'Please enter a task description.' : 'Please enter who to assign this task to.';
+          msgEl.hidden = false;
+          (!title ? titleEl : assigneeEl).focus();
+          return;
+        }
+
+        msgEl.hidden = true;
+        const newId = nextTaskId();
+        tasks.unshift({
+          id: newId,
+          title,
+          assignee,
+          dueDate,
+          priority,
+          status: 'Assigned'
+        });
+
+        // Clear fields & reset filters so new task is visible
+        titleEl.value = '';
+        assigneeEl.value = '';
+        dueEl.value = todayISO();
+        priorityEl.value = 'High';
+
+        segmentFilter = 'All';
+        personFilter = 'Everyone';
+        searchQuery = '';
+        activeStatus = 'Assigned';
+        document.getElementById('searchInput').value = '';
+        syncSegmentButtons();
+
+        saveTasks();
+        render();
+        showToast(`Assigned ${newId} to ${assignee}.`);
+      });
+
+      // Full Assign / Edit Modal
       const backdrop = document.getElementById('modalBackdrop');
       const form = document.getElementById('taskForm');
       const deleteBtn = document.getElementById('deleteTaskBtn');
 
       function openModal(task) {
         editingId = task ? task.id : null;
-        document.getElementById('modalTitle').textContent = task ? `Edit ${task.id}` : 'New task';
+        document.getElementById('modalTitle').textContent = task ? `Edit ${task.id}` : 'Assign with details';
+        document.getElementById('modalSub').textContent = task && task.copiedFrom ? `Same task as ${task.copiedFrom}` : '';
         document.getElementById('fTitle').value = task ? task.title : '';
         document.getElementById('fAssignee').value = task ? task.assignee : '';
-        document.getElementById('fDueDate').value = task ? task.dueDate : offsetDate(3);
-        document.getElementById('fPriority').value = task ? task.priority : 'Medium';
-        document.getElementById('fStatus').value = task ? task.status : activeStatus;
+        document.getElementById('fDueDate').value = task ? task.dueDate : todayISO();
+        document.getElementById('fPriority').value = task ? task.priority : 'High';
+        document.getElementById('fStatus').value = task ? task.status : 'Assigned';
         deleteBtn.hidden = !task;
         backdrop.hidden = false;
         document.getElementById('fTitle').focus();
@@ -910,13 +1242,10 @@
         editingId = null;
       }
 
-      document.getElementById('newTaskBtn').addEventListener('click', () => openModal(null));
+      document.getElementById('assignDetailsBtn').addEventListener('click', () => openModal(null));
       document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
       backdrop.addEventListener('click', (e) => {
         if (e.target === backdrop) closeModal();
-      });
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !backdrop.hidden) closeModal();
       });
 
       form.addEventListener('submit', (e) => {
@@ -932,19 +1261,16 @@
           tasks = tasks.map((t) =>
             t.id === editingId ? { ...t, title, assignee, dueDate, priority, status } : t
           );
+          showToast(`Saved ${editingId}.`);
         } else {
-          const maxNum = tasks.reduce((max, t) => {
-            const n = parseInt(String(t.id).replace(/\D/g, ''), 10);
-            return Number.isFinite(n) && n > max ? n : max;
-          }, 100);
-          tasks.unshift({
-            id: `TSK-${maxNum + 1}`,
-            title,
-            assignee,
-            dueDate,
-            priority,
-            status
-          });
+          const newId = nextTaskId();
+          tasks.unshift({ id: newId, title, assignee, dueDate, priority, status });
+          segmentFilter = 'All';
+          personFilter = 'Everyone';
+          searchQuery = '';
+          document.getElementById('searchInput').value = '';
+          syncSegmentButtons();
+          showToast(`Assigned ${newId} to ${assignee}.`);
         }
         activeStatus = status;
         saveTasks();
@@ -954,13 +1280,124 @@
 
       deleteBtn.addEventListener('click', () => {
         if (!editingId) return;
+        const deletedId = editingId;
         tasks = tasks.filter((t) => t.id !== editingId);
         saveTasks();
         closeModal();
         render();
+        showToast(`Deleted ${deletedId}.`);
       });
 
-      // Segmented filter
+      // Also Assign To Someone Else Modal
+      const copyBackdrop = document.getElementById('copyBackdrop');
+      const copyInput = document.getElementById('copyInput');
+      const copyChips = document.getElementById('copyChips');
+      const copyMsg = document.getElementById('copyMsg');
+
+      function openCopyModal(task) {
+        copyingTaskId = task.id;
+        copyMsg.hidden = true;
+        copyInput.value = '';
+        document.getElementById('copySub').textContent =
+          `Copying "${task.title}" (${task.id}). Currently assigned to ${task.assignee}.`;
+
+        const candidates = getAllPeople().filter((p) => p !== task.assignee);
+        copyChips.innerHTML = candidates
+          .map((p) => `<button type="button" class="person-chip" data-person="${escapeHtml(p)}">${escapeHtml(p)}</button>`)
+          .join('');
+        copyBackdrop.hidden = false;
+        copyInput.focus();
+      }
+
+      function closeCopyModal() {
+        copyBackdrop.hidden = true;
+        copyingTaskId = null;
+      }
+
+      copyChips.addEventListener('click', (e) => {
+        const chip = e.target.closest('.person-chip');
+        if (!chip) return;
+        const name = chip.dataset.person;
+        const current = copyInput.value
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (current.includes(name)) {
+          const next = current.filter((n) => n !== name);
+          copyInput.value = next.join(', ');
+          chip.classList.remove('selected');
+        } else {
+          current.push(name);
+          copyInput.value = current.join(', ');
+          chip.classList.add('selected');
+        }
+      });
+
+      document.getElementById('cancelCopyBtn').addEventListener('click', closeCopyModal);
+      copyBackdrop.addEventListener('click', (e) => {
+        if (e.target === copyBackdrop) closeCopyModal();
+      });
+
+      document.getElementById('copyForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const source = tasks.find((t) => t.id === copyingTaskId);
+        if (!source) return;
+
+        const names = Array.from(
+          new Set(
+            copyInput.value
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          )
+        );
+
+        if (names.length === 0) {
+          copyMsg.textContent = 'Please choose or type at least one person.';
+          copyMsg.hidden = false;
+          return;
+        }
+
+        const filteredNames = names.filter((n) => n.toLowerCase() !== source.assignee.toLowerCase());
+        if (filteredNames.length === 0) {
+          copyMsg.textContent = `${source.assignee} already has this task. Pick someone else.`;
+          copyMsg.hidden = false;
+          return;
+        }
+
+        const createdIds = [];
+        for (const person of filteredNames) {
+          const newId = nextTaskId();
+          createdIds.push(newId);
+          tasks.unshift({
+            id: newId,
+            title: source.title,
+            assignee: person,
+            dueDate: source.dueDate,
+            priority: source.priority,
+            status: 'Assigned',
+            copiedFrom: source.id
+          });
+        }
+
+        saveTasks();
+        closeCopyModal();
+        render();
+        showToast(
+          filteredNames.length === 1
+            ? `Created ${createdIds[0]} for ${filteredNames[0]}.`
+            : `Created ${filteredNames.length} copies (${createdIds.join(', ')}).`
+        );
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          if (!backdrop.hidden) closeModal();
+          if (!copyBackdrop.hidden) closeCopyModal();
+        }
+      });
+
+      // Filters & status tabs
       document.querySelectorAll('.seg-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
           segmentFilter = btn.dataset.seg;
@@ -969,7 +1406,6 @@
         });
       });
 
-      // Person & Search filters
       document.getElementById('personSelect').addEventListener('change', (e) => {
         personFilter = e.target.value;
         render();
@@ -980,7 +1416,6 @@
         render();
       });
 
-      // Status tabs
       document.querySelectorAll('.status-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
           activeStatus = btn.dataset.status;
@@ -988,20 +1423,38 @@
         });
       });
 
-      // Card clicks & inline status dropdown
+      // Card interactions
       const grid = document.getElementById('cardsGrid');
       grid.addEventListener('change', (e) => {
-        const select = e.target.closest('.card-status-select');
-        if (!select) return;
-        const id = select.dataset.taskId;
-        const newStatus = select.value;
-        tasks = tasks.map((t) => (t.id === id ? { ...t, status: newStatus } : t));
-        saveTasks();
-        render();
+        const statusSelect = e.target.closest('.card-status-select');
+        if (statusSelect) {
+          const id = statusSelect.dataset.taskId;
+          const newStatus = statusSelect.value;
+          tasks = tasks.map((t) => (t.id === id ? { ...t, status: newStatus } : t));
+          saveTasks();
+          render();
+          return;
+        }
+
+        const assigneeSelect = e.target.closest('.assignee-select');
+        if (assigneeSelect) {
+          const id = assigneeSelect.dataset.taskId;
+          const newPerson = assigneeSelect.value;
+          tasks = tasks.map((t) => (t.id === id ? { ...t, assignee: newPerson } : t));
+          saveTasks();
+          render();
+          showToast(`${id} reassigned to ${newPerson}.`);
+        }
       });
 
       grid.addEventListener('click', (e) => {
-        if (e.target.closest('.card-status-select')) return;
+        const copyBtn = e.target.closest('.btn-also-assign');
+        if (copyBtn) {
+          const task = tasks.find((t) => t.id === copyBtn.dataset.copyId);
+          if (task) openCopyModal(task);
+          return;
+        }
+        if (e.target.closest('.card-status-select') || e.target.closest('.assignee-select')) return;
         const card = e.target.closest('.card');
         if (!card) return;
         const task = tasks.find((t) => t.id === card.dataset.id);
@@ -1010,7 +1463,7 @@
 
       grid.addEventListener('keydown', (e) => {
         if (e.key !== 'Enter' && e.key !== ' ') return;
-        if (e.target.closest('.card-status-select')) return;
+        if (e.target.closest('select') || e.target.closest('button')) return;
         const card = e.target.closest('.card');
         if (!card) return;
         e.preventDefault();
