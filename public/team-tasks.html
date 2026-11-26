@@ -110,6 +110,10 @@
       outline-offset: 2px;
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
     .container {
       max-width: 1120px;
       margin: 0 auto;
@@ -123,7 +127,7 @@
       justify-content: space-between;
       gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
 
     .title-row {
@@ -155,6 +159,33 @@
       margin: 2px 0 0;
       font-size: 0.9375rem;
       color: var(--text-muted);
+    }
+
+    /* Main 2-button switch */
+    .view-switch {
+      display: inline-flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 18px;
+    }
+
+    .view-btn {
+      min-height: 40px;
+      padding: 0 18px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .view-btn.active {
+      background: var(--brand);
+      color: #ffffff;
     }
 
     .btn-primary {
@@ -227,10 +258,6 @@
       font-weight: 500;
     }
 
-    .quick-msg[hidden] {
-      display: none;
-    }
-
     /* Overload Warning */
     .warning-line {
       display: flex;
@@ -245,10 +272,6 @@
       border: 1px solid var(--warn-border);
       color: var(--warn-text);
       font-size: 0.9rem;
-    }
-
-    .warning-line[hidden] {
-      display: none;
     }
 
     .warning-link {
@@ -314,7 +337,7 @@
 
     .search-input {
       min-width: 210px;
-      flex: 0 1 250px;
+      flex: 0 1 260px;
     }
 
     /* Status buttons row */
@@ -450,12 +473,12 @@
     }
 
     .avatar {
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       border-radius: 999px;
       background: var(--brand-soft);
       color: var(--brand);
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 700;
       display: inline-flex;
       align-items: center;
@@ -532,6 +555,165 @@
       color: var(--brand);
     }
 
+    /* VIEW 2: TEAM WORKLOAD */
+    .wl-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .wl-stat {
+      text-align: left;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: border-color 0.15s ease, transform 0.12s ease;
+    }
+
+    .wl-stat:hover {
+      transform: translateY(-1px);
+    }
+
+    .wl-stat-num {
+      display: block;
+      font-size: 1.875rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .wl-stat-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-top: 4px;
+      color: var(--text-muted);
+    }
+
+    .wl-stat[data-group="ALL"] .wl-stat-num { color: var(--brand); }
+    .wl-stat[data-group="FREE"] .wl-stat-num { color: var(--st-approved); }
+    .wl-stat[data-group="BUSY"] .wl-stat-num { color: var(--st-ongoing); }
+    .wl-stat[data-group="OVERLOADED"] .wl-stat-num { color: var(--st-returned); }
+
+    .wl-stat.active[data-group="ALL"] { border-color: var(--brand); background: var(--brand-soft); }
+    .wl-stat.active[data-group="FREE"] { border-color: var(--st-approved); background: var(--st-approved-bg); }
+    .wl-stat.active[data-group="BUSY"] { border-color: var(--st-ongoing); background: var(--st-ongoing-bg); }
+    .wl-stat.active[data-group="OVERLOADED"] { border-color: var(--st-returned); background: var(--st-returned-bg); }
+
+    .wl-search-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+    }
+
+    .wl-search-row .control {
+      background: var(--surface);
+      max-width: 280px;
+    }
+
+    .wl-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .wl-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .wl-person {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .wl-name {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .wl-dept {
+      margin: 1px 0 0;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .avail-badge {
+      flex-shrink: 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    .avail-Free { background: var(--st-approved-bg); color: var(--st-approved); }
+    .avail-Light { background: var(--st-assigned-bg); color: var(--st-assigned); }
+    .avail-Busy { background: var(--st-ongoing-bg); color: var(--st-ongoing); }
+    .avail-Overloaded { background: var(--st-returned-bg); color: var(--st-returned); }
+
+    .wl-open-count {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .wl-task-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .wl-task-item {
+      padding: 9px 11px;
+      border-radius: 10px;
+      background: var(--surface-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.84rem;
+    }
+
+    .wl-task-name {
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .wl-task-due {
+      flex-shrink: 0;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .wl-free-note {
+      margin: 0;
+      padding: 12px;
+      border-radius: 10px;
+      background: var(--st-approved-bg);
+      color: var(--st-approved);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
     .empty-state {
       grid-column: 1 / -1;
       text-align: center;
@@ -552,10 +734,6 @@
       justify-content: center;
       padding: 16px;
       z-index: 50;
-    }
-
-    .modal-backdrop[hidden] {
-      display: none;
     }
 
     .modal {
@@ -675,24 +853,23 @@
       box-shadow: var(--modal-shadow);
     }
 
-    .toast[hidden] {
-      display: none;
-    }
-
     @media (max-width: 860px) {
       .quick-assign-row {
         grid-template-columns: 1fr 1fr;
       }
-      .quick-assign-row .qa-title {
-        grid-column: 1 / -1;
-      }
+      .quick-assign-row .qa-title,
       .quick-assign-row .btn-primary {
         grid-column: 1 / -1;
+      }
+      .wl-summary {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
     @media (max-width: 600px) {
-      .quick-assign-row {
+      .quick-assign-row,
+      .wl-summary,
+      .form-row-2 {
         grid-template-columns: 1fr;
       }
       .filter-controls {
@@ -700,11 +877,10 @@
         justify-content: stretch;
       }
       .filter-controls .control,
-      .search-input {
+      .search-input,
+      .wl-search-row .control {
         flex: 1 1 100%;
-      }
-      .form-row-2 {
-        grid-template-columns: 1fr;
+        max-width: none;
       }
     }
   </style>
@@ -723,91 +899,134 @@
       <button type="button" class="btn-secondary" id="assignDetailsBtn">Assign with details</button>
     </header>
 
-    <!-- Quick Assign Box -->
-    <section class="quick-assign" aria-label="Assign a task">
-      <h2 class="quick-assign-title">Assign a task</h2>
-      <form id="quickAssignForm" class="quick-assign-row" novalidate>
-        <input
-          id="qaTitle"
-          class="control qa-title"
-          type="text"
-          placeholder="What needs to be done?"
-          aria-label="Task description"
-        />
-        <input
-          id="qaAssignee"
-          class="control"
-          type="text"
-          list="peopleSuggestions"
-          placeholder="Assign to..."
-          aria-label="Assign to"
-        />
-        <input
-          id="qaDueDate"
-          class="control"
-          type="date"
-          aria-label="Due date"
-        />
-        <select id="qaPriority" class="control" aria-label="Priority">
-          <option value="Critical">Critical</option>
-          <option value="High" selected>High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
-        </select>
-        <button type="submit" class="btn-primary">Assign task</button>
-      </form>
-      <p class="quick-msg" id="quickMsg" hidden></p>
-    </section>
+    <!-- Two-button switch -->
+    <nav class="view-switch" aria-label="View switch">
+      <button type="button" class="view-btn active" data-view="tasks">Tasks</button>
+      <button type="button" class="view-btn" data-view="workload">Team workload</button>
+    </nav>
 
-    <!-- Overload Warning -->
-    <div class="warning-line" id="warningLine" hidden>
-      <span id="warningText"></span>
-      <button type="button" class="warning-link" id="warningFilterBtn">Show tasks</button>
+    <!-- VIEW 1: TASKS -->
+    <div id="tasksView">
+      <!-- Quick Assign Box -->
+      <section class="quick-assign" aria-label="Assign a task">
+        <h2 class="quick-assign-title">Assign a task</h2>
+        <form id="quickAssignForm" class="quick-assign-row" novalidate>
+          <input
+            id="qaTitle"
+            class="control qa-title"
+            type="text"
+            placeholder="What needs to be done?"
+            aria-label="Task description"
+          />
+          <input
+            id="qaAssignee"
+            class="control"
+            type="text"
+            list="peopleSuggestions"
+            placeholder="Assign to..."
+            aria-label="Assign to"
+          />
+          <input
+            id="qaDueDate"
+            class="control"
+            type="date"
+            aria-label="Due date"
+          />
+          <select id="qaPriority" class="control" aria-label="Priority">
+            <option value="Critical">Critical</option>
+            <option value="High" selected>High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+          <button type="submit" class="btn-primary">Assign task</button>
+        </form>
+        <p class="quick-msg" id="quickMsg" hidden></p>
+      </section>
+
+      <!-- Overload Warning -->
+      <div class="warning-line" id="warningLine" hidden>
+        <span id="warningText"></span>
+        <button type="button" class="warning-link" id="warningFilterBtn">Show tasks</button>
+      </div>
+
+      <!-- Filters (one row) -->
+      <section class="filter-bar" aria-label="Task filters">
+        <div class="segmented" role="group" aria-label="Quick filter">
+          <button type="button" class="seg-btn active" data-seg="All">All</button>
+          <button type="button" class="seg-btn" data-seg="Urgent">Urgent</button>
+          <button type="button" class="seg-btn" data-seg="Overdue">Overdue</button>
+        </div>
+
+        <div class="filter-controls">
+          <select class="control" id="personSelect" aria-label="Filter by person">
+            <option value="Everyone">Everyone</option>
+          </select>
+          <input
+            type="search"
+            class="control search-input"
+            id="searchInput"
+            placeholder="Search tasks or people..."
+            aria-label="Search tasks"
+          />
+        </div>
+      </section>
+
+      <!-- Status Buttons -->
+      <section class="status-row" role="tablist" aria-label="Task status">
+        <button type="button" class="status-btn active" data-status="Assigned" role="tab" aria-selected="true">
+          <span class="status-dot"></span> Assigned <span class="status-count" id="count-Assigned">0</span>
+        </button>
+        <button type="button" class="status-btn" data-status="Ongoing" role="tab" aria-selected="false">
+          <span class="status-dot"></span> Ongoing <span class="status-count" id="count-Ongoing">0</span>
+        </button>
+        <button type="button" class="status-btn" data-status="Submitted" role="tab" aria-selected="false">
+          <span class="status-dot"></span> Submitted <span class="status-count" id="count-Submitted">0</span>
+        </button>
+        <button type="button" class="status-btn" data-status="Approved" role="tab" aria-selected="false">
+          <span class="status-dot"></span> Approved <span class="status-count" id="count-Approved">0</span>
+        </button>
+        <button type="button" class="status-btn" data-status="Returned" role="tab" aria-selected="false">
+          <span class="status-dot"></span> Returned <span class="status-count" id="count-Returned">0</span>
+        </button>
+      </section>
+
+      <!-- Task Cards Grid -->
+      <section class="cards-grid" id="cardsGrid" aria-live="polite"></section>
     </div>
 
-    <!-- Filters (one row) -->
-    <section class="filter-bar" aria-label="Task filters">
-      <div class="segmented" role="group" aria-label="Quick filter">
-        <button type="button" class="seg-btn active" data-seg="All">All</button>
-        <button type="button" class="seg-btn" data-seg="Urgent">Urgent</button>
-        <button type="button" class="seg-btn" data-seg="Overdue">Overdue</button>
-      </div>
+    <!-- VIEW 2: TEAM WORKLOAD -->
+    <div id="workloadView" hidden>
+      <section class="wl-summary" aria-label="Team workload summary">
+        <button type="button" class="wl-stat active" data-group="ALL">
+          <span class="wl-stat-num" id="wlTotal">17</span>
+          <span class="wl-stat-label">Total employees</span>
+        </button>
+        <button type="button" class="wl-stat" data-group="FREE">
+          <span class="wl-stat-num" id="wlFree">0</span>
+          <span class="wl-stat-label">Free now</span>
+        </button>
+        <button type="button" class="wl-stat" data-group="BUSY">
+          <span class="wl-stat-num" id="wlBusy">0</span>
+          <span class="wl-stat-label">Busy, 3 to 5 tasks</span>
+        </button>
+        <button type="button" class="wl-stat" data-group="OVERLOADED">
+          <span class="wl-stat-num" id="wlOverloaded">0</span>
+          <span class="wl-stat-label">Overloaded, 6 or more</span>
+        </button>
+      </section>
 
-      <div class="filter-controls">
-        <select class="control" id="personSelect" aria-label="Filter by person">
-          <option value="Everyone">Everyone</option>
-        </select>
+      <div class="wl-search-row">
         <input
           type="search"
-          class="control search-input"
-          id="searchInput"
-          placeholder="Search tasks or people..."
-          aria-label="Search tasks"
+          class="control"
+          id="wlSearchInput"
+          placeholder="Find an employee by name..."
+          aria-label="Search employees"
         />
       </div>
-    </section>
 
-    <!-- Status Buttons -->
-    <section class="status-row" role="tablist" aria-label="Task status">
-      <button type="button" class="status-btn active" data-status="Assigned" role="tab" aria-selected="true">
-        <span class="status-dot"></span> Assigned <span class="status-count" id="count-Assigned">0</span>
-      </button>
-      <button type="button" class="status-btn" data-status="Ongoing" role="tab" aria-selected="false">
-        <span class="status-dot"></span> Ongoing <span class="status-count" id="count-Ongoing">0</span>
-      </button>
-      <button type="button" class="status-btn" data-status="Submitted" role="tab" aria-selected="false">
-        <span class="status-dot"></span> Submitted <span class="status-count" id="count-Submitted">0</span>
-      </button>
-      <button type="button" class="status-btn" data-status="Approved" role="tab" aria-selected="false">
-        <span class="status-dot"></span> Approved <span class="status-count" id="count-Approved">0</span>
-      </button>
-      <button type="button" class="status-btn" data-status="Returned" role="tab" aria-selected="false">
-        <span class="status-dot"></span> Returned <span class="status-count" id="count-Returned">0</span>
-      </button>
-    </section>
-
-    <!-- Task Cards Grid -->
-    <section class="cards-grid" id="cardsGrid" aria-live="polite"></section>
+      <section class="cards-grid" id="workloadGrid" aria-live="polite"></section>
+    </div>
   </main>
 
   <datalist id="peopleSuggestions"></datalist>
@@ -895,7 +1114,8 @@
 
   <script>
     (function () {
-      const STORAGE_KEY = 'awfis_founder_tasks_v1';
+      const STORAGE_KEY = 'awfis_founder_tasks_v2';
+      const EMP_STORAGE_KEY = 'awfis_founder_employees_v2';
       const STATUSES = ['Assigned', 'Ongoing', 'Submitted', 'Approved', 'Returned'];
 
       function todayISO() {
@@ -915,6 +1135,26 @@
         return `${y}-${m}-${day}`;
       }
 
+      const SAMPLE_EMPLOYEES = [
+        { name: 'Anchal Agawane', department: 'Education' },
+        { name: 'Rutuja Botre', department: 'Innovation' },
+        { name: 'Shubham Jadhav', department: 'Tech & Accounts' },
+        { name: 'Jayendra Walunj', department: 'Operations' },
+        { name: 'Rohan Kulkarni', department: 'Media' },
+        { name: 'Priya Sharma', department: 'Sales' },
+        { name: 'Tanvi Patil', department: 'Tech & Accounts' },
+        { name: 'Ritesh Deshmukh', department: 'Sales' },
+        { name: 'Amit Verma', department: 'Trainer' },
+        { name: 'Dr. Kunal More', department: 'Education' },
+        { name: 'Neha Gupta', department: 'Counselor' },
+        { name: 'Sneha Shinde', department: 'Tech & Accounts' },
+        { name: 'Amit Patel', department: 'TeleCaller' },
+        { name: 'Sanket Joshi', department: 'TeleCaller' },
+        { name: 'Kavita Nair', department: 'Operations' },
+        { name: 'Aarav Sharma', department: 'Interns' },
+        { name: 'Ishita Roy', department: 'Interns' }
+      ];
+
       const SAMPLE_TASKS = [
         { id: 'TSK-101', title: 'Finalize CRM lead capture widget', assignee: 'Sneha Shinde', priority: 'Critical', status: 'Assigned', dueDate: offsetDate(-2) },
         { id: 'TSK-102', title: 'Update LMS assessment runner UI', assignee: 'Sneha Shinde', priority: 'High', status: 'Assigned', dueDate: offsetDate(2) },
@@ -929,14 +1169,35 @@
         { id: 'TSK-111', title: 'Revise mobile wireframe dark contrast', assignee: 'Aarav Sharma', priority: 'Medium', status: 'Returned', dueDate: offsetDate(-3) }
       ];
 
+      let employees = loadEmployees();
       let tasks = loadTasks();
+      let activeView = 'tasks';
       let activeStatus = 'Assigned';
       let segmentFilter = 'All';
       let personFilter = 'Everyone';
       let searchQuery = '';
+      let workloadGroup = 'ALL';
+      let workloadSearch = '';
       let editingId = null;
       let copyingTaskId = null;
       let toastTimer = null;
+
+      function loadEmployees() {
+        try {
+          const raw = localStorage.getItem(EMP_STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          }
+        } catch (e) {}
+        return SAMPLE_EMPLOYEES.map((e) => ({ ...e }));
+      }
+
+      function saveEmployees() {
+        try {
+          localStorage.setItem(EMP_STORAGE_KEY, JSON.stringify(employees));
+        } catch (e) {}
+      }
 
       function loadTasks() {
         try {
@@ -954,6 +1215,19 @@
           localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
         } catch (e) {}
       }
+
+      function ensureEmployee(name) {
+        const clean = String(name || '').trim();
+        if (!clean) return;
+        const exists = employees.some((e) => e.name.toLowerCase() === clean.toLowerCase());
+        if (!exists) {
+          employees.push({ name: clean, department: 'General' });
+          saveEmployees();
+        }
+      }
+
+      // Sync any task assignees into employees list
+      tasks.forEach((t) => ensureEmployee(t.assignee));
 
       function nextTaskId() {
         const maxNum = tasks.reduce((max, t) => {
@@ -986,6 +1260,10 @@
           .join('') || '?';
       }
 
+      function firstName(name) {
+        return String(name || '').trim().split(/\s+/)[0] || name;
+      }
+
       function formatDue(dateStr) {
         const [y, m, d] = dateStr.split('-').map(Number);
         const dt = new Date(y, m - 1, d);
@@ -1000,8 +1278,8 @@
           .replace(/"/g, '&quot;');
       }
 
-      function getAllPeople() {
-        return Array.from(new Set(tasks.map((t) => t.assignee).filter(Boolean))).sort();
+      function getAllPeopleNames() {
+        return Array.from(new Set(employees.map((e) => e.name))).sort();
       }
 
       function getFilteredTasks() {
@@ -1023,7 +1301,7 @@
       }
 
       function updatePeopleControls() {
-        const names = getAllPeople();
+        const names = getAllPeopleNames();
         const select = document.getElementById('personSelect');
         const current = personFilter;
         select.innerHTML =
@@ -1082,11 +1360,15 @@
         });
       }
 
-      function render() {
-        updatePeopleControls();
-        updateWarning();
+      function getAvailability(openCount) {
+        if (openCount === 0) return { key: 'FREE', label: 'Free now', cls: 'Free' };
+        if (openCount <= 2) return { key: 'LIGHT', label: 'Light load', cls: 'Light' };
+        if (openCount <= 5) return { key: 'BUSY', label: 'Busy', cls: 'Busy' };
+        return { key: 'OVERLOADED', label: 'Overloaded', cls: 'Overloaded' };
+      }
 
-        const names = getAllPeople();
+      function renderTasksView() {
+        const names = getAllPeopleNames();
         const filtered = getFilteredTasks();
         document.getElementById('countLine').textContent = `${filtered.length} of ${tasks.length} tasks`;
 
@@ -1165,6 +1447,139 @@
         }).join('');
       }
 
+      function renderWorkloadView() {
+        const enriched = employees.map((emp) => {
+          const openTasks = tasks
+            .filter((t) => t.assignee.toLowerCase() === emp.name.toLowerCase() && t.status !== 'Approved')
+            .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+          const avail = getAvailability(openTasks.length);
+          return { emp, openTasks, avail };
+        });
+
+        document.getElementById('wlTotal').textContent = enriched.length;
+        document.getElementById('wlFree').textContent = enriched.filter((x) => x.avail.key === 'FREE').length;
+        document.getElementById('wlBusy').textContent = enriched.filter((x) => x.avail.key === 'BUSY').length;
+        document.getElementById('wlOverloaded').textContent = enriched.filter((x) => x.avail.key === 'OVERLOADED').length;
+
+        document.querySelectorAll('.wl-stat').forEach((card) => {
+          card.classList.toggle('active', card.dataset.group === workloadGroup);
+        });
+
+        const q = workloadSearch.trim().toLowerCase();
+        const visible = enriched
+          .filter((x) => {
+            if (workloadGroup !== 'ALL' && x.avail.key !== workloadGroup) return false;
+            if (q && !x.emp.name.toLowerCase().includes(q) && !x.emp.department.toLowerCase().includes(q)) return false;
+            return true;
+          })
+          .sort((a, b) => a.openTasks.length - b.openTasks.length || a.emp.name.localeCompare(b.emp.name));
+
+        const grid = document.getElementById('workloadGrid');
+        if (visible.length === 0) {
+          grid.innerHTML = `<div class="empty-state">No employees match this filter.</div>`;
+          return;
+        }
+
+        grid.innerHTML = visible.map(({ emp, openTasks, avail }) => {
+          const taskListHtml = openTasks.length === 0
+            ? `<p class="wl-free-note">No open tasks. Ready for new work.</p>`
+            : `<ul class="wl-task-list">
+                ${openTasks.map((t) => {
+                  const overdue = isOverdue(t);
+                  const dueText = overdue ? `Overdue · ${formatDue(t.dueDate)}` : formatDue(t.dueDate);
+                  return `
+                    <li class="wl-task-item">
+                      <span class="wl-task-name">${escapeHtml(t.title)}</span>
+                      <span class="wl-task-due ${overdue ? 'due-overdue' : ''}">${escapeHtml(dueText)}</span>
+                    </li>
+                  `;
+                }).join('')}
+              </ul>`;
+
+          return `
+            <article class="wl-card">
+              <div>
+                <div class="wl-card-head">
+                  <div class="wl-person">
+                    <span class="avatar" aria-hidden="true">${escapeHtml(initials(emp.name))}</span>
+                    <div>
+                      <h3 class="wl-name">${escapeHtml(emp.name)}</h3>
+                      <p class="wl-dept">${escapeHtml(emp.department)}</p>
+                    </div>
+                  </div>
+                  <span class="avail-badge avail-${avail.cls}">${avail.label}</span>
+                </div>
+              </div>
+
+              <div>
+                <div class="wl-open-count">${openTasks.length} open ${openTasks.length === 1 ? 'task' : 'tasks'}</div>
+              </div>
+
+              ${taskListHtml}
+
+              <button
+                type="button"
+                class="btn-primary wl-assign-btn"
+                data-assign-name="${escapeHtml(emp.name)}"
+              >
+                Assign a task to ${escapeHtml(firstName(emp.name))}
+              </button>
+            </article>
+          `;
+        }).join('');
+      }
+
+      function render() {
+        updatePeopleControls();
+        updateWarning();
+
+        document.querySelectorAll('.view-btn').forEach((btn) => {
+          btn.classList.toggle('active', btn.dataset.view === activeView);
+        });
+
+        document.getElementById('tasksView').hidden = activeView !== 'tasks';
+        document.getElementById('workloadView').hidden = activeView !== 'workload';
+
+        renderTasksView();
+        if (activeView === 'workload') {
+          renderWorkloadView();
+        }
+      }
+
+      // View switch
+      document.querySelectorAll('.view-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeView = btn.dataset.view;
+          render();
+        });
+      });
+
+      // Workload summary cards & search
+      document.querySelectorAll('.wl-stat').forEach((card) => {
+        card.addEventListener('click', () => {
+          const grp = card.dataset.group;
+          workloadGroup = workloadGroup === grp ? 'ALL' : grp;
+          renderWorkloadView();
+        });
+      });
+
+      document.getElementById('wlSearchInput').addEventListener('input', (e) => {
+        workloadSearch = e.target.value;
+        renderWorkloadView();
+      });
+
+      document.getElementById('workloadGrid').addEventListener('click', (e) => {
+        const btn = e.target.closest('.wl-assign-btn');
+        if (!btn) return;
+        const name = btn.dataset.assignName;
+        activeView = 'tasks';
+        render();
+        const assigneeEl = document.getElementById('qaAssignee');
+        const titleEl = document.getElementById('qaTitle');
+        assigneeEl.value = name;
+        titleEl.focus();
+      });
+
       // Quick Assign Box
       const qaDue = document.getElementById('qaDueDate');
       qaDue.value = todayISO();
@@ -1190,6 +1605,7 @@
         }
 
         msgEl.hidden = true;
+        ensureEmployee(assignee);
         const newId = nextTaskId();
         tasks.unshift({
           id: newId,
@@ -1200,7 +1616,6 @@
           status: 'Assigned'
         });
 
-        // Clear fields & reset filters so new task is visible
         titleEl.value = '';
         assigneeEl.value = '';
         dueEl.value = todayISO();
@@ -1257,6 +1672,8 @@
         const status = document.getElementById('fStatus').value;
         if (!title || !assignee || !dueDate) return;
 
+        ensureEmployee(assignee);
+
         if (editingId) {
           tasks = tasks.map((t) =>
             t.id === editingId ? { ...t, title, assignee, dueDate, priority, status } : t
@@ -1301,7 +1718,7 @@
         document.getElementById('copySub').textContent =
           `Copying "${task.title}" (${task.id}). Currently assigned to ${task.assignee}.`;
 
-        const candidates = getAllPeople().filter((p) => p !== task.assignee);
+        const candidates = getAllPeopleNames().filter((p) => p !== task.assignee);
         copyChips.innerHTML = candidates
           .map((p) => `<button type="button" class="person-chip" data-person="${escapeHtml(p)}">${escapeHtml(p)}</button>`)
           .join('');
@@ -1367,6 +1784,7 @@
 
         const createdIds = [];
         for (const person of filteredNames) {
+          ensureEmployee(person);
           const newId = nextTaskId();
           createdIds.push(newId);
           tasks.unshift({
@@ -1440,6 +1858,7 @@
         if (assigneeSelect) {
           const id = assigneeSelect.dataset.taskId;
           const newPerson = assigneeSelect.value;
+          ensureEmployee(newPerson);
           tasks = tasks.map((t) => (t.id === id ? { ...t, assignee: newPerson } : t));
           saveTasks();
           render();
