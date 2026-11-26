@@ -36,7 +36,7 @@ export const MOCK_CAMPAIGNS: CampaignWorkspace[] = [
     title: 'National EdTech Expo & Campus Roadshow 2026',
     objective: 'Showcase MindLyft LMS & Capsule programs to 3,500+ students and 40+ college deans.',
     participatingDepartments: ['Operation Team', 'Sales Department', 'Media', 'Technical Team'],
-    assignedEmployees: ['Vikram Deshmukh', 'Kavita Nair', 'Ritesh Deshmukh', 'Tanvi Patil'],
+    assignedEmployees: ['Jayendra Walunj', 'Kavita Nair', 'Ritesh Deshmukh', 'Tanvi Patil'],
     leadManager: 'Shubham Jadhav',
     startDate: '2026-11-10',
     deadline: '2026-12-20',
@@ -166,7 +166,7 @@ export const MOCK_TECHNICAL_BUGS: TechnicalBug[] = [
 ];
 
 export const MOCK_EVENTS: CompanyEvent[] = [
-  { id: 'EVT-401', name: 'National EdTech Expo & Career Summit 2026', eventType: 'Expo', date: '2026-12-10', venue: 'Pragati Maidan, New Delhi • Hall 5', organizer: 'Vikram Deshmukh', participatingDepartments: ['Operation Team', 'Sales Department', 'Media'], boothDetails: 'Stall A-14 (Corner 6x6m Island Booth)', leadsCollected: 410, qualifiedLeads: 185, conversions: 24, expenseRef: 850000, status: 'Ongoing' },
+  { id: 'EVT-401', name: 'National EdTech Expo & Career Summit 2026', eventType: 'Expo', date: '2026-12-10', venue: 'Pragati Maidan, New Delhi • Hall 5', organizer: 'Jayendra Walunj', participatingDepartments: ['Operation Team', 'Sales Department', 'Media'], boothDetails: 'Stall A-14 (Corner 6x6m Island Booth)', leadsCollected: 410, qualifiedLeads: 185, conversions: 24, expenseRef: 850000, status: 'Ongoing' },
   { id: 'EVT-402', name: 'MindLyft Pan-India Agentic AI Hackathon', eventType: 'Campaign', date: '2026-12-22', venue: 'MindLyft Innovation Centre, Pune', organizer: 'Tanvi Patil', participatingDepartments: ['Technical Team', 'Trainer', 'Interns'], leadsCollected: 620, qualifiedLeads: 290, conversions: 42, expenseRef: 450000, status: 'Upcoming' },
   { id: 'EVT-403', name: 'Deans & Academic Leadership Conclave', eventType: 'FDP', date: '2026-11-12', venue: 'JW Marriott, Pune', organizer: 'Anchal Agawane', participatingDepartments: ['Sales Department', 'Trainer'], leadsCollected: 85, qualifiedLeads: 64, conversions: 14, expenseRef: 320000, status: 'Completed' },
   { id: 'EVT-404', name: 'COEP Campus Full-Stack & AI Workshop', eventType: 'College Workshop', date: '2026-11-18', venue: 'COEP Auditorium, Pune', organizer: 'Ritesh Deshmukh', participatingDepartments: ['Sales Department', 'Trainer', 'Counselor'], leadsCollected: 340, qualifiedLeads: 140, conversions: 31, expenseRef: 95000, status: 'Completed' },
@@ -176,7 +176,7 @@ export const MOCK_DOCUMENTS: DocumentRecord[] = [
   { id: 'DOC-01', name: 'COEP_Institutional_MoU_2026_2027.pdf', category: 'MoUs', owner: 'Anchal Agawane', relatedModule: 'Colleges & Sales', uploadDate: '2026-10-15', classification: 'Department Only', version: 'v2.1', fileType: 'PDF' },
   { id: 'DOC-02', name: 'MindlyftAI_Cohort8_Curriculum_Syllabus.pdf', category: 'Course documents', owner: 'Rutuja Botre', relatedModule: 'Education', uploadDate: '2026-11-01', classification: 'Public Internal', version: 'v3.0', fileType: 'PDF' },
   { id: 'DOC-03', name: 'Q3_FY26_GSTR3B_Compliance_Filing.xlsx', category: 'GST files', owner: 'Pooja Ahire', relatedModule: 'Accounts & Finance', uploadDate: '2026-11-18', classification: 'Chairperson Confidential', version: 'v1.0', fileType: 'XLSX' },
-  { id: 'DOC-04', name: 'National_Expo_Booth_Vendor_Contract.pdf', category: 'Event documents', owner: 'Vikram Deshmukh', relatedModule: 'Events & Expos', uploadDate: '2026-11-20', classification: 'Department Only', version: 'v1.2', fileType: 'PDF' },
+  { id: 'DOC-04', name: 'National_Expo_Booth_Vendor_Contract.pdf', category: 'Event documents', owner: 'Jayendra Walunj', relatedModule: 'Events & Expos', uploadDate: '2026-11-20', classification: 'Department Only', version: 'v1.2', fileType: 'PDF' },
   { id: 'DOC-05', name: 'Aarav_Sharma_Internship_Exit_Clearance.docx', category: 'Employee documents', owner: 'Tanvi Patil', relatedModule: 'Employees', uploadDate: '2026-11-24', classification: 'Private', version: 'v1.0', fileType: 'DOCX' },
 ];
 

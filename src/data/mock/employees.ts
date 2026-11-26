@@ -128,8 +128,8 @@ export const MOCK_EMPLOYEES: Employee[] = [
   {
     id: 'AWF-EMP-005',
     permanentId: 'AWF-EMP-005',
-    name: 'Vikram Deshmukh',
-    email: 'vikram.deshmukh@mindlyft.in',
+    name: 'Jayendra Walunj',
+    email: 'jayendra.walunj@mindlyft.in',
     phone: '+91 98220 11005',
     designation: 'Head of Company Operations',
     role: 'OPERATION_HEAD',
@@ -142,7 +142,7 @@ export const MOCK_EMPLOYEES: Employee[] = [
     reportingDirectorId: 'AWF-EMP-004',
     roleSeatId: 'SEAT-HEAD-OPS',
     employmentStatus: 'Active',
-    avatarInitials: 'VD',
+    avatarInitials: 'JW',
     avatarColor: 'bg-teal-600',
     bio: 'Coordinates execution across all eight permanent departments, eliminating operational bottlenecks.',
     responsibilities: [
@@ -383,7 +383,7 @@ export const MOCK_EMPLOYEES: Employee[] = [
     employmentType: 'Full-time',
     joiningDate: '2024-03-18',
     reportingManagerId: 'AWF-EMP-005',
-    reportingManagerName: 'Vikram Deshmukh',
+    reportingManagerName: 'Jayendra Walunj',
     reportingDirectorId: 'AWF-EMP-004',
     roleSeatId: 'SEAT-LEAD-OPS',
     employmentStatus: 'Active',

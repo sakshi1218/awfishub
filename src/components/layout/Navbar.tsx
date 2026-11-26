@@ -81,7 +81,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
     { role: 'DIRECTOR', label: 'Education Director', name: 'Anchal Agawane', empId: 'AWF-EMP-002', dept: 'Trainer, Counselor, TeleCaller' },
     { role: 'DIRECTOR', label: 'Innovation Director', name: 'Rutuja Botre', empId: 'AWF-EMP-003', dept: 'Sales, Media, Interns' },
     { role: 'DIRECTOR', label: 'Director (Tech & Accounts)', name: 'Shubham Jadhav', empId: 'AWF-EMP-004', dept: 'Technical Team & Accounts' },
-    { role: 'OPERATION_HEAD', label: 'Operation Head', name: 'Vikram Deshmukh', empId: 'AWF-EMP-005', dept: 'Operation Team' },
+    { role: 'OPERATION_HEAD', label: 'Operation Head', name: 'Jayendra Walunj', empId: 'AWF-EMP-005', dept: 'Operation Team' },
     { role: 'TEAM_LEAD', label: 'Team Lead', name: 'Tanvi Patil', empId: 'AWF-EMP-008', dept: 'Technical Team' },
     { role: 'FACULTY', label: 'Faculty', name: 'Dr. Kunal More', empId: 'AWF-EMP-011', dept: 'Assigned Batches Only' },
     { role: 'STAFF', label: 'Staff Member', name: 'Sneha Shinde', empId: 'AWF-EMP-013', dept: 'Technical Team' },

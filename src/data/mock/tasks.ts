@@ -141,7 +141,7 @@ export const MOCK_TASKS: TaskItem[] = [
     assigningDirectorId: 'AWF-EMP-004',
     assigningDirectorName: 'Shubham Jadhav (Director 3)',
     assignedToId: 'AWF-EMP-005',
-    assignedToName: 'Vikram Deshmukh',
+    assignedToName: 'Jayendra Walunj',
     department: 'Operation Team',
     team: 'Central Operations',
     project: 'National EdTech Expo',

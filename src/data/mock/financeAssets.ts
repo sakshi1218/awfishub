@@ -103,7 +103,7 @@ export const MOCK_EXPENSE_CLAIMS: ExpenseClaim[] = [
   {
     id: 'EXP-CLM-02',
     claimantId: 'AWF-EMP-005',
-    claimantName: 'Vikram Deshmukh',
+    claimantName: 'Jayendra Walunj',
     category: 'Event Logistics',
     description: 'Advance print deposit for Pragati Maidan Expo standees & lanyards',
     amount: 34500,
