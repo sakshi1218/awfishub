@@ -78,9 +78,9 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
     dept: string;
   }[] = [
     { role: 'CHAIRPERSON', label: 'Chairperson', name: 'Pooja Ahire', empId: 'AWF-EMP-001', dept: 'Executive Board' },
-    { role: 'DIRECTOR', label: 'Director (Sales & Outreach)', name: 'Anchal Agawane', empId: 'AWF-EMP-002', dept: 'Sales, TeleCaller, Counselor' },
-    { role: 'DIRECTOR', label: 'Director (Tech & Education)', name: 'Rutuja Botre', empId: 'AWF-EMP-003', dept: 'Technical Team, Trainer' },
-    { role: 'DIRECTOR', label: 'Director (Ops & Media)', name: 'Shubham Jadhav', empId: 'AWF-EMP-004', dept: 'Media, Ops, Interns' },
+    { role: 'DIRECTOR', label: 'Education Director', name: 'Anchal Agawane', empId: 'AWF-EMP-002', dept: 'Trainer, Counselor, TeleCaller' },
+    { role: 'DIRECTOR', label: 'Innovation Director', name: 'Rutuja Botre', empId: 'AWF-EMP-003', dept: 'Sales, Media, Interns' },
+    { role: 'DIRECTOR', label: 'Director (Tech & Accounts)', name: 'Shubham Jadhav', empId: 'AWF-EMP-004', dept: 'Technical Team & Accounts' },
     { role: 'OPERATION_HEAD', label: 'Operation Head', name: 'Vikram Deshmukh', empId: 'AWF-EMP-005', dept: 'Operation Team' },
     { role: 'TEAM_LEAD', label: 'Team Lead', name: 'Tanvi Patil', empId: 'AWF-EMP-008', dept: 'Technical Team' },
     { role: 'FACULTY', label: 'Faculty', name: 'Dr. Kunal More', empId: 'AWF-EMP-011', dept: 'Assigned Batches Only' },

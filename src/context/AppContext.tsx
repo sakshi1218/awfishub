@@ -260,9 +260,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getDirectorAllowedDepartments = (directorId: string): DepartmentType[] => {
-    if (directorId === 'AWF-EMP-002') return ['Sales Department', 'TeleCaller', 'Counselor'];
-    if (directorId === 'AWF-EMP-003') return ['Technical Team', 'Trainer'];
-    if (directorId === 'AWF-EMP-004') return ['Media', 'Operation Team', 'Interns'];
+    if (directorId === 'AWF-EMP-002') return ['Trainer', 'Counselor', 'TeleCaller'];
+    if (directorId === 'AWF-EMP-003') return ['Sales Department', 'Media', 'Interns'];
+    if (directorId === 'AWF-EMP-004') return ['Technical Team', 'Operation Team'];
     return [];
   };
 
