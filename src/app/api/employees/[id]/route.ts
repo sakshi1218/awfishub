@@ -8,15 +8,24 @@ export async function GET(
   try {
     const employee = await prisma.employee.findUnique({
       where: { id: params.id },
-      include: {
-        department: true,
-        reportingManager: true,
-        reportingDirector: true,
-        subordinates: true,
-        directorSubordinates: true,
-        tasksAssigned: { take: 5, orderBy: { createdAt: 'desc' } },
-        tasksReceived: { take: 5, orderBy: { createdAt: 'desc' } },
-        dailyReports: { take: 5, orderBy: { reportDate: 'desc' } },
+      select: {
+        id: true,
+        employeeId: true,
+        name: true,
+        email: true,
+        avatarUrl: true,
+        designation: true,
+        role: true,
+        status: true,
+        joiningDate: true,
+        department: { select: { id: true, name: true } },
+        reportingManager: { select: { id: true, name: true, designation: true } },
+        reportingDirector: { select: { id: true, name: true, designation: true } },
+        subordinates: { select: { id: true, employeeId: true, name: true, designation: true, status: true } },
+        directorSubordinates: { select: { id: true, employeeId: true, name: true, designation: true, status: true } },
+        tasksAssigned: { take: 5, orderBy: { createdAt: 'desc' }, select: { id: true, taskId: true, title: true, status: true, createdAt: true } },
+        tasksReceived: { take: 5, orderBy: { createdAt: 'desc' }, select: { id: true, taskId: true, title: true, status: true, createdAt: true } },
+        dailyReports: { take: 5, orderBy: { reportDate: 'desc' }, select: { id: true, reportDate: true, status: true } },
       },
     });
 
@@ -36,19 +45,10 @@ export async function GET(
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    // Soft deactivate or delete
-    const updated = await prisma.employee.update({
-      where: { id: params.id },
-      data: { status: 'INACTIVE' },
-    });
-    return NextResponse.json(updated);
-  } catch (error) {
-    console.error('Error deactivating employee:', error);
-    return NextResponse.json({ error: 'Failed to deactivate employee' }, { status: 500 });
-  }
+export async function DELETE() {
+  return NextResponse.json({ error: 'Employee management requires an authenticated administrator session.' }, { status: 401 });
+}
+
+export async function PATCH() {
+  return NextResponse.json({ error: 'Employee management requires an authenticated administrator session.' }, { status: 401 });
 }

@@ -1,18 +1,30 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Radio, BarChart2, Mic, Film, CheckCircle2, Clock } from 'lucide-react';
+import { Radio, BarChart2, Mic, Film, CheckCircle2, Clock, LayoutDashboard, Wallet, Target, CalendarDays } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { useApp } from '@/context/AppContext';
 import { PodcastEpisode, ReelItem } from '@/types';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import MediaManagementSections, { type MediaTab } from '@/components/media/MediaManagementSections';
 
 const REEL_STAGES: ReelItem['stage'][] = ['Assigned', 'Editing', 'Review', 'Approved', 'Posted'];
 
 export default function MediaPage() {
-  const { socialMetrics, podcasts, reels, updatePodcastStage, updateReelStage } = useApp();
-  const [tab, setTab] = useState<'SOCIAL' | 'PODCAST' | 'REELS'>('SOCIAL');
+  const {
+    socialMetrics,
+    podcasts,
+    reels,
+    campaigns,
+    events,
+    employees,
+    currentEmployee,
+    updatePodcastStage,
+    updateReelStage,
+  } = useApp();
+  const [tab, setTab] = useState<MediaTab>('SOCIAL');
+  const tabButtonClass = (active: boolean) => `shrink-0 px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-colors ${active ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-rose-600 shadow-sm' : 'bg-transparent border-transparent text-slate-500 hover:bg-white/70 dark:hover:bg-slate-900/70 hover:border-slate-200 dark:hover:border-slate-700'}`;
 
   return (
     <div className="space-y-6">
@@ -20,20 +32,33 @@ export default function MediaPage() {
         title="Media Department Workspace"
         subtitle="Social media engagement analytics, MindLyft Leaders podcast guest pipeline, and reel editing Kanban."
         icon={Radio}
-        actions={
-          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
-            <button onClick={() => setTab('SOCIAL')} className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 ${tab === 'SOCIAL' ? 'bg-white dark:bg-slate-900 text-rose-600 shadow-sm' : 'text-slate-500'}`}>
-              <BarChart2 className="w-3.5 h-3.5" /> Social Media
-            </button>
-            <button onClick={() => setTab('PODCAST')} className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 ${tab === 'PODCAST' ? 'bg-white dark:bg-slate-900 text-rose-600 shadow-sm' : 'text-slate-500'}`}>
-              <Mic className="w-3.5 h-3.5" /> Podcasts
-            </button>
-            <button onClick={() => setTab('REELS')} className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 ${tab === 'REELS' ? 'bg-white dark:bg-slate-900 text-rose-600 shadow-sm' : 'text-slate-500'}`}>
-              <Film className="w-3.5 h-3.5" /> Reel Kanban
-            </button>
-          </div>
-        }
       />
+
+      <nav aria-label="Media workspace sections" className="max-w-full overflow-x-auto">
+        <div className="flex w-max items-center gap-2 py-1 text-xs">
+          <button onClick={() => setTab('OVERVIEW')} className={tabButtonClass(tab === 'OVERVIEW')}>
+            <LayoutDashboard className="w-3.5 h-3.5" /> Executive Overview
+          </button>
+          <button onClick={() => setTab('SOCIAL')} className={tabButtonClass(tab === 'SOCIAL')}>
+            <BarChart2 className="w-3.5 h-3.5" /> Social Media
+          </button>
+          <button onClick={() => setTab('PODCAST')} className={tabButtonClass(tab === 'PODCAST')}>
+            <Mic className="w-3.5 h-3.5" /> Podcasts
+          </button>
+          <button onClick={() => setTab('REELS')} className={tabButtonClass(tab === 'REELS')}>
+            <Film className="w-3.5 h-3.5" /> Reels 
+          </button>
+          <button onClick={() => setTab('FUNDS')} className={tabButtonClass(tab === 'FUNDS')}>
+            <Wallet className="w-3.5 h-3.5" /> Funds
+          </button>
+          <button onClick={() => setTab('STRATEGIES')} className={tabButtonClass(tab === 'STRATEGIES')}>
+            <Target className="w-3.5 h-3.5" /> Strategies
+          </button>
+          <button onClick={() => setTab('SCHEDULE')} className={tabButtonClass(tab === 'SCHEDULE')}>
+            <CalendarDays className="w-3.5 h-3.5" /> Schedule
+          </button>
+        </div>
+      </nav>
 
       {tab === 'SOCIAL' && (
         <div className="space-y-6">
@@ -150,6 +175,17 @@ export default function MediaPage() {
           })}
         </div>
       )}
+
+      <MediaManagementSections
+        activeTab={tab}
+        campaigns={campaigns}
+        socialMetrics={socialMetrics}
+        podcasts={podcasts}
+        reels={reels}
+        events={events}
+        employees={employees}
+        currentEmployee={currentEmployee}
+      />
     </div>
   );
 }
