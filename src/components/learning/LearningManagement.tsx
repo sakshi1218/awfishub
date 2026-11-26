@@ -709,110 +709,102 @@ function LearningManagement({ pathname }: { pathname: string }) {
 
   function renderDashboard() {
     const activeCount = batches.filter((batch) => batch.status === 'Active').length;
+    const atRiskCount = students.filter((student) => student.status === 'At risk').length;
+    const lowAttendanceCount = students.filter((student) => student.attendance > 0 && student.attendance < 80).length;
+    const dueAssessments = assessments.filter((assessment) => assessment.status !== 'Completed');
+    const placementInProgress = demoPlacementApplications.filter((application) => application.status === 'In progress').length;
+    const offersReceived = demoPlacementApplications.filter((application) => application.status === 'Offer received').length;
     const averageProgress = students.length
       ? Math.round(students.reduce((total, student) => total + student.progress, 0) / students.length)
       : 0;
-    const upcomingAssessments = assessments.filter((assessment) => assessment.status !== 'Completed').length;
+    const averageAttendance = students.length
+      ? Math.round(students.reduce((total, student) => total + student.attendance, 0) / students.length)
+      : 0;
 
     return (
-      <LmsShell title="LMS Dashboard" description={pageDetails.dashboard.description}>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="Programmes" value={courseCatalogue.reduce((total, provider) => total + provider.programmes.length, 0)} detail="Across listed providers · demo catalogue" icon={BookOpen} />
-          <MetricCard label="Active batches" value={activeCount} detail={`${batches.length} sample batches shown`} icon={CalendarDays} tone="blue" />
-          <MetricCard label="Demo students" value={students.length} detail="Sample learner records only" icon={Users} tone="emerald" />
-          <MetricCard label="Average progress" value={`${averageProgress}%`} detail={`${upcomingAssessments} assessments not completed`} icon={Target} tone="amber" />
+      <LmsShell
+        title="LMS Dashboard"
+        description="Manage courses, batches, learners, assessments, and placements from one workspace."
+        action={<button type="button" className={buttonClass} onClick={openBatchDialog}><Plus className="h-4 w-4" /> Create batch</button>}
+      >
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+          <MetricCard label="Courses" value={allCourses.length} detail="Across programme providers" icon={BookOpen} />
+          <MetricCard label="Active batches" value={activeCount} detail={`${batches.length} batches in total`} icon={CalendarDays} tone="blue" />
+          <MetricCard label="Students" value={students.length} detail="Demo learner records" icon={Users} tone="emerald" />
+          <MetricCard label="Avg. attendance" value={`${averageAttendance}%`} detail={`${lowAttendanceCount} students below 80%`} icon={CheckCircle2} tone="blue" />
+          <MetricCard label="Avg. progress" value={`${averageProgress}%`} detail={`${dueAssessments.length} assessments due`} icon={Target} tone="amber" />
+          <MetricCard label="Placements" value={offersReceived} detail={`${placementInProgress} applications in progress`} icon={GraduationCap} tone="emerald" />
         </div>
 
-        <div className="grid gap-5 xl:grid-cols-[1.4fr_1fr]">
-          <Panel title="Enrollment trend" subtitle="Illustrative monthly enrollment · demo data">
-            <div className="h-72 p-3 sm:p-5">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={demoEnrollmentTrend} margin={{ left: -20, right: 8, top: 8, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="lmsEnrollmentFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.02} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" vertical={false} />
-                  <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                  <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-                  <Tooltip contentStyle={{ borderRadius: 12, borderColor: '#e2e8f0', fontSize: 12 }} />
-                  <Area type="monotone" dataKey="students" name="Demo learners" stroke="#7c3aed" strokeWidth={2.5} fill="url(#lmsEnrollmentFill)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </Panel>
+        <Panel title="Quick actions" subtitle="Open the most common LMS workflows">
+          <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              { title: 'Create batch', detail: 'Set up a new learner cohort', icon: CalendarDays, href: undefined, action: openBatchDialog },
+              { title: 'Enroll student', detail: 'Add a learner to a batch', icon: Users, href: undefined, action: openStudentDialog },
+              { title: 'Mark attendance', detail: 'Open the batch register', icon: ClipboardCheck, href: '/learning/attendance', action: undefined },
+              { title: 'Create assessment', detail: 'Schedule a batch assessment', icon: Target, href: undefined, action: openAssessmentDialog },
+            ].map((item) => {
+              const Icon = item.icon;
+              const content = (
+                <>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300"><Icon className="h-4 w-4" /></span>
+                  <span className="min-w-0"><span className="block text-xs font-bold text-slate-900 dark:text-white">{item.title}</span><span className="mt-1 block text-[10px] leading-4 text-slate-500 dark:text-slate-400">{item.detail}</span></span>
+                  <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-slate-400" />
+                </>
+              );
+              return item.href ? (
+                <Link key={item.title} href={item.href} onClick={item.action} className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-violet-300 hover:bg-violet-50/40 dark:border-slate-800 dark:hover:border-violet-800 dark:hover:bg-violet-950/30">{content}</Link>
+              ) : (
+                <button key={item.title} type="button" onClick={item.action} className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 text-left transition hover:border-violet-300 hover:bg-violet-50/40 dark:border-slate-800 dark:hover:border-violet-800 dark:hover:bg-violet-950/30">{content}</button>
+              );
+            })}
+          </div>
+        </Panel>
 
-          <Panel title="Learning outcomes" subtitle="Sample progress distribution">
-            <div className="grid items-center gap-2 p-4 sm:grid-cols-[1fr_1fr]">
-              <div className="h-52">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={demoLearningOutcomes} dataKey="value" nameKey="label" innerRadius={52} outerRadius={78} paddingAngle={4}>
-                      {demoLearningOutcomes.map((item, index) => (
-                        <Cell key={item.label} fill={['#7c3aed', '#f59e0b', '#10b981'][index]} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ borderRadius: 12, borderColor: '#e2e8f0', fontSize: 12 }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="space-y-3">
-                {demoLearningOutcomes.map((item, index) => (
-                  <div key={item.label} className="flex items-center justify-between gap-3 text-xs">
-                    <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: ['#7c3aed', '#f59e0b', '#10b981'][index] }} />
-                      {item.label}
-                    </span>
-                    <span className="font-bold text-slate-900 dark:text-white">{item.value}%</span>
-                  </div>
-                ))}
-                <p className="pt-2 text-[10px] leading-4 text-slate-400">Illustrative percentages, not live student results.</p>
-              </div>
-            </div>
-          </Panel>
-        </div>
-
-        <div className="grid gap-5 xl:grid-cols-2">
-          <Panel
-            title="Upcoming batches"
-            subtitle="Schedule preview"
-            action={<Link className="text-xs font-semibold text-violet-700 hover:text-violet-900 dark:text-violet-300" href="/learning/batches">View batches <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>}
-          >
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {batches.slice(0, 3).map((batch) => (
-                <Link key={batch.id} href={`/learning/batches/${batch.id}`} className="flex items-center justify-between gap-4 px-4 py-3.5 transition hover:bg-slate-50 dark:hover:bg-slate-800/50 sm:px-5">
-                  <span className="min-w-0">
-                    <span className="block truncate text-xs font-semibold text-slate-900 dark:text-white">{batch.name}</span>
-                    <span className="mt-1 block truncate text-[10px] text-slate-500 dark:text-slate-400">{batch.course}</span>
-                  </span>
-                  <span className="shrink-0 text-right">
-                    <StatusBadge value={batch.status} />
-                    <span className="mt-1 block text-[10px] text-slate-500">{new Date(`${batch.startDate}T00:00:00`).toLocaleDateString()}</span>
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </Panel>
-
-          <Panel title="Learning shortcuts" subtitle="Open an LMS workspace">
-            <div className="grid gap-2 p-4 sm:grid-cols-2">
-              {[
-                { title: 'Programme catalogue', href: '/learning/programmes', icon: BookOpen },
-                { title: 'Student directory', href: '/learning/students', icon: Users },
-                { title: 'Batch attendance', href: '/learning/attendance', icon: ClipboardCheck },
-                { title: 'Completion reports', href: '/learning/completion-reports', icon: Download },
-              ].map((item) => {
-                const Icon = item.icon;
+        <div className="grid gap-5 xl:grid-cols-[1.4fr_0.6fr]">
+          <Panel title="Current batches" subtitle="Continue work with the latest cohorts" action={<Link className="text-xs font-semibold text-violet-700 hover:text-violet-900 dark:text-violet-300" href="/learning/batches">View all batches <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>}>
+            <div className="grid gap-3 p-4 sm:grid-cols-2">
+              {batches.map((batch) => {
+                const batchStudents = students.filter((student) => student.batchId === batch.id);
+                const batchAverage = batchStudents.length ? Math.round(batchStudents.reduce((total, student) => total + student.progress, 0) / batchStudents.length) : 0;
+                const batchFaculty = faculty.find((member) => member.id === batch.facultyId);
                 return (
-                  <Link key={item.href} href={item.href} className="flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-violet-300 hover:bg-violet-50/50 dark:border-slate-800 dark:hover:border-violet-800 dark:hover:bg-violet-950/30">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300"><Icon className="h-4 w-4" /></span>
-                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">{item.title}</span>
-                    <ArrowUpRight className="ml-auto h-3.5 w-3.5 text-slate-400" />
+                  <Link key={batch.id} href={`/learning/batches/${batch.id}`} className="rounded-xl border border-slate-200 p-4 transition hover:border-violet-300 hover:shadow-sm dark:border-slate-800 dark:hover:border-violet-800">
+                    <div className="flex items-start justify-between gap-3"><span className="min-w-0"><span className="block text-[10px] font-bold uppercase tracking-wide text-violet-700 dark:text-violet-300">{batch.id}</span><span className="mt-1 block text-sm font-bold leading-5 text-slate-900 dark:text-white">{batch.name}</span></span><StatusBadge value={batch.status} /></div>
+                    <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-slate-500 dark:text-slate-400">{batch.course}</p>
+                    <div className="mt-4 grid grid-cols-2 gap-3 text-[10px]"><span className="text-slate-500">Learners<strong className="mt-1 block text-xs text-slate-800 dark:text-slate-200">{batchStudents.length} / {batch.capacity}</strong></span><span className="text-slate-500">Progress<strong className="mt-1 block text-xs text-slate-800 dark:text-slate-200">{batchAverage}%</strong></span><span className="col-span-2 text-slate-500">Faculty<strong className="mt-1 block truncate text-xs text-slate-800 dark:text-slate-200">{batchFaculty?.name ?? 'Unassigned'}</strong></span></div>
                   </Link>
                 );
               })}
+            </div>
+          </Panel>
+
+          <Panel title="Needs attention" subtitle="Items that should be reviewed">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              <Link href="/learning/students" className="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"><Target className="h-4 w-4" /></span><span className="min-w-0"><span className="block text-xs font-semibold text-slate-900 dark:text-white">{atRiskCount} students at risk</span><span className="mt-1 block text-[10px] text-slate-500">Review progress and attendance</span></span><ArrowRight className="ml-auto h-4 w-4 text-slate-400" /></Link>
+              <Link href="/learning/attendance" className="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"><Clock3 className="h-4 w-4" /></span><span className="min-w-0"><span className="block text-xs font-semibold text-slate-900 dark:text-white">{lowAttendanceCount} low-attendance students</span><span className="mt-1 block text-[10px] text-slate-500">Attendance is below 80%</span></span><ArrowRight className="ml-auto h-4 w-4 text-slate-400" /></Link>
+              <Link href="/learning/assessments" className="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"><ClipboardCheck className="h-4 w-4" /></span><span className="min-w-0"><span className="block text-xs font-semibold text-slate-900 dark:text-white">{dueAssessments.length} assessments pending</span><span className="mt-1 block text-[10px] text-slate-500">Scheduled or awaiting review</span></span><ArrowRight className="ml-auto h-4 w-4 text-slate-400" /></Link>
+              <Link href="/learning/batches/LMS-101" className="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"><GraduationCap className="h-4 w-4" /></span><span className="min-w-0"><span className="block text-xs font-semibold text-slate-900 dark:text-white">{placementInProgress} placement applications</span><span className="mt-1 block text-[10px] text-slate-500">Review upcoming interview rounds</span></span><ArrowRight className="ml-auto h-4 w-4 text-slate-400" /></Link>
+            </div>
+          </Panel>
+        </div>
+
+        <div className="grid gap-5 xl:grid-cols-[1.4fr_0.6fr]">
+          <Panel title="Course catalogue" subtitle="Popular courses and programme availability" action={<Link className="text-xs font-semibold text-violet-700 hover:text-violet-900 dark:text-violet-300" href="/learning/courses">View all courses <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>}>
+            <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+              {allCourses.slice(0, 6).map((course) => {
+                const relatedBatch = batches.find((batch) => batch.courseSlug === course.slug);
+                return <Link key={course.slug} href={`/learning/courses/${course.slug}`} className="rounded-xl border border-slate-200 p-4 transition hover:border-violet-300 hover:bg-violet-50/30 dark:border-slate-800 dark:hover:border-violet-800 dark:hover:bg-violet-950/20"><span className="block text-[10px] font-bold uppercase tracking-wide text-violet-700 dark:text-violet-300">{course.provider}</span><span className="mt-2 block text-xs font-bold leading-5 text-slate-900 dark:text-white">{course.course}</span><span className="mt-3 block text-[10px] text-slate-500">{relatedBatch ? `${relatedBatch.id} · ${relatedBatch.status} batch` : 'No active demo batch'}</span></Link>;
+              })}
+            </div>
+          </Panel>
+          <Panel title="LMS overview" subtitle="Main workspace sections">
+            <div className="space-y-2 p-4">
+              {[
+                { title: 'Courses', detail: 'Browse catalogue and course details', href: '/learning/courses', icon: BookOpen },
+                { title: 'Batches', detail: 'Students, faculty, attendance, progress', href: '/learning/batches', icon: CalendarDays },
+                { title: 'Students', detail: 'Learner directory and placement activity', href: '/learning/students', icon: Users },
+              ].map((item) => { const Icon = item.icon; return <Link key={item.title} href={item.href} className="flex items-center gap-3 rounded-xl px-3 py-3 transition hover:bg-slate-50 dark:hover:bg-slate-800/50"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><Icon className="h-4 w-4" /></span><span><span className="block text-xs font-semibold text-slate-900 dark:text-white">{item.title}</span><span className="mt-0.5 block text-[10px] text-slate-500">{item.detail}</span></span><ArrowRight className="ml-auto h-4 w-4 text-slate-400" /></Link>; })}
             </div>
           </Panel>
         </div>
