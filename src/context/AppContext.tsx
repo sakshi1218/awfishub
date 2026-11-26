@@ -310,7 +310,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const byEmployee = new Map<string, TaskItem[]>();
     tasks.forEach((t) => {
       if (t.status === 'Approved') return;
-      if (!t.assigningDirectorId) return;
+      if (!t.assigningDirectorId || !t.assignedToId) return;
       if (t.priority !== 'Critical' && t.priority !== 'High' && t.directorPriority !== 'Priority 1') return;
       const list = byEmployee.get(t.assignedToId) || [];
       list.push(t);
