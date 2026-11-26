@@ -46,6 +46,27 @@ export interface LearningAssessment {
   status: 'Draft' | 'Scheduled' | 'Reviewing' | 'Completed';
 }
 
+export type PlacementRoundStatus = 'Cleared' | 'Not cleared' | 'In progress' | 'Scheduled';
+
+export interface LearningPlacementRound {
+  name: string;
+  date: string;
+  status: PlacementRoundStatus;
+  note: string;
+}
+
+export interface LearningPlacementApplication {
+  id: string;
+  studentId: string;
+  batchId: string;
+  company: string;
+  role: string;
+  source: 'Campus placement drive' | 'Direct application';
+  appliedOn: string;
+  status: 'Applied' | 'In progress' | 'Offer received' | 'Not selected';
+  rounds: LearningPlacementRound[];
+}
+
 export const demoBatches: LearningBatch[] = [
   {
     id: 'LMS-101',
@@ -136,6 +157,82 @@ export const demoStudents: LearningStudent[] = [
   { id: 'STU-2406', name: 'Sara Fernandes', email: 'sara.fernandes@example.demo', batchId: 'LMS-102', progress: 0, attendance: 0, status: 'Upcoming' },
   { id: 'STU-2407', name: 'Reyansh Patil', email: 'reyansh.patil@example.demo', batchId: 'LMS-103', progress: 100, attendance: 92, status: 'Completed' },
   { id: 'STU-2408', name: 'Diya Menon', email: 'diya.menon@example.demo', batchId: 'LMS-103', progress: 100, attendance: 96, status: 'Completed' },
+];
+
+export const demoPlacementApplications: LearningPlacementApplication[] = [
+  {
+    id: 'PLC-101',
+    studentId: 'STU-2401',
+    batchId: 'LMS-101',
+    company: 'CloudNova',
+    role: 'AI Engineer Intern',
+    source: 'Campus placement drive',
+    appliedOn: '2026-10-19',
+    status: 'In progress',
+    rounds: [
+      { name: 'Resume screening', date: '2026-10-20', status: 'Cleared', note: 'Profile shortlisted' },
+      { name: 'Aptitude assessment', date: '2026-10-22', status: 'Cleared', note: 'Assessment passed' },
+      { name: 'Technical interview', date: '2026-10-25', status: 'Cleared', note: 'Moved to final round' },
+      { name: 'HR interview', date: '2026-11-29', status: 'Scheduled', note: 'Next scheduled round' },
+    ],
+  },
+  {
+    id: 'PLC-102',
+    studentId: 'STU-2402',
+    batchId: 'LMS-101',
+    company: 'TechAxis Solutions',
+    role: 'Data Analyst',
+    source: 'Direct application',
+    appliedOn: '2026-10-18',
+    status: 'Not selected',
+    rounds: [
+      { name: 'Resume screening', date: '2026-10-19', status: 'Cleared', note: 'Profile shortlisted' },
+      { name: 'Technical interview', date: '2026-10-24', status: 'Not cleared', note: 'Process ended at this round' },
+    ],
+  },
+  {
+    id: 'PLC-103',
+    studentId: 'STU-2403',
+    batchId: 'LMS-101',
+    company: 'BrightPath Analytics',
+    role: 'Junior Data Scientist',
+    source: 'Campus placement drive',
+    appliedOn: '2026-11-02',
+    status: 'In progress',
+    rounds: [
+      { name: 'Resume screening', date: '2026-11-03', status: 'Cleared', note: 'Profile shortlisted' },
+      { name: 'Technical interview', date: '2026-11-28', status: 'Scheduled', note: 'Interview scheduled' },
+    ],
+  },
+  {
+    id: 'PLC-104',
+    studentId: 'STU-2407',
+    batchId: 'LMS-103',
+    company: 'NexaWorks',
+    role: 'Machine Learning Associate',
+    source: 'Campus placement drive',
+    appliedOn: '2026-09-12',
+    status: 'Offer received',
+    rounds: [
+      { name: 'Resume screening', date: '2026-09-14', status: 'Cleared', note: 'Profile shortlisted' },
+      { name: 'Case study', date: '2026-09-20', status: 'Cleared', note: 'Case study passed' },
+      { name: 'Final interview', date: '2026-09-25', status: 'Cleared', note: 'Offer approved' },
+    ],
+  },
+  {
+    id: 'PLC-105',
+    studentId: 'STU-2408',
+    batchId: 'LMS-103',
+    company: 'Vertex Digital',
+    role: 'Machine Learning Trainee',
+    source: 'Direct application',
+    appliedOn: '2026-09-16',
+    status: 'Not selected',
+    rounds: [
+      { name: 'Resume screening', date: '2026-09-17', status: 'Cleared', note: 'Profile shortlisted' },
+      { name: 'Technical interview', date: '2026-09-23', status: 'Not cleared', note: 'Process ended at this round' },
+    ],
+  },
 ];
 
 export const demoAssessments: LearningAssessment[] = [

@@ -52,14 +52,16 @@ import {
   demoEnrollmentTrend,
   demoFaculty,
   demoLearningOutcomes,
+  demoPlacementApplications,
   demoStudents,
   type LearningAssessment,
   type LearningBatch,
   type LearningFaculty,
+  type LearningPlacementApplication,
   type LearningStudent,
 } from '@/lib/lms-demo-data';
 
-type ModalName = 'batch' | 'student' | 'assessment' | 'faculty' | null;
+type ModalName = 'batch' | 'student' | 'studentDetails' | 'assessment' | 'faculty' | null;
 type StudentSortKey = 'name' | 'progress' | 'attendance';
 
 const pageDetails: Record<string, { title: string; description: string }> = {
@@ -121,6 +123,12 @@ const statusStyles: Record<string, string> = {
   Assigned: 'bg-violet-50 text-violet-700 ring-violet-600/15 dark:bg-violet-950/40 dark:text-violet-300',
   Present: 'bg-emerald-50 text-emerald-700 ring-emerald-600/15 dark:bg-emerald-950/40 dark:text-emerald-300',
   Absent: 'bg-rose-50 text-rose-700 ring-rose-600/15 dark:bg-rose-950/40 dark:text-rose-300',
+  Applied: 'bg-slate-100 text-slate-600 ring-slate-500/15 dark:bg-slate-800 dark:text-slate-300',
+  'In progress': 'bg-blue-50 text-blue-700 ring-blue-600/15 dark:bg-blue-950/40 dark:text-blue-300',
+  'Offer received': 'bg-emerald-50 text-emerald-700 ring-emerald-600/15 dark:bg-emerald-950/40 dark:text-emerald-300',
+  'Not selected': 'bg-rose-50 text-rose-700 ring-rose-600/15 dark:bg-rose-950/40 dark:text-rose-300',
+  Cleared: 'bg-emerald-50 text-emerald-700 ring-emerald-600/15 dark:bg-emerald-950/40 dark:text-emerald-300',
+  'Not cleared': 'bg-rose-50 text-rose-700 ring-rose-600/15 dark:bg-rose-950/40 dark:text-rose-300',
 };
 
 const buttonClass =
@@ -292,16 +300,18 @@ function DemoDialog({
   title,
   onClose,
   children,
+  className = 'max-w-lg',
 }: {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  className?: string;
 }) {
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm" role="presentation" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onClose();
     }}>
-      <section role="dialog" aria-modal="true" aria-labelledby="learning-dialog-title" className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+      <section role="dialog" aria-modal="true" aria-labelledby="learning-dialog-title" className={`max-h-[90vh] w-full ${className} overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900`}>
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-violet-600 dark:text-violet-300">Temporary prototype action</p>
@@ -314,6 +324,131 @@ function DemoDialog({
         <div className="p-5">{children}</div>
       </section>
     </div>
+  );
+}
+
+function formatPlacementDate(value: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function PlacementApplicationCard({ application }: { application: LearningPlacementApplication }) {
+  return (
+    <article className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/50 sm:p-4">
+      <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
+        <div>
+          <h4 className="text-xs font-bold text-slate-900 dark:text-white">{application.company}</h4>
+          <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-300">{application.role}</p>
+          <p className="mt-1 text-[10px] text-slate-500">
+            {application.source} · Applied {formatPlacementDate(application.appliedOn)}
+          </p>
+        </div>
+        <StatusBadge value={application.status} />
+      </div>
+      <div className="mt-4">
+        <h5 className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Interview rounds</h5>
+        {application.rounds.length ? (
+          <ol className="mt-3 space-y-3 border-l border-slate-200 pl-4 dark:border-slate-700">
+            {application.rounds.map((round, index) => (
+              <li key={`${application.id}-${round.name}`} className="relative">
+                <span
+                  className={`absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-800 ${
+                    round.status === 'Cleared'
+                      ? 'bg-emerald-500'
+                      : round.status === 'Not cleared'
+                        ? 'bg-rose-500'
+                        : round.status === 'In progress'
+                          ? 'bg-blue-500'
+                          : 'bg-slate-300 dark:bg-slate-600'
+                  }`}
+                />
+                <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
+                  <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">
+                    {index + 1}. {round.name}
+                  </p>
+                  <StatusBadge value={round.status} />
+                </div>
+                <p className="mt-1 text-[10px] text-slate-500">
+                  {formatPlacementDate(round.date)} · {round.note}
+                </p>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="mt-2 text-[10px] text-slate-500">No interview rounds have been recorded.</p>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function StudentRecordDialog({
+  student,
+  batch,
+  applications,
+  onClose,
+}: {
+  student: LearningStudent;
+  batch?: LearningBatch;
+  applications: LearningPlacementApplication[];
+  onClose: () => void;
+}) {
+  return (
+    <DemoDialog title={`${student.name} · Student record`} onClose={onClose} className="max-w-3xl">
+      <div className="space-y-5">
+        <section className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+            <div>
+              <p className="text-sm font-bold text-slate-900 dark:text-white">{student.name}</p>
+              <p className="mt-1 text-[11px] text-slate-500">{student.id} · {student.email}</p>
+            </div>
+            <StatusBadge value={student.status} />
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Batch</p>
+              <p className="mt-1 text-xs font-semibold text-slate-800 dark:text-slate-200">{batch?.name ?? student.batchId}</p>
+              <p className="mt-1 text-[10px] text-slate-500">{batch?.course ?? 'Course details unavailable'}</p>
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="font-semibold uppercase tracking-wide text-slate-500">Course progress</span>
+                <span className="font-bold text-slate-700 dark:text-slate-200">{student.progress}%</span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                <div className="h-full rounded-full bg-violet-600" style={{ width: `${student.progress}%` }} />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="font-semibold uppercase tracking-wide text-slate-500">Attendance</span>
+                <span className="font-bold text-slate-700 dark:text-slate-200">{student.attendance}%</span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                <div className="h-full rounded-full bg-blue-600" style={{ width: `${student.attendance}%` }} />
+              </div>
+            </div>
+          </div>
+        </section>
+        <Panel title="Placement workflow" subtitle={`${applications.length} demo company ${applications.length === 1 ? 'application' : 'applications'}`}>
+          <div className="space-y-3 p-4">
+            {applications.length ? (
+              applications.map((application) => (
+                <PlacementApplicationCard key={application.id} application={application} />
+              ))
+            ) : (
+              <p className="rounded-lg border border-dashed border-slate-200 px-3 py-5 text-center text-[11px] text-slate-500 dark:border-slate-700">
+                No placement drive participation or company applications recorded for this student.
+              </p>
+            )}
+          </div>
+        </Panel>
+        <p className="text-[10px] text-slate-500">Student and placement details are illustrative demo data. Changes are not saved.</p>
+      </div>
+    </DemoDialog>
   );
 }
 
@@ -335,6 +470,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
   const [sortAscending, setSortAscending] = useState(true);
   const [page, setPage] = useState(1);
   const [modal, setModal] = useState<ModalName>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState('');
   const [toast, setToast] = useState('');
   const [selectedFacultyId, setSelectedFacultyId] = useState(faculty[0]?.id ?? '');
   const [selectedBatchId, setSelectedBatchId] = useState(batches[0]?.id ?? '');
@@ -435,6 +571,10 @@ function LearningManagement({ pathname }: { pathname: string }) {
   const pagedStudents = filteredStudents.slice((page - 1) * pageSize, page * pageSize);
 
   const openStudentDialog = () => setModal('student');
+  const openStudentRecord = (studentId: string) => {
+    setSelectedStudentId(studentId);
+    setModal('studentDetails');
+  };
   const openBatchDialog = () => setModal('batch');
   const openAssessmentDialog = () => setModal('assessment');
   const openFacultyDialog = (facultyId?: string, batchId?: string) => {
@@ -826,16 +966,26 @@ function LearningManagement({ pathname }: { pathname: string }) {
               </p>
             </div>
           </Panel>
-          <Panel title="Available batches" subtitle="Sample batch links">
+          <Panel title="Available batches" subtitle="Select a batch to review its details and activity.">
             {courseBatches.length ? (
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {courseBatches.map((batch) => (
-                  <Link key={batch.id} href={`/learning/batches/${batch.id}`} className="flex items-center justify-between gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  <Link
+                    key={batch.id}
+                    href={`/learning/batches/${batch.id}`}
+                    className="group flex items-center justify-between gap-3 px-5 py-4 transition-colors hover:bg-violet-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-500 dark:hover:bg-violet-950/20"
+                  >
                     <span>
                       <span className="block text-xs font-semibold text-slate-900 dark:text-white">{batch.name}</span>
                       <span className="mt-1 block text-[10px] text-slate-500">{batch.id} · {batch.delivery}</span>
                     </span>
-                    <StatusBadge value={batch.status} />
+                    <span className="flex shrink-0 flex-col items-end gap-2">
+                      <StatusBadge value={batch.status} />
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-violet-700 dark:text-violet-300">
+                        View batch
+                        <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                      </span>
+                    </span>
                   </Link>
                 ))}
               </div>
@@ -896,8 +1046,24 @@ function LearningManagement({ pathname }: { pathname: string }) {
     if (!detailBatch) return <LmsShell title="Batch not found" description="This batch is not available in the sample records."><EmptyState title="Batch not found" description="Return to the batch list to select a demo batch." /></LmsShell>;
     const batchStudents = students.filter((student) => student.batchId === detailBatch.id);
     const batchAssessments = assessments.filter((assessment) => assessment.batchId === detailBatch.id);
+    const batchPlacementApplications = demoPlacementApplications.filter((application) => application.batchId === detailBatch.id);
     const assignedFaculty = faculty.find((member) => member.id === detailBatch.facultyId);
-    const tabs = ['Overview', 'Students', 'Faculty', 'Attendance', 'Progress', 'Assessments'];
+    const tabs = ['Overview', 'Students', 'Faculty', 'Attendance', 'Progress', 'Assessments', 'Placement'];
+    const placementStudents = batchStudents.map((student) => ({
+      student,
+      applications: batchPlacementApplications.filter((application) => application.studentId === student.id),
+    }));
+    const studentsWithPlacement = placementStudents.filter(({ applications }) => applications.length > 0).length;
+    const clearedPlacementRounds = batchPlacementApplications.reduce(
+      (total, application) => total + application.rounds.filter((round) => round.status === 'Cleared').length,
+      0
+    );
+    const placementOffers = batchPlacementApplications.filter((application) => application.status === 'Offer received').length;
+    const attendanceStudents = batchStudents.filter((student) => student.status !== 'Upcoming');
+    const attendanceKeyForStudent = (studentId: string) => `${detailBatch.id}:${studentId}:${attendanceDate}`;
+    const isPresentForBatch = (student: LearningStudent) =>
+      attendanceMarks[attendanceKeyForStudent(student.id)] ?? student.status !== 'Upcoming';
+    const presentCount = attendanceStudents.filter(isPresentForBatch).length;
 
     return (
       <LmsShell
@@ -920,7 +1086,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
                 <MetricCard label="Delivery" value={detailBatch.delivery} detail="Sample format" icon={BookOpen} tone="amber" />
               </div>
             )}
-            {activeBatchTab === 'Students' && <StudentTable rows={batchStudents} onSort={toggleStudentSort} sortKey={sortKey} ascending={sortAscending} onStudentClick={(id) => showToast(`Opened learner ${id}.`)} />}
+            {activeBatchTab === 'Students' && <StudentTable rows={batchStudents} onSort={toggleStudentSort} sortKey={sortKey} ascending={sortAscending} onStudentClick={openStudentRecord} />}
             {activeBatchTab === 'Faculty' && (
               <div className="flex flex-col justify-between gap-4 rounded-xl bg-slate-50 p-4 dark:bg-slate-800/50 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-3">
@@ -931,9 +1097,77 @@ function LearningManagement({ pathname }: { pathname: string }) {
               </div>
             )}
             {activeBatchTab === 'Attendance' && (
-              <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-                <div><h3 className="text-sm font-semibold text-slate-900 dark:text-white">Batch attendance preview</h3><p className="mt-1 text-xs text-slate-500">Attendance marks are temporary demo state.</p></div>
-                <Link href="/learning/attendance" className={secondaryButtonClass}>Open attendance <ArrowRight className="h-3.5 w-3.5" /></Link>
+              <div className="space-y-4">
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Batch attendance register</h3>
+                    <p className="mt-1 text-xs text-slate-500">Review each learner and toggle today’s demo attendance. Changes are temporary.</p>
+                  </div>
+                  <label className="block text-[10px] font-semibold text-slate-500">
+                    Attendance date
+                    <input
+                      aria-label="Batch attendance date"
+                      className={`${inputClass} mt-1 sm:w-44`}
+                      type="date"
+                      value={attendanceDate}
+                      onChange={(event) => setAttendanceDate(event.target.value)}
+                    />
+                  </label>
+                </div>
+                <div className="flex flex-wrap gap-2 text-[10px] font-semibold">
+                  <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700 dark:bg-slate-800 dark:text-slate-200">{attendanceStudents.length} learners</span>
+                  <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">{presentCount} present</span>
+                  <span className="rounded-full bg-rose-50 px-3 py-1.5 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">{attendanceStudents.length - presentCount} absent</span>
+                </div>
+                {attendanceStudents.length ? (
+                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                    <table className="w-full min-w-[600px] text-left text-xs">
+                      <thead className="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/50">
+                        <tr>
+                          <th className="px-4 py-3">Student</th>
+                          <th className="px-4 py-3">Student ID</th>
+                          <th className="px-4 py-3">Overall attendance</th>
+                          <th className="px-4 py-3 text-right">Today · {new Date(`${attendanceDate}T00:00:00`).toLocaleDateString()}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {attendanceStudents.map((student) => {
+                          const present = isPresentForBatch(student);
+                          const key = attendanceKeyForStudent(student.id);
+                          return (
+                            <tr key={student.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30">
+                              <td className="px-4 py-3">
+                                <button
+                                  type="button"
+                                  onClick={() => openStudentRecord(student.id)}
+                                  className="text-left font-semibold text-violet-700 hover:underline dark:text-violet-300"
+                                >
+                                  {student.name}
+                                </button>
+                                <span className="mt-0.5 block text-[10px] text-slate-500">{student.email}</span>
+                              </td>
+                              <td className="px-4 py-3 text-slate-500">{student.id}</td>
+                              <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{student.attendance}%</td>
+                              <td className="px-4 py-3 text-right">
+                                <button
+                                  type="button"
+                                  aria-label={`Mark ${present ? 'absent' : 'present'} for ${student.name}`}
+                                  aria-pressed={present}
+                                  onClick={() => setAttendanceMarks((current) => ({ ...current, [key]: !present }))}
+                                  className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                                >
+                                  <StatusBadge value={present ? 'Present' : 'Absent'} />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <EmptyState title="No attendance roster yet" description="This upcoming batch has no active students to mark in the demo register." />
+                )}
               </div>
             )}
             {activeBatchTab === 'Progress' && <ProgressList rows={batchStudents} />}
@@ -941,6 +1175,60 @@ function LearningManagement({ pathname }: { pathname: string }) {
               <div className="space-y-3">
                 {batchAssessments.length ? batchAssessments.map((assessment) => <AssessmentRow key={assessment.id} assessment={assessment} onAction={() => showToast(`Opened ${assessment.title}.`)} />) : <EmptyState title="No assessments" description="No demo assessments are linked to this batch yet." />}
                 <Link href="/learning/assessments" className="inline-flex items-center gap-1 text-xs font-semibold text-violet-700 dark:text-violet-300">View all assessments <ArrowRight className="h-3.5 w-3.5" /></Link>
+              </div>
+            )}
+            {activeBatchTab === 'Placement' && (
+              <div className="space-y-5">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <MetricCard label="Students with placement activity" value={`${studentsWithPlacement} / ${batchStudents.length}`} detail="Demo students with company activity" icon={Users} />
+                  <MetricCard label="Company applications" value={batchPlacementApplications.length} detail="Campus drives and direct applications" icon={Target} tone="blue" />
+                  <MetricCard label="Rounds cleared" value={clearedPlacementRounds} detail="Across this batch's demo applications" icon={CheckCircle2} tone="emerald" />
+                  <MetricCard label="Offers received" value={placementOffers} detail="Illustrative outcomes only" icon={GraduationCap} tone="amber" />
+                </div>
+                <Panel title="Student placement reports" subtitle="Company applications, current outcomes, and interview-round history">
+                  <div className="border-b border-violet-100 bg-violet-50/60 px-4 py-3 text-[11px] leading-5 text-violet-900 dark:border-violet-900/50 dark:bg-violet-950/30 dark:text-violet-200 sm:px-5">
+                    Demo placement data only. Companies, applications, and interview outcomes are sample records, not live student or employer data.
+                  </div>
+                  {placementStudents.length ? (
+                    <div className="space-y-4 p-4 sm:p-5">
+                      {placementStudents.map(({ student, applications }) => (
+                        <article key={student.id} className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+                          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
+                            <div>
+                              <button
+                                type="button"
+                                onClick={() => openStudentRecord(student.id)}
+                                className="text-left text-sm font-bold text-violet-700 hover:text-violet-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:text-violet-300 dark:hover:text-violet-200"
+                              >
+                                {student.name}
+                              </button>
+                              <p className="mt-1 text-[10px] text-slate-500">{student.id} · {student.email}</p>
+                              <p className="mt-1 text-[10px] font-medium text-slate-400">Select name to open full student record</p>
+                            </div>
+                            <span className="text-[10px] font-semibold text-slate-500">
+                              {applications.length} {applications.length === 1 ? 'application' : 'applications'}
+                            </span>
+                          </div>
+                          {applications.length ? (
+                            <div className="mt-4 space-y-3">
+                              {applications.map((application) => (
+                                <PlacementApplicationCard key={application.id} application={application} />
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="mt-3 rounded-lg border border-dashed border-slate-200 px-3 py-4 text-[11px] text-slate-500 dark:border-slate-700">
+                              No placement drive participation or company applications recorded for this student.
+                            </p>
+                          )}
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-5">
+                      <EmptyState title="No students in this batch" description="Placement reports will appear here when demo students are associated with the batch." />
+                    </div>
+                  )}
+                </Panel>
               </div>
             )}
           </div>
@@ -994,7 +1282,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
         </div>
         <Panel title="Student directory" subtitle={`${filteredStudents.length} matching demo learners`}>
           <div className="p-4 sm:px-5">{filterControls(false, true, studentStatuses)}</div>
-          <StudentTable rows={pagedStudents} onSort={toggleStudentSort} sortKey={sortKey} ascending={sortAscending} onStudentClick={(id) => showToast(`Opened learner ${id}.`)} />
+          <StudentTable rows={pagedStudents} onSort={toggleStudentSort} sortKey={sortKey} ascending={sortAscending} onStudentClick={openStudentRecord} />
           <div className="flex flex-col justify-between gap-3 border-t border-slate-100 px-4 py-3 dark:border-slate-800 sm:flex-row sm:items-center sm:px-5">
             <p className="text-[11px] text-slate-500">Page {page} of {pageCount} · {filteredStudents.length} demo records</p>
             <div className="flex gap-2">
@@ -1068,7 +1356,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {activeStudents.map((student) => {
-                    const key = `${selectedBatchId}:${student.id}`;
+                    const key = `${selectedBatchId}:${student.id}:${attendanceDate}`;
                     const present = attendanceMarks[key] ?? student.status !== 'Upcoming';
                     return (
                       <tr key={student.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30">
@@ -1201,6 +1489,14 @@ function LearningManagement({ pathname }: { pathname: string }) {
     );
   }
 
+  const selectedStudent = students.find((student) => student.id === selectedStudentId);
+  const selectedStudentBatch = selectedStudent
+    ? batches.find((batch) => batch.id === selectedStudent.batchId)
+    : undefined;
+  const selectedStudentPlacementApplications = selectedStudent
+    ? demoPlacementApplications.filter((application) => application.studentId === selectedStudent.id)
+    : [];
+
   const renderPage = () => {
     if (detailCourse) return renderCourseDetails();
     if (detailBatch) return renderBatchDetails();
@@ -1232,6 +1528,14 @@ function LearningManagement({ pathname }: { pathname: string }) {
       )}
       {modal === 'batch' && <AddBatchDialog faculty={faculty} onCancel={() => setModal(null)} onSave={addBatch} />}
       {modal === 'student' && <EnrollStudentDialog batches={batches} onCancel={() => setModal(null)} onSave={addStudent} />}
+      {modal === 'studentDetails' && selectedStudent && (
+        <StudentRecordDialog
+          student={selectedStudent}
+          batch={selectedStudentBatch}
+          applications={selectedStudentPlacementApplications}
+          onClose={() => setModal(null)}
+        />
+      )}
       {modal === 'assessment' && <AddAssessmentDialog batches={batches} onCancel={() => setModal(null)} onSave={addAssessment} />}
       {modal === 'faculty' && (
         <AssignFacultyDialog
@@ -1281,14 +1585,23 @@ function StudentTable({
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {rows.map((student) => (
               <tr key={student.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30">
-                <td className="px-5 py-3.5"><span className="font-semibold text-slate-900 dark:text-white">{student.name}</span><span className="mt-0.5 block text-[10px] text-slate-500">{student.id} · {student.email}</span></td>
+                <td className="px-5 py-3.5">
+                  <button
+                    type="button"
+                    onClick={() => onStudentClick(student.id)}
+                    className="text-left font-semibold text-violet-700 hover:text-violet-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:text-violet-300 dark:hover:text-violet-200"
+                  >
+                    {student.name}
+                  </button>
+                  <span className="mt-0.5 block text-[10px] text-slate-500">{student.id} · {student.email}</span>
+                </td>
                 <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">{student.batchId}</td>
                 <td className="px-5 py-3.5">
                   <span className="flex items-center gap-2"><span className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700"><span className="block h-full rounded-full bg-violet-600" style={{ width: `${student.progress}%` }} /></span><span className="text-[10px] text-slate-600 dark:text-slate-300">{student.progress}%</span></span>
                 </td>
                 <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">{student.attendance}%</td>
                 <td className="px-5 py-3.5"><StatusBadge value={student.status} /></td>
-                <td className="px-5 py-3.5 text-right"><button type="button" onClick={() => onStudentClick(student.id)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label={`More actions for ${student.name}`}><MoreHorizontal className="h-4 w-4" /></button></td>
+                <td className="px-5 py-3.5 text-right"><button type="button" onClick={() => onStudentClick(student.id)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label={`View record for ${student.name}`}><MoreHorizontal className="h-4 w-4" /></button></td>
               </tr>
             ))}
           </tbody>
