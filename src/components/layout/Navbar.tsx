@@ -1,328 +1,273 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import {
   Menu,
   Bell,
   Search,
-  UserCheck,
   ChevronDown,
+  ShieldCheck,
   Check,
+  Sun,
+  Moon,
 } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
-import Link from 'next/link';
-import { flatNavigation } from '@/lib/navigation';
+import { useApp } from '@/context/AppContext';
+import { RoleType } from '@/types';
 
 interface NavbarProps {
   onMenuClick: () => void;
 }
 
-interface NotificationItem {
-  id: string;
-  title: string;
-  type: string;
-  isRead: boolean;
-  linkUrl?: string | null;
-  message: string;
-}
+const QUICK_ROUTES = [
+  { label: 'Overview Dashboard', href: '/dashboard', section: 'Overview' },
+  { label: 'My Tasks', href: '/my-tasks', section: 'Overview' },
+  { label: 'Task Management & Transfers', href: '/tasks', section: 'Operations' },
+  { label: 'Department Workspaces', href: '/workspaces', section: 'Workspaces' },
+  { label: 'Employees & Role Seats', href: '/employees', section: 'Organization' },
+  { label: 'Organization Chart', href: '/organization', section: 'Organization' },
+  { label: 'Campaigns', href: '/campaigns', section: 'Growth' },
+  { label: 'Media & Podcasts', href: '/media', section: 'Media' },
+  { label: 'Sales & CRM', href: '/sales', section: 'Sales' },
+  { label: 'TeleCaller', href: '/telecaller', section: 'Outreach' },
+  { label: 'Courses & Batches', href: '/education', section: 'Education' },
+  { label: 'Colleges & Experts', href: '/colleges', section: 'Partners' },
+  { label: 'Open Market', href: '/open-market', section: 'Sales' },
+  { label: 'Events & Expos', href: '/events', section: 'Events' },
+  { label: 'Company Assets', href: '/assets', section: 'Administration' },
+  { label: 'Accounts & Finance (Chairperson)', href: '/accounts', section: 'Finance' },
+  { label: 'Documents', href: '/documents', section: 'Administration' },
+  { label: 'Reports & Analytics', href: '/reports', section: 'Analytics' },
+  { label: 'Settings & Permissions', href: '/settings', section: 'System' },
+];
 
 export default function Navbar({ onMenuClick }: NavbarProps) {
-  const { currentUser, allUsers, switchUser } = useAuth();
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const {
+    currentRole,
+    currentEmployee,
+    switchRole,
+    darkMode,
+    toggleDarkMode,
+    notifications,
+    markAllNotificationsRead,
+    isChairperson,
+  } = useApp();
+
+  const [roleOpen, setRoleOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
 
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
   const searchResults = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return [];
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+    return QUICK_ROUTES.filter(
+      (r) =>
+        (r.href !== '/accounts' || isChairperson) &&
+        `${r.label} ${r.section}`.toLowerCase().includes(q)
+    ).slice(0, 6);
+  }, [search, isChairperson]);
 
-    return flatNavigation
-      .filter((entry) =>
-        `${entry.label} ${entry.section} ${entry.parent ?? ''} ${entry.description ?? ''}`
-          .toLowerCase()
-          .includes(query)
-      )
-      .slice(0, 7);
-  }, [search]);
+  const roleOptions: {
+    role: RoleType;
+    label: string;
+    name: string;
+    empId: string;
+    dept: string;
+  }[] = [
+    { role: 'CHAIRPERSON', label: 'Chairperson', name: 'Pooja Ahire', empId: 'AWF-EMP-001', dept: 'Executive Board' },
+    { role: 'DIRECTOR', label: 'Director (Sales & Outreach)', name: 'Anchal Agawane', empId: 'AWF-EMP-002', dept: 'Sales, TeleCaller, Counselor' },
+    { role: 'DIRECTOR', label: 'Director (Tech & Education)', name: 'Rutuja Botre', empId: 'AWF-EMP-003', dept: 'Technical Team, Trainer' },
+    { role: 'DIRECTOR', label: 'Director (Ops & Media)', name: 'Shubham Jadhav', empId: 'AWF-EMP-004', dept: 'Media, Ops, Interns' },
+    { role: 'OPERATION_HEAD', label: 'Operation Head', name: 'Vikram Deshmukh', empId: 'AWF-EMP-005', dept: 'Operation Team' },
+    { role: 'TEAM_LEAD', label: 'Team Lead', name: 'Tanvi Patil', empId: 'AWF-EMP-008', dept: 'Technical Team' },
+    { role: 'FACULTY', label: 'Faculty', name: 'Dr. Kunal More', empId: 'AWF-EMP-011', dept: 'Assigned Batches Only' },
+    { role: 'STAFF', label: 'Staff Member', name: 'Sneha Shinde', empId: 'AWF-EMP-013', dept: 'Technical Team' },
+    { role: 'INTERN', label: 'Intern', name: 'Aarav Sharma', empId: 'AWF-INT-001', dept: 'Interns' },
+  ];
 
-  useEffect(() => {
-    fetchNotifications();
-  }, [currentUser]);
-
-  const fetchNotifications = async () => {
-    try {
-      const res = await fetch('/api/notifications');
-      if (res.ok) {
-        const data: NotificationItem[] = await res.json();
-        setNotifications(data);
-        setUnreadCount(data.filter((notification) => !notification.isRead).length);
-      }
-    } catch (e) {
-      console.error('Failed to fetch notifications', e);
-    }
-  };
-
-  const markAllRead = async () => {
-    try {
-      await fetch('/api/notifications', { method: 'PATCH' });
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      setUnreadCount(0);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  // Enforce Director isolation in the switcher: when viewing as a Director, hide other Directors
+  const visibleRoleOptions = roleOptions.filter(
+    (opt) => !(currentRole === 'DIRECTOR' && opt.role === 'DIRECTOR' && opt.empId !== currentEmployee.id)
+  );
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 lg:px-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
-      {/* Left controls */}
+    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 lg:px-6 bg-white/95 dark:bg-[#130d26]/95 backdrop-blur-md border-b border-purple-200/80 dark:border-purple-900/50">
+      {/* Left: Menu + Search */}
       <div className="flex items-center gap-3">
         <button
-          type="button"
-          aria-label="Toggle navigation menu"
           onClick={onMenuClick}
-          className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
+          className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
+          aria-label="Toggle Menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         <div className="relative hidden sm:block">
-          <div className="flex w-64 items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-100 px-3 py-1.5 text-xs text-slate-500 dark:border-slate-700/60 dark:bg-slate-800/80 dark:text-slate-400">
-            <Search className="h-4 w-4 shrink-0 text-slate-400" />
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 w-64 md:w-72">
+            <Search className="w-4 h-4 text-slate-400 shrink-0" />
             <input
-              type="search"
+              type="text"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               onFocus={() => setSearchOpen(true)}
-              onBlur={() => window.setTimeout(() => setSearchOpen(false), 150)}
-              onKeyDown={(event) => {
-                if (event.key === 'Escape') {
-                  setSearch('');
-                  setSearchOpen(false);
-                }
-              }}
-              placeholder="Search AWSFISHUB modules..."
-              aria-label="Search navigation"
-              className="w-full border-none bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-200"
+              onBlur={() => setTimeout(() => setSearchOpen(false), 160)}
+              placeholder="Jump to module..."
+              className="bg-transparent border-none outline-none w-full text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400"
             />
           </div>
           {searchOpen && search.trim() && (
-            <div className="absolute left-0 top-full z-50 mt-2 max-h-96 w-80 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-slate-700 dark:bg-slate-900">
-              {searchResults.length ? (
-                searchResults.map((result) => (
+            <div className="absolute left-0 top-full mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl p-1.5 z-50">
+              {searchResults.length > 0 ? (
+                searchResults.map((r) => (
                   <Link
-                    key={result.href}
-                    href={result.href ?? '/'}
-                    onClick={() => {
-                      setSearch('');
-                      setSearchOpen(false);
-                    }}
-                    className="block rounded-lg px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/40"
+                    key={r.href}
+                    href={r.href}
+                    className="block px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 text-xs"
                   >
-                    <span className="block text-xs font-semibold text-slate-900 dark:text-white">
-                      {result.label}
-                    </span>
-                    <span className="block text-[10px] text-slate-500 dark:text-slate-400">
-                      {result.section}{result.parent ? ` / ${result.parent}` : ''}
-                    </span>
+                    <p className="font-bold text-slate-900 dark:text-white">{r.label}</p>
+                    <p className="text-[10px] text-slate-400">{r.section}</p>
                   </Link>
                 ))
               ) : (
-                <p className="px-3 py-4 text-xs text-slate-500">No matching modules.</p>
+                <p className="px-3 py-3 text-xs text-slate-400">No matching module found.</p>
               )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Right controls: Role switcher & profile */}
-      <div className="flex items-center gap-3">
-        {/* Dynamic Role Switcher Pill */}
+      {/* Right: Theme Toggle, Notifications, Role Simulation Switcher */}
+      <div className="flex items-center gap-2.5">
+        <button
+          onClick={toggleDarkMode}
+          className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+          title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+        </button>
+
+        {/* Notifications */}
         <div className="relative">
           <button
-            onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200 dark:border-blue-800/60 text-slate-800 dark:text-slate-200 text-xs font-medium hover:border-blue-400 transition-all shadow-sm"
-          >
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-slate-500 dark:text-slate-400 hidden md:inline">Demo preview:</span>
-            <span className="font-bold text-blue-700 dark:text-blue-400 truncate max-w-[140px]">
-              {currentUser?.name || 'Select User'}
-            </span>
-            <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-blue-600 text-white shrink-0">
-              {currentUser?.role.replace('_', ' ')}
-            </span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
-          </button>
-
-          {/* Switcher Dropdown */}
-          {userDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-              <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Demo Role Preview
-                  </h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Not Real Authentication · Preview interface only
-                  </p>
-                </div>
-                <UserCheck className="w-4 h-4 text-blue-600" />
-              </div>
-
-              <div className="max-h-80 overflow-y-auto py-1 divide-y divide-slate-100 dark:divide-slate-800/60">
-                {allUsers.map((user) => {
-                  const isSelected = user.id === currentUser?.id;
-                  return (
-                    <button
-                      key={user.id}
-                      onClick={() => {
-                        switchUser(user.id);
-                        setUserDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-4 py-2.5 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors ${
-                        isSelected ? 'bg-blue-50/70 dark:bg-blue-950/40' : ''
-                      }`}
-                    >
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
-                          isSelected
-                            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
-                            : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                        }`}
-                      >
-                        {user.name.charAt(0)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                            {user.name}
-                          </p>
-                          {isSelected && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                          {user.designation}
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <span
-                            className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${
-                              user.role === 'FOUNDER'
-                                ? 'bg-amber-500/10 text-amber-600 border border-amber-500/30 dark:text-amber-400'
-                                : user.role.includes('DIRECTOR')
-                                ? 'bg-purple-500/10 text-purple-600 border border-purple-500/30 dark:text-purple-400'
-                                : user.role === 'MANAGER'
-                                ? 'bg-blue-500/10 text-blue-600 border border-blue-500/30 dark:text-blue-400'
-                                : 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 dark:text-emerald-400'
-                            }`}
-                          >
-                            {user.role.replace('_', ' ')}
-                          </span>
-                          {user.department && (
-                            <span className="text-[9px] text-slate-400 truncate">
-                              • {user.department.name}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Notifications Icon & Popover */}
-        <div className="relative">
-          <button
-            onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative"
+            onClick={() => setNotifOpen(!notifOpen)}
+            className="relative p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             title="Notifications"
           >
-            <Bell className="w-5 h-5" />
+            <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center animate-pulse">
+              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center">
                 {unreadCount}
               </span>
             )}
           </button>
 
-          {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-              <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Notifications
-                  </h4>
-                  {unreadCount > 0 && (
-                    <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold">
-                      {unreadCount} new
-                    </span>
-                  )}
-                </div>
-                {unreadCount > 0 && (
-                  <button
-                    onClick={markAllRead}
-                    className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+          {notifOpen && (
+            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-2 z-50">
+              <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-900 dark:text-white">
+                  Notifications ({unreadCount} unread)
+                </span>
+                <button
+                  onClick={markAllNotificationsRead}
+                  className="text-[11px] font-semibold text-blue-600 hover:underline"
+                >
+                  Mark all read
+                </button>
+              </div>
+              <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                {notifications.slice(0, 5).map((n) => (
+                  <Link
+                    key={n.id}
+                    href={n.targetUrl}
+                    onClick={() => setNotifOpen(false)}
+                    className={`block p-3 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 ${
+                      !n.isRead ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''
+                    }`}
                   >
-                    Mark all read
-                  </button>
-                )}
+                    <p className="font-bold text-slate-900 dark:text-white">{n.title}</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{n.message}</p>
+                    <span className="text-[10px] text-slate-400 mt-1 block">{n.timestamp}</span>
+                  </Link>
+                ))}
               </div>
-
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
-                {notifications.length === 0 ? (
-                  <div className="px-4 py-6 text-center text-xs text-slate-400">
-                    No notifications right now
-                  </div>
-                ) : (
-                  notifications.slice(0, 6).map((notif) => (
-                    <Link
-                      key={notif.id}
-                      href={notif.linkUrl || '/notifications'}
-                      onClick={() => setNotificationsOpen(false)}
-                      className={`block px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors ${
-                        !notif.isRead ? 'bg-blue-50/40 dark:bg-blue-950/20' : ''
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-xs font-semibold text-slate-900 dark:text-white line-clamp-1">
-                          {notif.title}
-                        </p>
-                        <span className="text-[9px] uppercase px-1.5 py-0.5 rounded font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0">
-                          {notif.type}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
-                        {notif.message}
-                      </p>
-                    </Link>
-                  ))
-                )}
-              </div>
-
-              <div className="p-2 border-t border-slate-100 dark:border-slate-800 text-center">
+              <div className="px-4 pt-2 border-t border-slate-100 dark:border-slate-800 text-center">
                 <Link
                   href="/notifications"
-                  onClick={() => setNotificationsOpen(false)}
-                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                  onClick={() => setNotifOpen(false)}
+                  className="text-xs font-semibold text-blue-600 hover:underline"
                 >
-                  View all in Notifications Center →
+                  Open Notification Center →
                 </Link>
               </div>
             </div>
           )}
         </div>
 
-        {/* Product preview indicator */}
-        <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-slate-800">
-          <div className="flex flex-col text-right">
-            <span className="text-xs font-bold text-slate-900 dark:text-white">AWSFISHUB</span>
-            <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
-              UI prototype
+        {/* Role Switcher */}
+        <div className="relative">
+          <button
+            onClick={() => setRoleOpen(!roleOpen)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-50 via-fuchsia-50 to-blue-50 dark:from-purple-950/60 dark:to-blue-950/60 border border-purple-200 dark:border-purple-700 text-xs font-medium hover:border-fuchsia-400 transition-all"
+          >
+            <span className="w-2 h-2 rounded-full bg-fuchsia-500" />
+            <span className="font-bold text-violet-700 dark:text-violet-300 truncate max-w-[130px]">
+              {currentEmployee.name}
             </span>
-          </div>
+            <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white">
+              {currentRole.replace('_', ' ')}
+            </span>
+            <ChevronDown className="w-3.5 h-3.5 text-purple-500" />
+          </button>
+
+          {roleOpen && (
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-2 z-50">
+              <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-900 dark:text-white uppercase">
+                  <ShieldCheck className="w-4 h-4 text-blue-600" />
+                  Mock Role Simulation
+                </div>
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  Visual UI role preview only (not real backend security). Directors are isolated from viewing each other.
+                </p>
+              </div>
+
+              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                {visibleRoleOptions.map((opt) => {
+                  const selected = currentEmployee.id === opt.empId;
+                  return (
+                    <button
+                      key={opt.empId}
+                      onClick={() => {
+                        switchRole(opt.role, opt.empId);
+                        setRoleOpen(false);
+                      }}
+                      className={`w-full px-4 py-2.5 text-left flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/60 ${
+                        selected ? 'bg-blue-50/70 dark:bg-blue-950/30' : ''
+                      }`}
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs text-slate-900 dark:text-white">
+                            {opt.name}
+                          </span>
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                            {opt.label}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          {opt.dept} • {opt.empId}
+                        </p>
+                      </div>
+                      {selected && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

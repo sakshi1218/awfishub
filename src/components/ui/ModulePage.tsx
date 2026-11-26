@@ -23,7 +23,7 @@ export default function ModulePage({
     entry?.description ??
     'This page establishes the module structure for future workflow development.';
   const ancestors = getNavigationAncestors(pathname);
-  const sectionName = entry?.section ?? ancestors[ancestors.length - 1]?.section ?? 'AWSFISHUB';
+  const sectionName = entry?.section ?? ancestors[ancestors.length - 1]?.section ?? 'AWfisHub';
   const parentName = entry?.parent;
   const quickLinks = flatNavigation
     .filter((candidate) =>
@@ -118,7 +118,7 @@ export default function ModulePage({
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">Explore this area</h2>
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Related AWSFISHUB module pages</p>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Related AWfisHub module pages</p>
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

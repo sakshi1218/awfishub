@@ -1,267 +1,114 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import {
-  Building2,
-  Plus,
-  Users,
-  CheckCircle2,
-  Layers,
-  Edit2,
-  Trash2,
-  Check,
-  X,
-  Briefcase,
-  TrendingUp,
-} from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import React, { useState } from 'react';
+import { Building2, Users, CheckSquare, AlertTriangle, Lock } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
+import { PERMANENT_DEPARTMENTS } from '@/data/constants/departments';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 
 export default function DepartmentsPage() {
-  const { isFounder } = useAuth();
-  const [departments, setDepartments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingDept, setEditingDept] = useState<any | null>(null);
+  const {
+    employees,
+    currentRole,
+    currentEmployee,
+    getDirectorAllowedDepartments,
+    getVisibleTasksForCurrentUser,
+    getPriorityConflicts,
+  } = useApp();
+  const [selectedDept, setSelectedDept] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
-    name: '',
-    code: '',
-    description: '',
-  });
+  const allowedDirectorDepts =
+    currentRole === 'DIRECTOR' ? getDirectorAllowedDepartments(currentEmployee.id) : null;
 
-  useEffect(() => {
-    loadDepartments();
-  }, []);
+  const visibleDepartments = allowedDirectorDepts
+    ? PERMANENT_DEPARTMENTS.filter((d) => allowedDirectorDepts.includes(d.name))
+    : PERMANENT_DEPARTMENTS;
 
-  const loadDepartments = async () => {
-    try {
-      const res = await fetch('/api/departments');
-      if (res.ok) {
-        setDepartments(await res.json());
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleOpenAdd = () => {
-    setEditingDept(null);
-    setFormData({ name: '', code: '', description: '' });
-    setIsModalOpen(true);
-  };
-
-  const handleOpenEdit = (dept: any) => {
-    setEditingDept(dept);
-    setFormData({
-      name: dept.name,
-      code: dept.code,
-      description: dept.description || '',
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const url = '/api/departments';
-      const method = editingDept ? 'PUT' : 'POST';
-      const body = editingDept ? { ...formData, id: editingDept.id } : formData;
-
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      if (res.ok) {
-        setIsModalOpen(false);
-        loadDepartments();
-      } else {
-        const err = await res.json();
-        alert(err.error || 'Failed to save department');
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const visibleTasks = getVisibleTasksForCurrentUser();
+  const allConflicts = getPriorityConflicts();
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-              <Building2 className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-                Department Management
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Manage MindLyft business units, operational domains, and organizational divisions
-              </p>
-            </div>
-          </div>
+      <PageHeader
+        title="Departments, Priority Workload & Privacy"
+        subtitle="Department KPIs, Critical & Priority 1 task counts, and multi-director conflict indicators."
+        icon={Building2}
+        badge={`${visibleDepartments.length} Authorized Units`}
+      />
+
+      {currentRole === 'DIRECTOR' && (
+        <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 flex items-center gap-2">
+          <Lock className="w-4 h-4 text-purple-500 shrink-0" />
+          Showing only departments assigned to <b>{currentEmployee.name}</b>. Other Directors&apos; departments and private metrics are hidden.
         </div>
+      )}
 
-        {isFounder && (
-          <button
-            onClick={handleOpenAdd}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md shadow-blue-500/20 transition-all self-start sm:self-auto"
-          >
-            <Plus className="w-4 h-4" />
-            Create Department
-          </button>
-        )}
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {visibleDepartments.map((d) => {
+          const deptEmps = employees.filter((e) => e.department === d.name);
+          const deptTasks = visibleTasks.filter((t) => t.department === d.name);
+          const criticalCount = deptTasks.filter((t) => t.priority === 'Critical').length;
+          const p1Count = deptTasks.filter((t) => t.directorPriority === 'Priority 1').length;
+          const deptConflicts = allConflicts.filter((c) => c.tasks.some((t) => t.department === d.name)).length;
 
-      {/* Departments Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {departments.map((dept) => (
-          <div
-            key={dept.id}
-            className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
-          >
-            <div>
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
-                  <Building2 className="w-5 h-5" />
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                    {dept.code}
+          return (
+            <div
+              key={d.id}
+              onClick={() => setSelectedDept(d.name)}
+              className="cursor-pointer p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-400 shadow-sm space-y-3 text-xs"
+            >
+              <div className="flex justify-between items-start">
+                <span className="font-mono text-[10px] font-bold text-blue-600">{d.code}</span>
+                <StatusBadge label={`${d.kpiRate}% KPI`} variant="success" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">{d.name}</h3>
+              <p className="text-slate-500 line-clamp-2">{d.description}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {criticalCount > 0 && <StatusBadge label={`${criticalCount} Critical`} variant="danger" />}
+                {p1Count > 0 && <StatusBadge label={`${p1Count} Priority 1`} variant="purple" />}
+                {deptConflicts > 0 && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-600">
+                    <AlertTriangle className="w-3 h-3" /> {deptConflicts} Conflict
                   </span>
-                  {isFounder && (
-                    <button
-                      onClick={() => handleOpenEdit(dept)}
-                      className="p-1 text-slate-400 hover:text-blue-600 rounded"
-                      title="Edit Department"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
+                )}
+              </div>
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+                <p>Lead: <b>{d.leadName}</b></p>
+                <p>Director: <b>{d.directorName}</b></p>
+                <div className="flex justify-between text-slate-500 pt-1">
+                  <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {deptEmps.length} Staff</span>
+                  <span className="flex items-center gap-1"><CheckSquare className="w-3.5 h-3.5" /> {deptTasks.length} Tasks</span>
                 </div>
               </div>
-
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">{dept.name}</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
-                {dept.description || 'No description provided.'}
-              </p>
             </div>
-
-            {/* Department stats & members preview */}
-            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <div className="flex items-center justify-between text-xs mb-3">
-                <span className="text-slate-400 font-medium">Headcount</span>
-                <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                  <Users className="w-3.5 h-3.5 text-blue-500" />
-                  {dept.employees?.length || 0} Members
-                </span>
-              </div>
-
-              {/* Members chip previews */}
-              {dept.employees && dept.employees.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {dept.employees.slice(0, 3).map((emp: any) => (
-                    <span
-                      key={emp.id}
-                      className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 truncate max-w-[140px]"
-                    >
-                      {emp.name}
-                    </span>
-                  ))}
-                  {dept.employees.length > 3 && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 font-medium">
-                      +{dept.employees.length - 3} more
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <p className="text-[11px] text-slate-400 italic">No assigned employees yet.</p>
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                {editingDept ? 'Edit Department' : 'Create New Department'}
-              </h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      {selectedDept && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-3 text-xs">
+            <div className="flex justify-between items-center">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">{selectedDept} Roster & Task Load</h3>
+              <button onClick={() => setSelectedDept(null)} className="text-slate-500 font-bold">Close</button>
             </div>
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Department Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. Artificial Intelligence & Research"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Department Code (Uppercase)
-                </label>
-                <input
-                  type="text"
-                  required
-                  disabled={!!editingDept}
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  placeholder="e.g. AI_RES"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Description & Mandate
-                </label>
-                <textarea
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Strategic mandate, responsibilities, and coverage..."
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white outline-none"
-                />
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md shadow-blue-500/20"
-                >
-                  {editingDept ? 'Update Department' : 'Create Department'}
-                </button>
-              </div>
-            </form>
+            {employees.filter((e) => e.department === selectedDept).map((e) => {
+              const empTasks = visibleTasks.filter((t) => t.assignedToId === e.id);
+              const hasConflict = allConflicts.some((c) => c.employeeId === e.id);
+              return (
+                <div key={e.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 flex justify-between items-center">
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-white">{e.name}</p>
+                    <p className="text-[10px] text-slate-500">{e.designation} • {empTasks.length} Tasks</p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {hasConflict && <StatusBadge label="Conflict" variant="danger" />}
+                    <span className="font-mono text-blue-600">{e.permanentId}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

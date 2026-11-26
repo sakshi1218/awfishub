@@ -1,6 +1,6 @@
-# AWSFISHUB — Business Management Platform
+# AWfisHub — Business Management Platform
 
-AWSFISHUB is an enterprise-grade company management and organizational operating platform. It provides centralized visibility and governance across the company's organizational hierarchy, daily deliverables, review meetings, campus sales operations, attendance, and analytics.
+AWfisHub is an enterprise-grade company management and organizational operating platform. It provides centralized visibility and governance across the company's organizational hierarchy, daily deliverables, review meetings, campus sales operations, attendance, and analytics.
 
 ---
 
