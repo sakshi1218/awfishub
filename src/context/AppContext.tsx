@@ -271,7 +271,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (currentRole === 'DIRECTOR') {
       const allowed = getDirectorAllowedDepartments(currentEmployee.id);
       return tasks.filter((t) => {
-        // Cannot see Founder's private tasks or other Directors' private tasks
+        // Strictly hide Founder's tasks (assigned to or by Founder AWF-EMP-001)
+        if (t.assignedToId === 'AWF-EMP-001' || t.assignedById === 'AWF-EMP-001') {
+          return false;
+        }
+        // Strictly hide tasks assigned by other Directors
+        if (t.assigningDirectorId && t.assigningDirectorId !== currentEmployee.id) {
+          return false;
+        }
+        // Cannot see private tasks of others
         if (t.isPrivate && t.assignedById !== currentEmployee.id && t.assignedToId !== currentEmployee.id) {
           return false;
         }

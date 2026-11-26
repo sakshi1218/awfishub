@@ -55,7 +55,7 @@ export default function DirectorDashboard() {
 
   // Priority conflicts involving this Director's tasks
   const myConflicts = getPriorityConflicts().filter((c) =>
-    c.tasks.some((t) => t.assigningDirectorId === currentEmployee.id || allowedDepts.includes(t.department))
+    c.tasks.some((t) => t.assigningDirectorId === currentEmployee.id)
   );
 
   const displayedTasks =
