@@ -88,6 +88,18 @@ interface AppContextType {
   // Division scoping helper for Directors (prevents seeing other Directors' divisions)
   getDirectorAllowedDepartments: (directorId: string) => DepartmentType[];
   getVisibleTasksForCurrentUser: () => TaskItem[];
+  getVisibleEmployees: (includeOtherTeams?: boolean) => Employee[];
+  getEmployeeWorkload: (employeeId: string) => {
+    activeCount: number;
+    inProgressCount: number;
+    submittedCount: number;
+    overdueCount: number;
+    criticalCount: number;
+    nextDueDate: string | null;
+    availability: 'Free' | 'Light' | 'Busy' | 'Overloaded';
+    tasks: TaskItem[];
+    activeTasks: TaskItem[];
+  };
   getPriorityConflicts: () => Array<{
     employeeId: string;
     employeeName: string;
@@ -96,6 +108,8 @@ interface AppContextType {
   }>;
   directorPriorityOrder: string;
   setDirectorPriorityOrder: (order: string) => void;
+  activeToast: NotificationItem | null;
+  dismissToast: () => void;
 
   // Collections
   employees: Employee[];
@@ -143,6 +157,7 @@ interface AppContextType {
   addTask: (task: Omit<TaskItem, 'id' | 'transferHistory' | 'priorityHistory' | 'comments'>) => void;
   updateTaskStatus: (taskId: string, status: TaskLifecycleStatus, progressPct?: number) => void;
   transferTask: (taskId: string, newAssigneeId: string, reason: string) => void;
+  respondToTask: (taskId: string, responseStatus: 'Accepted' | 'Reschedule Requested' | 'Declined', reason?: string) => void;
   addTaskComment: (taskId: string, text: string) => void;
   escalatePriorityConflict: (taskIds: string[]) => void;
   founderOverridePriority: (
@@ -222,6 +237,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [gstRecords] = useState<GSTRecord[]>(MOCK_GST_RECORDS);
   const [documents, setDocuments] = useState<DocumentRecord[]>(MOCK_DOCUMENTS);
   const [notifications, setNotifications] = useState<NotificationItem[]>(MOCK_NOTIFICATIONS);
+  const [activeToast, setActiveToast] = useState<NotificationItem | null>(null);
+  const dismissToast = () => setActiveToast(null);
+
+  const pushTaskNotification = (params: {
+    userId?: string;
+    taskId?: string;
+    type: string;
+    title: string;
+    message: string;
+    category: NotificationItem['category'];
+    priority?: TaskPriority;
+    dueDate?: string;
+  }) => {
+    const newNotif: NotificationItem = {
+      id: `NOTIF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      userId: params.userId,
+      taskId: params.taskId,
+      type: params.type,
+      title: params.title,
+      message: params.message,
+      category: params.category,
+      createdBy: currentEmployee.name,
+      createdAt: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+      priority: params.priority,
+      dueDate: params.dueDate,
+      timestamp: 'Just now',
+      isRead: false,
+      targetUrl: params.taskId ? `/tasks?taskId=${params.taskId}` : '/tasks',
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+    setActiveToast(newNotif);
+  };
 
   const [currentRole, setCurrentRole] = useState<RoleType>('CHAIRPERSON');
   const [currentEmployee, setCurrentEmployee] = useState<Employee>(() =>
@@ -264,6 +311,65 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (directorId === 'AWF-EMP-003') return ['Sales Department', 'Media', 'Interns'];
     if (directorId === 'AWF-EMP-004') return ['Technical Team', 'Operation Team'];
     return [];
+  };
+
+  const getVisibleEmployees = (includeOtherTeams = false): Employee[] => {
+    if (currentRole === 'CHAIRPERSON' || currentRole === 'OPERATION_HEAD') {
+      return employees;
+    }
+    if (currentRole === 'DIRECTOR') {
+      if (includeOtherTeams) return employees;
+      const allowed = getDirectorAllowedDepartments(currentEmployee.id);
+      return employees.filter(
+        (e) =>
+          e.id === currentEmployee.id ||
+          e.reportingDirectorId === currentEmployee.id ||
+          allowed.includes(e.department)
+      );
+    }
+    if (currentRole === 'TEAM_LEAD') {
+      return employees.filter((e) => e.department === currentEmployee.department);
+    }
+    return employees.filter((e) => e.id === currentEmployee.id);
+  };
+
+  const getEmployeeWorkload = (employeeId: string) => {
+    const empTasks = tasks.filter((t) => t.assignedToId === employeeId);
+    const activeTasks = empTasks.filter((t) => t.status !== 'Approved');
+    const activeCount = activeTasks.length;
+    const inProgressCount = activeTasks.filter((t) => t.status === 'In Progress').length;
+    const submittedCount = activeTasks.filter((t) => t.status === 'Submitted').length;
+    const overdueCount = activeTasks.filter((t) => t.dueDate < '2026-11-25').length;
+    const criticalCount = activeTasks.filter((t) => t.priority === 'Critical').length;
+    const hasOverdueCritical = activeTasks.some(
+      (t) => t.priority === 'Critical' && t.dueDate < '2026-11-25'
+    );
+    const sortedDates = activeTasks
+      .map((t) => t.dueDate)
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
+    const nextDueDate = sortedDates[0] || null;
+
+    let availability: 'Free' | 'Light' | 'Busy' | 'Overloaded' = 'Free';
+    if (activeCount >= 6 || hasOverdueCritical) {
+      availability = 'Overloaded';
+    } else if (activeCount >= 3) {
+      availability = 'Busy';
+    } else if (activeCount >= 1) {
+      availability = 'Light';
+    }
+
+    return {
+      activeCount,
+      inProgressCount,
+      submittedCount,
+      overdueCount,
+      criticalCount,
+      nextDueDate,
+      availability,
+      tasks: empTasks,
+      activeTasks,
+    };
   };
 
   const getVisibleTasksForCurrentUser = (): TaskItem[] => {
@@ -424,11 +530,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addTask = (task: Omit<TaskItem, 'id' | 'transferHistory' | 'priorityHistory' | 'comments'>) => {
-    const id = `TSK-${Math.floor(115 + Math.random() * 880)}`;
+    const id = `TSK-${Math.floor(118 + Math.random() * 880)}`;
     setTasks((prev) => [
       {
         ...task,
         id,
+        employeeResponse: { status: 'Pending' },
         transferHistory: [],
         priorityHistory: [
           {
@@ -446,6 +553,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       },
       ...prev,
     ]);
+    if (task.assignedToId) {
+      pushTaskNotification({
+        userId: task.assignedToId,
+        taskId: id,
+        type: 'TASK_ASSIGNED',
+        title: `New task assigned by ${task.assignedByName}`,
+        message: `New task assigned by ${task.assignedByName}: ${task.title} (Due ${task.dueDate})`,
+        category: 'Task Assignment',
+        priority: task.priority,
+        dueDate: task.dueDate,
+      });
+    }
   };
 
   const escalatePriorityConflict = (taskIds: string[]) => {
@@ -462,6 +581,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     decisionNote: string
   ) => {
     const today = new Date().toISOString().split('T')[0];
+    const targetTask = tasks.find((t) => t.id === taskId);
     setTasks((prev) =>
       prev.map((t) => {
         if (t.id !== taskId) return t;
@@ -489,9 +609,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         };
       })
     );
+    if (targetTask?.assignedToId) {
+      pushTaskNotification({
+        userId: targetTask.assignedToId,
+        taskId,
+        type: 'PRIORITY_OR_DATE_CHANGED',
+        title: `Priority/Schedule updated for ${taskId}`,
+        message: `${currentEmployee.name} updated ${targetTask.title} to ${newPriority} (${newDirectorPriority}), Due ${newDueDate}`,
+        category: 'Approval',
+        priority: newPriority,
+        dueDate: newDueDate,
+      });
+    }
   };
 
   const updateTaskStatus = (taskId: string, status: TaskLifecycleStatus, progressPct?: number) => {
+    const targetTask = tasks.find((t) => t.id === taskId);
     setTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
@@ -504,10 +637,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           : t
       )
     );
+    if (targetTask) {
+      if (status === 'Approved' || status === 'Returned') {
+        pushTaskNotification({
+          userId: targetTask.assignedToId,
+          taskId,
+          type: status === 'Approved' ? 'TASK_APPROVED' : 'TASK_RETURNED',
+          title: `Task ${status}: ${targetTask.id}`,
+          message: `${currentEmployee.name} marked "${targetTask.title}" as ${status}.`,
+          category: 'Approval',
+          priority: targetTask.priority,
+          dueDate: targetTask.dueDate,
+        });
+      } else if (status === 'In Progress' && targetTask.assignedById) {
+        pushTaskNotification({
+          userId: targetTask.assignedById,
+          taskId,
+          type: 'TASK_STARTED',
+          title: `Work started on ${targetTask.id}`,
+          message: `${targetTask.assignedToName} started working on "${targetTask.title}".`,
+          category: 'Task Assignment',
+          priority: targetTask.priority,
+          dueDate: targetTask.dueDate,
+        });
+      }
+    }
   };
 
   const transferTask = (taskId: string, newAssigneeId: string, reason: string) => {
     const newAssignee = employees.find((e) => e.id === newAssigneeId);
+    const targetTask = tasks.find((t) => t.id === taskId);
     if (!newAssignee) return;
     setTasks((prev) =>
       prev.map((t) => {
@@ -517,6 +676,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           assignedToId: newAssignee.id,
           assignedToName: newAssignee.name,
           department: newAssignee.department,
+          employeeResponse: { status: 'Pending' },
           transferHistory: [
             {
               id: `TR-${Date.now()}`,
@@ -534,6 +694,55 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         };
       })
     );
+    if (targetTask) {
+      pushTaskNotification({
+        userId: newAssignee.id,
+        taskId,
+        type: 'TASK_REASSIGNED',
+        title: `Task reassigned to you by ${currentEmployee.name}`,
+        message: `${targetTask.title} reassigned to ${newAssignee.name} (Due ${targetTask.dueDate}). Reason: ${reason}`,
+        category: 'Task Transfer',
+        priority: targetTask.priority,
+        dueDate: targetTask.dueDate,
+      });
+    }
+  };
+
+  const respondToTask = (
+    taskId: string,
+    responseStatus: 'Accepted' | 'Reschedule Requested' | 'Declined',
+    reason?: string
+  ) => {
+    const targetTask = tasks.find((t) => t.id === taskId);
+    const now = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== taskId) return t;
+        return {
+          ...t,
+          status: responseStatus === 'Accepted' && t.status === 'Assigned' ? 'In Progress' : t.status,
+          employeeResponse: {
+            status: responseStatus,
+            reason,
+            respondedAt: now,
+          },
+        };
+      })
+    );
+    if (targetTask) {
+      pushTaskNotification({
+        userId: targetTask.assigningDirectorId || targetTask.assignedById,
+        taskId,
+        type: 'EMPLOYEE_RESPONSE',
+        title: `${currentEmployee.name} ${responseStatus} ${targetTask.id}`,
+        message: reason
+          ? `${currentEmployee.name} (${responseStatus}) on "${targetTask.title}": ${reason}`
+          : `${currentEmployee.name} accepted "${targetTask.title}" and started work.`,
+        category: 'Task Assignment',
+        priority: targetTask.priority,
+        dueDate: targetTask.dueDate,
+      });
+    }
   };
 
   const addTaskComment = (taskId: string, text: string) => {
@@ -726,9 +935,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         isIntern: currentRole === 'INTERN',
         getDirectorAllowedDepartments,
         getVisibleTasksForCurrentUser,
+        getVisibleEmployees,
+        getEmployeeWorkload,
         getPriorityConflicts,
         directorPriorityOrder,
         setDirectorPriorityOrder,
+        activeToast,
+        dismissToast,
         employees,
         roleSeats,
         permissionMatrix,
@@ -764,6 +977,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         addTask,
         updateTaskStatus,
         transferTask,
+        respondToTask,
         addTaskComment,
         escalatePriorityConflict,
         founderOverridePriority,

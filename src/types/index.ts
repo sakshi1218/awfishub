@@ -164,6 +164,11 @@ export interface TaskItem {
   highlighted?: boolean;
   isPrivate?: boolean;
   conflictEscalated?: boolean;
+  employeeResponse?: {
+    status: 'Pending' | 'Accepted' | 'Reschedule Requested' | 'Declined';
+    reason?: string;
+    respondedAt?: string;
+  };
   attachments: string[];
   completionEvidence?: {
     workCompleted: string;
@@ -552,6 +557,9 @@ export interface DocumentRecord {
 
 export interface NotificationItem {
   id: string;
+  userId?: string;
+  taskId?: string;
+  type?: string;
   title: string;
   message: string;
   category:
@@ -562,6 +570,10 @@ export interface NotificationItem {
     | 'Event'
     | 'Finance'
     | 'Asset';
+  createdBy?: string;
+  createdAt?: string;
+  priority?: TaskPriority;
+  dueDate?: string;
   timestamp: string;
   isRead: boolean;
   targetUrl: string;

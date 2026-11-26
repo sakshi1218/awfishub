@@ -11,6 +11,7 @@ import {
   Check,
   Sun,
   Moon,
+  X,
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { RoleType } from '@/types';
@@ -49,16 +50,24 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
     darkMode,
     toggleDarkMode,
     notifications,
+    markNotificationRead,
     markAllNotificationsRead,
+    activeToast,
+    dismissToast,
     isChairperson,
   } = useApp();
+
+  const userNotifications = useMemo(
+    () => notifications.filter((n) => !n.userId || n.userId === currentEmployee.id),
+    [notifications, currentEmployee.id]
+  );
 
   const [roleOpen, setRoleOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const unreadCount = userNotifications.filter((n) => !n.isRead).length;
 
   const searchResults = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -177,20 +186,47 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
                   Mark all read
                 </button>
               </div>
-              <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
-                {notifications.slice(0, 5).map((n) => (
-                  <Link
+              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                {userNotifications.slice(0, 8).map((n) => (
+                  <div
                     key={n.id}
-                    href={n.targetUrl}
-                    onClick={() => setNotifOpen(false)}
-                    className={`block p-3 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 ${
-                      !n.isRead ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''
+                    className={`p-3 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/60 ${
+                      !n.isRead ? 'bg-violet-50/60 dark:bg-violet-950/20' : ''
                     }`}
                   >
-                    <p className="font-bold text-slate-900 dark:text-white">{n.title}</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{n.message}</p>
-                    <span className="text-[10px] text-slate-400 mt-1 block">{n.timestamp}</span>
-                  </Link>
+                    <Link
+                      href={n.targetUrl}
+                      onClick={() => {
+                        markNotificationRead(n.id);
+                        setNotifOpen(false);
+                      }}
+                      className="block"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-bold text-slate-900 dark:text-white">{n.title}</p>
+                        {!n.isRead && <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0 mt-1" />}
+                      </div>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 line-clamp-2">{n.message}</p>
+                      <div className="flex flex-wrap items-center gap-2 mt-1.5 text-[10px] text-slate-400">
+                        {n.createdBy && <span>By: <strong className="text-slate-600 dark:text-slate-300">{n.createdBy}</strong></span>}
+                        {n.priority && (
+                          <span className="px-1.5 py-0.5 rounded bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 font-bold">
+                            {n.priority}
+                          </span>
+                        )}
+                        {n.dueDate && <span>Due: {n.dueDate}</span>}
+                        <span>{n.createdAt || n.timestamp}</span>
+                      </div>
+                    </Link>
+                    {!n.isRead && (
+                      <button
+                        onClick={() => markNotificationRead(n.id)}
+                        className="mt-1.5 text-[10px] font-bold text-violet-600 hover:underline flex items-center gap-1"
+                      >
+                        <Check className="w-3 h-3" /> Mark as read
+                      </button>
+                    )}
+                  </div>
                 ))}
               </div>
               <div className="px-4 pt-2 border-t border-slate-100 dark:border-slate-800 text-center">
@@ -270,6 +306,40 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           )}
         </div>
       </div>
+
+      {/* Live Notification Toast */}
+      {activeToast && (
+        <div className="fixed bottom-5 right-5 z-50 max-w-sm w-full bg-white dark:bg-slate-900 border border-violet-300 dark:border-violet-700 rounded-2xl shadow-2xl p-4 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-300 flex items-center justify-center shrink-0">
+            <Bell className="w-4 h-4" />
+          </div>
+          <div className="flex-1 min-w-0 text-xs">
+            <p className="font-extrabold text-slate-900 dark:text-white truncate">{activeToast.title}</p>
+            <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 line-clamp-2">{activeToast.message}</p>
+            <div className="flex items-center gap-3 mt-2">
+              <Link
+                href={activeToast.targetUrl}
+                onClick={() => {
+                  markNotificationRead(activeToast.id);
+                  dismissToast();
+                }}
+                className="text-[11px] font-bold text-violet-600 hover:underline"
+              >
+                Open Task →
+              </Link>
+              <button
+                onClick={dismissToast}
+                className="text-[11px] text-slate-400 hover:text-slate-600"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+          <button onClick={dismissToast} className="p-1 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
     </header>
   );
 }
