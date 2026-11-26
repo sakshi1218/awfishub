@@ -99,19 +99,7 @@ export const navigationSections: NavigationSection[] = [
           { label: 'TeleCaller Reports', href: '/telecaller/reports', description: 'TeleCaller reporting overview.' },
         ],
       },
-      {
-        label: 'Technical Team',
-        icon: 'technical',
-        children: [
-          { label: 'Technical Dashboard', href: '/technical/dashboard', description: 'Technical workspace overview.' },
-          { label: 'Development Tasks', href: '/technical/development-tasks', description: 'Development task overview.' },
-          { label: 'Projects', href: '/technical/projects', description: 'Technical project overview.' },
-          { label: 'Bug Tracking', href: '/technical/bug-tracking', description: 'Bug tracking overview.' },
-          { label: 'Technical Documentation', href: '/technical/documentation', description: 'Technical documentation library.' },
-          { label: 'Release Tracking', href: '/technical/release-tracking', description: 'Release tracking overview.' },
-          { label: 'Technical Reports', href: '/technical/reports', description: 'Technical reporting overview.' },
-        ],
-      },
+      { label: 'Technical Team', href: '/technical/dashboard', description: 'Technical workspace overview.', icon: 'technical' },
       {
         label: 'Sales Department',
         icon: 'sales',
