@@ -9,6 +9,7 @@ import {
   ArrowRight,
   ArrowUp,
   ArrowUpRight,
+  BarChart3,
   BookOpen,
   CalendarDays,
   Check,
@@ -46,6 +47,7 @@ import {
 } from 'recharts';
 import { allCourses, courseCatalogue, slugifyCourse } from '@/lib/course-catalogue';
 import CourseCatalogueCard from '@/components/learning/CourseCatalogueCard';
+import DashboardTabs from '@/components/shared/DashboardTabs';
 import {
   demoAssessments,
   demoBatches,
@@ -63,6 +65,17 @@ import {
 
 type ModalName = 'batch' | 'student' | 'studentDetails' | 'assessment' | 'faculty' | null;
 type StudentSortKey = 'name' | 'progress' | 'attendance';
+
+const lmsDashboardTabs = [
+  { id: 'overview', label: 'Overview', icon: Users, href: '/learning/dashboard' },
+  { id: 'programmes', label: 'Programme Catalogue', icon: BookOpen, href: '/learning/programmes' },
+  { id: 'courses', label: 'Courses', icon: BookOpen, href: '/learning/courses' },
+  { id: 'batches', label: 'Batches', icon: CalendarDays, href: '/learning/batches' },
+  { id: 'students', label: 'Students', icon: Users, href: '/learning/students' },
+  { id: 'faculty', label: 'Faculty', icon: GraduationCap, href: '/learning/faculty' },
+  { id: 'assessments', label: 'Assessments & Progress', icon: ClipboardCheck, href: '/learning/assessments' },
+  { id: 'reports', label: 'Reports', icon: BarChart3, href: '/learning/completion-reports' },
+] as const;
 
 const pageDetails: Record<string, { title: string; description: string }> = {
   dashboard: {
@@ -177,7 +190,7 @@ function LmsShell({
         <nav aria-label="Breadcrumb" className="mb-5 flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
           <Link href="/" className="hover:text-violet-700 dark:hover:text-violet-300">Home</Link>
           <span aria-hidden="true">/</span>
-          <Link href="/learning/dashboard" className="hover:text-violet-700 dark:hover:text-violet-300">Learning Management</Link>
+          <Link href="/learning/dashboard" className="hover:text-violet-700 dark:hover:text-violet-300">LMS Dashboard</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page" className="text-slate-800 dark:text-slate-200">{title}</span>
         </nav>
@@ -204,12 +217,14 @@ function MetricCard({
   detail,
   icon: Icon,
   tone = 'violet',
+  href,
 }: {
   label: string;
   value: string | number;
   detail: string;
   icon: typeof Users;
   tone?: 'violet' | 'blue' | 'emerald' | 'amber';
+  href?: string;
 }) {
   const tones = {
     violet: 'bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300',
@@ -218,20 +233,22 @@ function MetricCard({
     amber: 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300',
   };
 
-  return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-      <div className="flex items-start justify-between gap-3">
+  const card = (
+    <div className={`rounded-xl border border-slate-200 bg-white p-3 transition dark:border-slate-800 dark:bg-slate-900 sm:p-4 ${href ? 'cursor-pointer hover:border-violet-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500' : ''}`}>
+      <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">{value}</p>
+          <p className="mt-1 text-xl font-bold tracking-tight text-slate-950 dark:text-white">{value}</p>
         </div>
-        <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${tones[tone]}`}>
-          <Icon className="h-5 w-5" />
+        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${tones[tone]}`}>
+          <Icon className="h-4 w-4" />
         </span>
       </div>
-      <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">{detail}</p>
-    </article>
+      <p className="mt-2 truncate text-[10px] text-slate-500 dark:text-slate-400">{detail}</p>
+    </div>
   );
+
+  return href ? <Link href={href} aria-label={`Open ${label}`} className="block">{card}</Link> : card;
 }
 
 function Panel({
@@ -476,6 +493,8 @@ function LearningManagement({ pathname }: { pathname: string }) {
   const [selectedBatchId, setSelectedBatchId] = useState(batches[0]?.id ?? '');
   const [attendanceDate, setAttendanceDate] = useState('2026-11-25');
   const [activeBatchTab, setActiveBatchTab] = useState('Overview');
+  const [activeLmsTab, setActiveLmsTab] = useState('overview');
+  const [selectedCourseSlug, setSelectedCourseSlug] = useState<string | null>(null);
   const [reportPreview, setReportPreview] = useState(false);
 
   useEffect(() => {
@@ -498,10 +517,13 @@ function LearningManagement({ pathname }: { pathname: string }) {
   const detailCourse = leaf === 'courses' && detailSlug
     ? allCourses.find((item) => item.slug === detailSlug)
     : undefined;
+  const inlineCourse = selectedCourseSlug
+    ? allCourses.find((item) => item.slug === selectedCourseSlug)
+    : undefined;
   const detailBatch = leaf === 'batches' && detailSlug
     ? batches.find((batch) => batch.id.toLowerCase() === detailSlug.toLowerCase())
     : undefined;
-  const pageTitle = detailCourse?.course ?? detailBatch?.name ?? pageDetails[leaf]?.title ?? 'Learning Management';
+  const pageTitle = detailCourse?.course ?? detailBatch?.name ?? pageDetails[leaf]?.title ?? 'LMS Dashboard';
   const pageDescription = detailCourse
     ? `${detailCourse.provider} · ${detailCourse.programme}. Course detail preview with no live batch or enrollment records.`
     : detailBatch
@@ -725,24 +747,80 @@ function LearningManagement({ pathname }: { pathname: string }) {
       <LmsShell
         title="LMS Dashboard"
         description="Manage courses, batches, learners, assessments, and placements from one workspace."
-        action={<button type="button" className={buttonClass} onClick={openBatchDialog}><Plus className="h-4 w-4" /> Create batch</button>}
       >
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-          <MetricCard label="Courses" value={allCourses.length} detail="Across programme providers" icon={BookOpen} />
-          <MetricCard label="Active batches" value={activeCount} detail={`${batches.length} batches in total`} icon={CalendarDays} tone="blue" />
-          <MetricCard label="Students" value={students.length} detail="Demo learner records" icon={Users} tone="emerald" />
-          <MetricCard label="Avg. attendance" value={`${averageAttendance}%`} detail={`${lowAttendanceCount} students below 80%`} icon={CheckCircle2} tone="blue" />
-          <MetricCard label="Avg. progress" value={`${averageProgress}%`} detail={`${dueAssessments.length} assessments due`} icon={Target} tone="amber" />
-          <MetricCard label="Placements" value={offersReceived} detail={`${placementInProgress} applications in progress`} icon={GraduationCap} tone="emerald" />
+        <DashboardTabs
+          id="lms-dashboard"
+          ariaLabel="LMS Dashboard sections"
+          tabs={lmsDashboardTabs}
+          value={activeLmsTab}
+          onChange={setActiveLmsTab}
+        >
+          <span className="sr-only">Use the tabs to switch between LMS workspaces.</span>
+        </DashboardTabs>
+
+        {activeLmsTab === 'overview' && <>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8">
+          <MetricCard label="Programmes" value={courseCatalogue.length} detail="Across programme providers" icon={BookOpen} tone="violet" href="/learning/programmes" />
+          <MetricCard label="Courses" value={allCourses.length} detail="Across programme providers" icon={BookOpen} href="/learning/courses" />
+          <MetricCard label="Active batches" value={activeCount} detail={`${batches.length} batches in total`} icon={CalendarDays} tone="blue" href="/learning/batches" />
+          <MetricCard label="Students" value={students.length} detail="Demo learner records" icon={Users} tone="emerald" href="/learning/students" />
+          <MetricCard label="Faculty" value={faculty.length} detail={`${faculty.filter((member) => member.status === 'Assigned').length} currently assigned`} icon={Users} tone="violet" href="/learning/faculty" />
+          <MetricCard label="Avg. attendance" value={`${averageAttendance}%`} detail={`${lowAttendanceCount} students below 80%`} icon={CheckCircle2} tone="blue" href="/learning/attendance" />
+          <MetricCard label="Avg. progress" value={`${averageProgress}%`} detail={`${dueAssessments.length} assessments due`} icon={Target} tone="amber" href="/learning/progress" />
+          <MetricCard label="Placements" value={offersReceived} detail={`${placementInProgress} applications in progress`} icon={GraduationCap} tone="emerald" href="/learning/completion-reports" />
         </div>
 
-        <Panel title="Quick actions" subtitle="Open the most common LMS workflows">
+        <div className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
+          <Panel title="Enrollment trend" subtitle="Learners added across the last six months">
+            <div className="h-64 p-4 sm:p-5">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={demoEnrollmentTrend} margin={{ left: -18, right: 8, top: 8, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="lmsEnrollmentFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.22} />
+                      <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" vertical={false} />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                  <Tooltip contentStyle={{ borderRadius: 10, borderColor: '#e2e8f0', fontSize: 12 }} />
+                  <Area type="monotone" dataKey="students" name="Learners" stroke="#7c3aed" strokeWidth={2} fill="url(#lmsEnrollmentFill)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </Panel>
+          <Panel title="Learning outcomes" subtitle="Current learner distribution">
+            <div className="flex items-center gap-5 p-4 sm:p-5">
+              <div className="h-36 w-36 shrink-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={demoLearningOutcomes} dataKey="value" nameKey="label" innerRadius={38} outerRadius={58} paddingAngle={3} strokeWidth={0}>
+                      {['#7c3aed', '#f59e0b', '#10b981'].map((fill) => <Cell key={fill} fill={fill} />)}
+                    </Pie>
+                    <Tooltip contentStyle={{ borderRadius: 10, borderColor: '#e2e8f0', fontSize: 12 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="min-w-0 space-y-3">
+                {demoLearningOutcomes.map((outcome, index) => (
+                  <div key={outcome.label} className="flex items-center justify-between gap-4 text-xs">
+                    <span className="flex min-w-0 items-center gap-2 text-slate-600 dark:text-slate-300"><span className={`h-2 w-2 shrink-0 rounded-full ${['bg-violet-600', 'bg-amber-500', 'bg-emerald-500'][index]}`} />{outcome.label}</span>
+                    <strong className="text-slate-900 dark:text-white">{outcome.value}%</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Panel>
+        </div>
+
+        <Panel title="Workspace shortcuts" subtitle="Open the detailed LMS workspaces">
           <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-4">
             {[
-              { title: 'Create batch', detail: 'Set up a new learner cohort', icon: CalendarDays, href: undefined, action: openBatchDialog },
-              { title: 'Enroll student', detail: 'Add a learner to a batch', icon: Users, href: undefined, action: openStudentDialog },
-              { title: 'Mark attendance', detail: 'Open the batch register', icon: ClipboardCheck, href: '/learning/attendance', action: undefined },
-              { title: 'Create assessment', detail: 'Schedule a batch assessment', icon: Target, href: undefined, action: openAssessmentDialog },
+              { title: 'Students', detail: 'Review learner records and enrollment', icon: Users, href: '/learning/students' },
+              { title: 'Attendance', detail: 'Review the batch attendance register', icon: ClipboardCheck, href: '/learning/attendance' },
+              { title: 'Assessments', detail: 'Review assessment schedules and status', icon: Target, href: '/learning/assessments' },
+              { title: 'Reports', detail: 'Review completion and performance reports', icon: BarChart3, href: '/learning/completion-reports' },
             ].map((item) => {
               const Icon = item.icon;
               const content = (
@@ -752,11 +830,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
                   <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-slate-400" />
                 </>
               );
-              return item.href ? (
-                <Link key={item.title} href={item.href} onClick={item.action} className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-violet-300 hover:bg-violet-50/40 dark:border-slate-800 dark:hover:border-violet-800 dark:hover:bg-violet-950/30">{content}</Link>
-              ) : (
-                <button key={item.title} type="button" onClick={item.action} className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 text-left transition hover:border-violet-300 hover:bg-violet-50/40 dark:border-slate-800 dark:hover:border-violet-800 dark:hover:bg-violet-950/30">{content}</button>
-              );
+              return <Link key={item.title} href={item.href} className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-violet-300 hover:bg-violet-50/40 dark:border-slate-800 dark:hover:border-violet-800 dark:hover:bg-violet-950/30">{content}</Link>;
             })}
           </div>
         </Panel>
@@ -808,6 +882,14 @@ function LearningManagement({ pathname }: { pathname: string }) {
             </div>
           </Panel>
         </div>
+        </>}
+        {activeLmsTab === 'programmes' && renderProgrammes()}
+        {activeLmsTab === 'courses' && renderCourses()}
+        {activeLmsTab === 'batches' && renderBatches()}
+        {activeLmsTab === 'students' && renderStudents()}
+        {activeLmsTab === 'faculty' && renderFaculty()}
+        {activeLmsTab === 'assessments' && renderAssessments()}
+        {activeLmsTab === 'reports' && renderCompletionReports()}
       </LmsShell>
     );
   }
@@ -838,6 +920,13 @@ function LearningManagement({ pathname }: { pathname: string }) {
                         <BookOpen className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
                         <Link
                           href={{ pathname: '/learning/courses', query: { provider: provider.name, programme: programme.name } }}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            setSelectedCourseSlug(null);
+                            setProviderFilter(provider.name);
+                            setProgrammeFilter(programme.name);
+                            setActiveLmsTab('courses');
+                          }}
                           className="text-xs font-semibold text-slate-800 hover:text-violet-700 dark:text-slate-100 dark:hover:text-violet-300"
                         >
                           {programme.name}
@@ -848,7 +937,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
                           const item = allCourses.find((entry) => entry.course === course);
                           return (
                             <li key={course} className="list-disc text-xs leading-5 text-slate-600 marker:text-violet-400 dark:text-slate-300">
-                              <Link href={`/learning/courses/${item?.slug ?? slugifyCourse(course)}`} className="hover:text-violet-700 dark:hover:text-violet-300">{course}</Link>
+                              <Link href={`/learning/courses/${item?.slug ?? slugifyCourse(course)}`} onClick={(event) => { event.preventDefault(); setSelectedCourseSlug(item?.slug ?? slugifyCourse(course)); setActiveLmsTab('courses'); }} className="hover:text-violet-700 dark:hover:text-violet-300">{course}</Link>
                             </li>
                           );
                         })}
@@ -869,6 +958,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
   }
 
   function renderCourses() {
+    if (inlineCourse) return renderCourseDetails(inlineCourse);
     return (
       <LmsShell title="Courses" description={pageDetails.courses.description}>
         <Panel title="Course catalogue" subtitle={`${visibleCourses.length} supplied courses · demo catalogue`}>
@@ -911,7 +1001,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
           {visibleCourses.length ? (
             <div className="grid gap-4 border-t border-slate-100 p-4 dark:border-slate-800 sm:grid-cols-2 sm:p-5">
               {visibleCourses.map((item) => (
-                <CourseCatalogueCard key={item.slug} course={item} />
+                <CourseCatalogueCard key={item.slug} course={item} onOpen={() => { setSelectedCourseSlug(item.slug); setActiveLmsTab('courses'); }} />
               ))}
             </div>
           ) : (
@@ -928,37 +1018,16 @@ function LearningManagement({ pathname }: { pathname: string }) {
     );
   }
 
-  function renderCourseDetails() {
-    if (!detailCourse) return <LmsShell title="Course not found" description="This course is not part of the supplied demo catalogue."><EmptyState title="Course not found" description="Return to the course catalogue to select a listed course." /></LmsShell>;
-    const courseBatches = batches.filter((batch) => batch.courseSlug === detailCourse.slug);
+  function renderCourseDetails(courseOverride = detailCourse) {
+    if (!courseOverride) return <LmsShell title="Course not found" description="This course is not part of the supplied demo catalogue."><EmptyState title="Course not found" description="Return to the course catalogue to select a listed course." /></LmsShell>;
+    const courseBatches = batches.filter((batch) => batch.courseSlug === courseOverride?.slug);
     return (
       <LmsShell
-        title={detailCourse.course}
-        description={`${detailCourse.provider} · ${detailCourse.programme}. Course detail preview; additional course information will be defined in a later phase.`}
-        action={<Link href="/learning/courses" className={secondaryButtonClass}><ArrowLeft className="h-3.5 w-3.5" /> Course catalogue</Link>}
+        title={courseOverride.course}
+        description="Review available batches and assigned trainers for this course."
+        action={<button type="button" onClick={() => { setSelectedCourseSlug(null); setActiveLmsTab('courses'); }} className={secondaryButtonClass}><ArrowLeft className="h-3.5 w-3.5" /> Course catalogue</button>}
       >
-        <div className="grid gap-4 sm:grid-cols-3">
-          <MetricCard label="Provider" value={detailCourse.provider} detail="Supplied catalogue category" icon={GraduationCap} />
-          <MetricCard label="Programme" value={detailCourse.programme} detail="Supplied programme category" icon={BookOpen} tone="blue" />
-          <MetricCard label="Demo batches" value={courseBatches.length} detail="Temporary sample records only" icon={CalendarDays} tone="emerald" />
-        </div>
-        <div className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
-          <Panel title="Course overview" subtitle="Catalogue information">
-            <div className="space-y-4 p-5">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Provider</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{detailCourse.provider}</p>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Programme / specialization</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{detailCourse.programme}</p>
-              </div>
-              <p className="rounded-xl bg-slate-50 p-4 text-xs leading-5 text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
-                This screen contains only the supplied catalogue details. Syllabus, pricing, delivery commitments, and enrollment rules are not represented.
-              </p>
-            </div>
-          </Panel>
-          <Panel title="Available batches" subtitle="Select a batch to review its details and activity.">
+        <Panel title="Available batches" subtitle="Batches and assigned trainers for this course.">
             {courseBatches.length ? (
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {courseBatches.map((batch) => (
@@ -970,6 +1039,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
                     <span>
                       <span className="block text-xs font-semibold text-slate-900 dark:text-white">{batch.name}</span>
                       <span className="mt-1 block text-[10px] text-slate-500">{batch.id} · {batch.delivery}</span>
+                      <span className="mt-2 block text-[11px] font-medium text-slate-700 dark:text-slate-200">Trainer: {faculty.find((member) => member.id === batch.facultyId)?.name ?? 'Unassigned'}</span>
                     </span>
                     <span className="flex shrink-0 flex-col items-end gap-2">
                       <StatusBadge value={batch.status} />
@@ -984,15 +1054,23 @@ function LearningManagement({ pathname }: { pathname: string }) {
             ) : (
               <div className="p-5"><EmptyState title="No demo batches" description="There are no sample batches linked to this course yet." /></div>
             )}
-          </Panel>
-        </div>
+        </Panel>
       </LmsShell>
     );
   }
 
   function renderBatches() {
     return (
-      <LmsShell title="Batches" description={pageDetails.batches.description} action={<button type="button" className={buttonClass} onClick={openBatchDialog}><Plus className="h-4 w-4" /> Create demo batch</button>}>
+      <LmsShell
+        title="Batches"
+        description={pageDetails.batches.description}
+        action={
+          <div className="flex flex-wrap gap-2">
+            <Link href="/learning/dashboard" className={secondaryButtonClass}><ArrowLeft className="h-3.5 w-3.5" /> LMS menu</Link>
+            <button type="button" className={buttonClass} onClick={openBatchDialog}><Plus className="h-4 w-4" /> Create demo batch</button>
+          </div>
+        }
+      >
         <div className="grid gap-3 sm:grid-cols-3">
           <MetricCard label="Total batches" value={batches.length} detail="Sample cohorts in this preview" icon={CalendarDays} />
           <MetricCard label="Active" value={batches.filter((batch) => batch.status === 'Active').length} detail="Current sample cohorts" icon={CheckCircle2} tone="emerald" />
@@ -1061,7 +1139,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
       <LmsShell
         title={detailBatch.name}
         description={`${detailBatch.course} · ${detailBatch.provider}`}
-        action={<Link href="/learning/batches" className={secondaryButtonClass}><ArrowLeft className="h-3.5 w-3.5" /> All batches</Link>}
+        action={<Link href={`/learning/courses/${detailBatch.courseSlug}`} className={secondaryButtonClass}><ArrowLeft className="h-3.5 w-3.5" /> Available batches</Link>}
       >
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex gap-1 overflow-x-auto border-b border-slate-100 p-2 dark:border-slate-800">
@@ -1476,7 +1554,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
   function renderFallback() {
     return (
       <LmsShell title={pageTitle} description={pageDescription}>
-        <EmptyState title="Learning workspace" description="This page is ready for its detailed workflow. Use the Learning Management menu to explore the current programme, batch, faculty, and student previews." />
+        <EmptyState title="LMS workspace" description="This page is ready for its detailed workflow. Use the LMS Dashboard to explore the programme, batch, faculty, and student previews." />
       </LmsShell>
     );
   }

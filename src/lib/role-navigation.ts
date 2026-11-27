@@ -110,15 +110,8 @@ function allowedLabelsForSection(
       return ['Tasks', 'Projects', 'Meetings', 'Daily Reports', 'Attendance', 'Leave Management'];
     case 'Department Workspaces':
       return departmentWorkspace ? [departmentWorkspace] : [];
-    case 'Learning Management':
-      if (persona === 'founder') return section.entries.map((entry) => entry.label);
-      if (persona === 'faculty') {
-        return ['LMS Dashboard', 'Courses', 'Batches', 'Students', 'Batch Attendance', 'Assessments', 'Student Progress', 'Completion Reports'];
-      }
-      if (/learning|education|training|lms/.test(responsibilities)) {
-        return ['LMS Dashboard', 'Programmes', 'Courses', 'Batches', 'Faculty', 'Students', 'Enrollment', 'Batch Attendance', 'Assessments', 'Student Progress', 'Completion Reports'];
-      }
-      return persona === 'employee' || persona === 'intern' ? ['Courses'] : [];
+    case 'LMS Dashboard':
+      return ['Overview'];
     case 'Events & Network':
       if (persona === 'founder') return section.entries.map((entry) => entry.label);
       if (departmentWorkspace === 'Sales Department') return section.entries.map((entry) => entry.label);
@@ -149,10 +142,12 @@ export function getRoleNavigationSections(user: CurrentEmployee | null): Navigat
   const departmentWorkspace = getDepartmentWorkspace(user);
 
   return navigationSections.flatMap((section) => {
+    if (section.href) return [{ ...section }];
     const allowedLabels = allowedLabelsForSection(section, persona, user, departmentWorkspace);
     const entries = section.entries.flatMap((entry): NavigationEntry[] => {
       if (section.label === 'Department Workspaces') {
-        if (entry.label !== departmentWorkspace || !entry.children) return [];
+        if (entry.label !== departmentWorkspace) return [];
+        if (!entry.children) return entry.href ? [entry] : [];
         const allowedChildren = getAllowedWorkspaceItems(persona, entry.label);
         const children = allowedChildren
           ? entry.children.filter((child) => allowedChildren.includes(child.label))

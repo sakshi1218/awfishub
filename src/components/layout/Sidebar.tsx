@@ -270,6 +270,26 @@ export default function Sidebar({
 
         <nav aria-label="Main navigation" className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
           {visibleNavigationSections.map((section) => {
+            if (section.href) {
+              const active = isPathActive(pathname, section.href);
+              const Icon = iconByName[section.icon ?? ''] ?? LayoutDashboard;
+              return (
+                <Link
+                  key={section.label}
+                  href={section.href}
+                  onClick={() => setMobileOpen(false)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs transition-colors ${
+                    active
+                      ? 'bg-indigo-600 font-semibold text-white shadow-sm shadow-indigo-600/20'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span className="truncate">{section.label}</span>}
+                </Link>
+              );
+            }
             const expanded = Boolean(openSections[section.label]);
             const sectionActive = section.entries.some((entry) => {
               if (isPathActive(pathname, entry.href)) return true;
