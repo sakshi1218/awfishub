@@ -54,6 +54,22 @@ export default function WorkspacesPage() {
       (d.classification !== 'Chairperson Confidential' || isChairperson) &&
       (d.owner === deptMeta.leadName || d.category === 'Course documents')
   );
+  const canViewCounselingNotes =
+    isChairperson ||
+    (currentRole === 'DIRECTOR' &&
+      getDirectorAllowedDepartments(currentEmployee.id).includes('Counselor')) ||
+    (currentEmployee.department === 'Counselor' &&
+      counselingSessions.some((session) => session.counselorName === currentEmployee.name));
+  const authorizedCounselingSessions = canViewCounselingNotes
+    ? counselingSessions.filter(
+        (session) =>
+          isChairperson ||
+          (currentRole === 'DIRECTOR' &&
+            getDirectorAllowedDepartments(currentEmployee.id).includes('Counselor')) ||
+          (currentEmployee.department === 'Counselor' &&
+            session.counselorName === currentEmployee.name)
+      )
+    : [];
 
   return (
     <div className="space-y-6">
@@ -245,7 +261,11 @@ export default function WorkspacesPage() {
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                 <Lock className="w-4 h-4 text-amber-500" /> Counselor Sessions & Restricted Notes
               </h3>
-              {counselingSessions.map((c) => (
+              {authorizedCounselingSessions.length === 0 ? (
+                <p className="text-xs text-slate-500">
+                  No counseling sessions are assigned to your authorized workspace.
+                </p>
+              ) : authorizedCounselingSessions.map((c) => (
                 <div key={c.id} className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 text-xs space-y-1">
                   <div className="flex justify-between">
                     <span className="font-bold text-slate-900 dark:text-white">{c.studentName} ({c.phone})</span>
