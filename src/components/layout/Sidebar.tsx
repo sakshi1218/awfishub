@@ -59,6 +59,7 @@ export default function Sidebar({
     { label: 'Task Management', href: '/tasks', icon: CheckSquare, visible: isChairperson || isDirector || isOperationHead },
     { label: 'Workspaces', href: '/workspaces', icon: Layers, visible: true },
     { label: 'Employees', href: '/employees', icon: Users, visible: true },
+    { label: 'Department Dashboard', href: '/departments', icon: Building2, visible: true },
     { label: 'Organization Chart', href: '/organization', icon: GitFork, visible: true },
     { label: 'Campaigns', href: '/campaigns', icon: Megaphone, visible: true },
     { label: 'Media', href: '/media', icon: Radio, visible: true },

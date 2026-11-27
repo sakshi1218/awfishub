@@ -44,6 +44,7 @@ export interface Employee {
   employmentStatus: EmploymentStatus;
   avatarInitials: string;
   avatarColor: string;
+  avatarUrl?: string;
   bio: string;
   responsibilities: string[];
   skills: string[];
