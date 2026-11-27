@@ -1,8 +1,18 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { TrendingUp, Search, ChevronRight, ArrowLeft } from 'lucide-react';
-import { PageHeader } from '@/components/shared/PageHeader';
+import {
+  TrendingUp,
+  LayoutGrid,
+  Building2,
+  MapPin,
+  GraduationCap,
+  Link2,
+  Users,
+  FileCheck2,
+  Clock,
+  ChevronDown,
+} from 'lucide-react';
 import {
   mockColleges,
   mockCollegeVisits,
@@ -26,29 +36,83 @@ export type SalesTabType =
   | 'PERFORMANCE'
   | 'COLLEGE';
 
-type SectionKey = 'COLLEGES' | 'VISITS' | 'FDP' | 'TIEUPS' | 'CRM' | 'AGREEMENTS' | 'FOLLOWUPS';
+type ViewKey = 'home' | 'colleges' | 'visits' | 'fdp' | 'ties' | 'clients' | 'agree' | 'follow';
 
-const STRIPE_COLORS: Record<SectionKey, string> = {
-  COLLEGES: 'border-l-violet-600',
-  VISITS: 'border-l-pink-500',
-  FDP: 'border-l-blue-600',
-  TIEUPS: 'border-l-emerald-600',
-  CRM: 'border-l-amber-600',
-  AGREEMENTS: 'border-l-indigo-600',
-  FOLLOWUPS: 'border-l-rose-600',
-};
+const SECTIONS: {
+  key: Exclude<ViewKey, 'home'>;
+  label: string;
+  desc: string;
+  icon: React.ElementType;
+  tintBg: string;
+  tintText: string;
+  hoverBorder: string;
+}[] = [
+  {
+    key: 'colleges',
+    label: 'Colleges',
+    desc: 'Colleges we work with',
+    icon: Building2,
+    tintBg: 'bg-[#6d3fe0]/15 dark:bg-[#a98bff]/15',
+    tintText: 'text-[#6d3fe0] dark:text-[#a98bff]',
+    hoverBorder: 'hover:border-[#6d3fe0] dark:hover:border-[#a98bff]',
+  },
+  {
+    key: 'visits',
+    label: 'Visits',
+    desc: 'Times we visited a college',
+    icon: MapPin,
+    tintBg: 'bg-[#c026d3]/15 dark:bg-[#e879f9]/15',
+    tintText: 'text-[#c026d3] dark:text-[#e879f9]',
+    hoverBorder: 'hover:border-[#c026d3] dark:hover:border-[#e879f9]',
+  },
+  {
+    key: 'fdp',
+    label: 'FDP sessions',
+    desc: 'Training sessions for faculty',
+    icon: GraduationCap,
+    tintBg: 'bg-[#2f6fed]/15 dark:bg-[#7aa5ff]/15',
+    tintText: 'text-[#2f6fed] dark:text-[#7aa5ff]',
+    hoverBorder: 'hover:border-[#2f6fed] dark:hover:border-[#7aa5ff]',
+  },
+  {
+    key: 'ties',
+    label: 'Tie-ups',
+    desc: 'Partnerships with colleges',
+    icon: Link2,
+    tintBg: 'bg-[#0f8f55]/15 dark:bg-[#47cd89]/15',
+    tintText: 'text-[#0f8f55] dark:text-[#47cd89]',
+    hoverBorder: 'hover:border-[#0f8f55] dark:hover:border-[#47cd89]',
+  },
+  {
+    key: 'clients',
+    label: 'Clients',
+    desc: 'People who want to know more',
+    icon: Users,
+    tintBg: 'bg-[#c27803]/15 dark:bg-[#fdb022]/15',
+    tintText: 'text-[#c27803] dark:text-[#fdb022]',
+    hoverBorder: 'hover:border-[#c27803] dark:hover:border-[#fdb022]',
+  },
+  {
+    key: 'agree',
+    label: 'Agreements',
+    desc: 'Signed MoUs and end dates',
+    icon: FileCheck2,
+    tintBg: 'bg-[#4f46e5]/15 dark:bg-[#a5a0ff]/15',
+    tintText: 'text-[#4f46e5] dark:text-[#a5a0ff]',
+    hoverBorder: 'hover:border-[#4f46e5] dark:hover:border-[#a5a0ff]',
+  },
+  {
+    key: 'follow',
+    label: 'Follow-ups',
+    desc: 'Tasks to do next',
+    icon: Clock,
+    tintBg: 'bg-[#d9382b]/15 dark:bg-[#ff8a80]/15',
+    tintText: 'text-[#d9382b] dark:text-[#ff8a80]',
+    hoverBorder: 'hover:border-[#d9382b] dark:hover:border-[#ff8a80]',
+  },
+];
 
-const ACTIVE_OUTLINE: Record<SectionKey, string> = {
-  COLLEGES: 'ring-2 ring-violet-600 dark:ring-violet-400',
-  VISITS: 'ring-2 ring-pink-500 dark:ring-pink-400',
-  FDP: 'ring-2 ring-blue-600 dark:ring-blue-400',
-  TIEUPS: 'ring-2 ring-emerald-600 dark:ring-emerald-400',
-  CRM: 'ring-2 ring-amber-500 dark:ring-amber-400',
-  AGREEMENTS: 'ring-2 ring-indigo-600 dark:ring-indigo-400',
-  FOLLOWUPS: 'ring-2 ring-rose-600 dark:ring-rose-400',
-};
-
-function getBadgeClass(status: string): string {
+function getPillClass(status: string): string {
   const s = status.toLowerCase();
   if (
     s === 'active' ||
@@ -60,7 +124,7 @@ function getBadgeClass(status: string): string {
     s === 'won' ||
     s === 'tie-up completed'
   ) {
-    return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300';
+    return 'bg-[#dcfae6] text-[#067647] dark:bg-[#0b3a27] dark:text-[#47cd89]';
   }
   if (
     s === 'overdue' ||
@@ -70,23 +134,23 @@ function getBadgeClass(status: string): string {
     s === 'lost' ||
     s === 'not interested'
   ) {
-    return 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300';
+    return 'bg-[#fee4e2] text-[#d92d20] dark:bg-[#4a1d1a] dark:text-[#ff8a80]';
   }
   if (
     s === 'pitched' ||
     s === 'negotiating' ||
     s === 'under negotiation' ||
     s === 'negotiation' ||
-    s === 'meeting scheduled' ||
     s === 'meeting set' ||
-    s === 'under review' ||
-    s === 'discussion ongoing' ||
+    s === 'meeting scheduled' ||
+    s === 'pitch requested' ||
+    s === 'proposal requested' ||
     s === 'tie-up in discussion' ||
-    s === 'proposal shared'
+    s === 'discussion ongoing'
   ) {
-    return 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300';
+    return 'bg-[#d1e9ff] text-[#175cd3] dark:bg-[#15304f] dark:text-[#84caff]';
   }
-  return 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300';
+  return 'bg-[#fef0c7] text-[#b54708] dark:bg-[#47310b] dark:text-[#fdb022]';
 }
 
 function formatDateShort(dateStr?: string) {
@@ -96,468 +160,498 @@ function formatDateShort(dateStr?: string) {
   return new Date(y, m - 1, d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
-interface RecordCardItem {
+interface CardRecord {
   id: string;
-  top: string;
   title: string;
+  subtitle: string;
   status: string;
   canMarkDone?: boolean;
   details: [string, string][];
 }
 
 export function SalesView({ defaultTab = 'DASHBOARD' }: { defaultTab?: SalesTabType }) {
-  const normalizeTab = (t: SalesTabType): 'DASHBOARD' | SectionKey => {
-    if (t === 'PERFORMANCE' || t === 'COLLEGE') return 'DASHBOARD';
-    return t;
+  const mapInitialView = (t: SalesTabType): ViewKey => {
+    if (t === 'COLLEGES') return 'colleges';
+    if (t === 'VISITS') return 'visits';
+    if (t === 'FDP') return 'fdp';
+    if (t === 'TIEUPS') return 'ties';
+    if (t === 'CRM') return 'clients';
+    if (t === 'AGREEMENTS') return 'agree';
+    if (t === 'FOLLOWUPS') return 'follow';
+    return 'home';
   };
 
-  const [activeView, setActiveView] = useState<'DASHBOARD' | SectionKey>(() => normalizeTab(defaultTab));
-  const [followUps, setFollowUps] = useState<FollowUp[]>(mockSalesFollowUps);
-  const [search, setSearch] = useState('');
+  const [view, setView] = useState<ViewKey>(() => mapInitialView(defaultTab));
+  const [query, setQuery] = useState('');
   const [openIds, setOpenIds] = useState<Record<string, boolean>>({});
+  const [followUps, setFollowUps] = useState<FollowUp[]>(mockSalesFollowUps);
 
-  const markFollowUpDone = (id: string) => {
+  const today = '2026-11-26';
+
+  const isFollowUpOverdue = (f: FollowUp) =>
+    f.status !== 'Completed' && (f.status === 'Overdue' || f.followUpDate < today);
+
+  const pendingFollowUps = useMemo(
+    () => followUps.filter((f) => f.status !== 'Completed'),
+    [followUps]
+  );
+
+  const overdueCount = useMemo(
+    () => pendingFollowUps.filter((f) => isFollowUpOverdue(f)).length,
+    [pendingFollowUps]
+  );
+
+  const nextThreeFollowUps = useMemo(() => {
+    return [...pendingFollowUps]
+      .sort((a, b) => a.followUpDate.localeCompare(b.followUpDate))
+      .slice(0, 3);
+  }, [pendingFollowUps]);
+
+  const markDone = (id: string) => {
     setFollowUps((prev) =>
       prev.map((f) => (f.id === id ? { ...f, status: 'Completed' } : f))
     );
   };
 
-  const toggleOpen = (id: string) => {
+  const toggleCard = (id: string) => {
     setOpenIds((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Live summary counts calculated directly from data
-  const approvedFdpCount = mockFDPSessions.filter((f) => f.status === 'Approved').length;
-  const activeTieupsCount = mockTieups.filter((t) => t.status === 'Active' || t.status === 'Signed').length;
-  const signedAgreementsCount = mockAgreements.filter((a) => a.status === 'Active' || a.status === 'Signed').length;
-  const expiringAgreementsCount = mockAgreements.filter((a) => a.status === 'Expiring Soon').length;
-  const pendingFollowUps = useMemo(
-    () => followUps.filter((f) => f.status === 'Pending' || f.status === 'Overdue' || f.status === 'Rescheduled'),
-    [followUps]
-  );
-  const overdueFollowUpsCount = pendingFollowUps.filter((f) => f.status === 'Overdue').length;
+  const getCount = (key: Exclude<ViewKey, 'home'>): number => {
+    if (key === 'colleges') return mockColleges.length;
+    if (key === 'visits') return mockCollegeVisits.length;
+    if (key === 'fdp') return mockFDPSessions.length;
+    if (key === 'ties') return mockTieups.length;
+    if (key === 'clients') return mockInterestedClients.length;
+    if (key === 'agree') return mockAgreements.length;
+    return pendingFollowUps.length;
+  };
 
-  const summaryBoxes: {
-    key: SectionKey;
-    label: string;
-    value: number;
-    sub: string;
-    redSub?: boolean;
-  }[] = [
-    {
-      key: 'COLLEGES',
-      label: 'Total colleges',
-      value: mockColleges.length,
-      sub: 'Unified profiles',
-    },
-    {
-      key: 'VISITS',
-      label: 'College visits',
-      value: mockCollegeVisits.length,
-      sub: 'Logged field visits',
-    },
-    {
-      key: 'FDP',
-      label: 'FDP sessions',
-      value: mockFDPSessions.length,
-      sub: `${approvedFdpCount} approved`,
-    },
-    {
-      key: 'TIEUPS',
-      label: 'Active tie-ups',
-      value: activeTieupsCount,
-      sub: `${mockTieups.length} total partnerships`,
-    },
-    {
-      key: 'CRM',
-      label: 'Interested clients',
-      value: mockInterestedClients.length,
-      sub: 'In your pipeline',
-    },
-    {
-      key: 'AGREEMENTS',
-      label: 'Agreements signed',
-      value: signedAgreementsCount,
-      sub: `${expiringAgreementsCount} expiring soon`,
-    },
-    {
-      key: 'FOLLOWUPS',
-      label: 'Follow-ups pending',
-      value: pendingFollowUps.length,
-      sub: `${overdueFollowUpsCount} overdue`,
-      redSub: overdueFollowUpsCount > 0,
-    },
-  ];
+  const activeSectionMeta = SECTIONS.find((s) => s.key === view);
 
-  // Next 4 pending follow-ups for dashboard (oldest first)
-  const attentionFollowUps = useMemo(() => {
-    return [...pendingFollowUps]
-      .sort((a, b) => a.followUpDate.localeCompare(b.followUpDate))
-      .slice(0, 4);
-  }, [pendingFollowUps]);
-
-  const sectionData = useMemo((): { title: string; items: RecordCardItem[] } => {
-    const q = search.trim().toLowerCase();
-    const matches = (...vals: (string | undefined)[]) =>
+  const sectionRecords = useMemo((): CardRecord[] => {
+    const q = query.trim().toLowerCase();
+    const match = (...vals: (string | undefined)[]) =>
       !q || vals.some((v) => String(v || '').toLowerCase().includes(q));
 
-    if (activeView === 'COLLEGES') {
-      return {
-        title: 'Colleges',
-        items: mockColleges
-          .filter((c) => matches(c.name, c.location, c.tpoName, c.type))
-          .map((c) => ({
-            id: c.id,
-            top: c.location,
-            title: c.name,
-            status: c.type,
-            details: [
-              ['City', c.location],
-              ['Contact', c.tpoName],
-              ['Type', c.type],
-              ['Phone', c.tpoContact],
-              ['Affiliation', c.affiliation],
-            ],
-          })),
-      };
+    if (view === 'colleges') {
+      return mockColleges
+        .filter((c) => match(c.name, c.location, c.tpoName, c.type))
+        .map((c) => ({
+          id: c.id,
+          title: c.name,
+          subtitle: c.location,
+          status: c.type,
+          details: [
+            ['City', c.location],
+            ['Contact', c.tpoName],
+            ['Stage', c.type],
+            ['Phone', c.tpoContact],
+            ['Notes', `${c.affiliation}${c.principalName ? ` · Principal: ${c.principalName}` : ''}`],
+          ],
+        }));
     }
 
-    if (activeView === 'VISITS') {
-      return {
-        title: 'College visits',
-        items: mockCollegeVisits
-          .filter((v) => matches(v.collegeName, v.assignedEmployee, v.outcome, v.tpoName))
-          .map((v) => ({
-            id: v.id,
-            top: formatDateShort(v.visitDate),
-            title: v.collegeName,
-            status: v.outcome,
-            details: [
-              ['Date', formatDateShort(v.visitDate)],
-              ['Visited by', v.assignedEmployee],
-              ['Outcome', v.outcome],
-              ['Who they met', v.tpoName],
-              ['Notes', v.discussionNotes],
-              ['Next step', v.requirements || `Follow up on ${formatDateShort(v.followUpDate)}`],
-            ],
-          })),
-      };
+    if (view === 'visits') {
+      return mockCollegeVisits
+        .filter((v) => match(v.collegeName, v.assignedEmployee, v.outcome, v.tpoName))
+        .map((v) => ({
+          id: v.id,
+          title: v.collegeName,
+          subtitle: formatDateShort(v.visitDate),
+          status: v.outcome,
+          details: [
+            ['Date', formatDateShort(v.visitDate)],
+            ['Visited by', v.assignedEmployee],
+            ['Outcome', v.outcome],
+            ['Met with', v.tpoName],
+            ['Notes', v.discussionNotes],
+            ['Next step', v.requirements || `Follow up on ${formatDateShort(v.followUpDate)}`],
+          ],
+        }));
     }
 
-    if (activeView === 'FDP') {
-      return {
-        title: 'FDP sessions',
-        items: mockFDPSessions
-          .filter((f) => matches(f.sessionTitle, f.collegeName, f.status, f.assignedEmployee))
-          .map((f) => ({
-            id: f.id,
-            top: f.collegeName,
-            title: f.sessionTitle,
-            status: f.status,
-            details: [
-              ['College', f.collegeName],
-              ['Date', formatDateShort(f.actualDate || f.proposedDate)],
-              ['Status', f.status],
-              ['Faculty expected', `${f.expectedParticipants} faculty`],
-              ['Coordinator', f.assignedEmployee],
-              ['Details', f.meetingDetails || f.proposedOffering],
-            ],
-          })),
-      };
+    if (view === 'fdp') {
+      return mockFDPSessions
+        .filter((f) => match(f.sessionTitle, f.collegeName, f.status, f.assignedEmployee))
+        .map((f) => ({
+          id: f.id,
+          title: f.collegeName,
+          subtitle: f.sessionTitle,
+          status: f.status,
+          details: [
+            ['Topic', f.sessionTitle],
+            ['Date', formatDateShort(f.actualDate || f.proposedDate)],
+            ['Status', f.status],
+            ['Faculty expected', String(f.expectedParticipants)],
+            ['Coordinator', f.assignedEmployee],
+            ['Venue', f.meetingDetails || 'College seminar hall'],
+          ],
+        }));
     }
 
-    if (activeView === 'TIEUPS') {
-      return {
-        title: 'Tie-ups',
-        items: mockTieups
-          .filter((t) => matches(t.collegeName, t.partnershipType, t.assignedEmployee, t.status))
-          .map((t) => ({
-            id: t.id,
-            top: t.partnershipType,
-            title: t.collegeName,
-            status: t.status,
-            details: [
-              ['College', t.collegeName],
-              ['Type', t.partnershipType],
-              ['Owner', t.assignedEmployee],
-              ['Status', t.status],
-              ['Validity', t.validityStartDate && t.expiryDate ? `${t.validityStartDate} to ${t.expiryDate}` : 'In discussion'],
-              ['Scope', t.scopeOfCollaboration],
-              ['Next step', t.notes],
-            ],
-          })),
-      };
+    if (view === 'ties') {
+      return mockTieups
+        .filter((t) => match(t.collegeName, t.partnershipType, t.assignedEmployee, t.status))
+        .map((t) => ({
+          id: t.id,
+          title: t.collegeName,
+          subtitle: t.partnershipType,
+          status: t.status,
+          details: [
+            ['Type', t.partnershipType],
+            ['Owner', t.assignedEmployee],
+            ['Status', t.status],
+            ['Duration', t.validityStartDate && t.expiryDate ? `${t.validityStartDate} to ${t.expiryDate}` : '1 year'],
+            ['Students covered', t.scopeOfCollaboration],
+            ['Next step', t.notes],
+          ],
+        }));
     }
 
-    if (activeView === 'CRM') {
-      return {
-        title: 'Interested clients',
-        items: mockInterestedClients
-          .filter((c) => matches(c.clientName, c.stage, c.contactPerson, c.location))
-          .map((c) => ({
-            id: c.id,
-            top: c.interestedServices.join(', '),
-            title: c.clientName,
-            status: c.stage,
-            details: [
-              ['Organization', `${c.clientName} (${c.location})`],
-              ['Stage', c.stage],
-              ['Phone', c.phone],
-              ['Interested in', c.interestedServices.join(', ')],
-              ['Next follow-up', formatDateShort(c.nextFollowUpDate)],
-              ['Notes', c.requirementDetails],
-            ],
-          })),
-      };
+    if (view === 'clients') {
+      return mockInterestedClients
+        .filter((c) => match(c.contactPerson, c.clientName, c.stage, c.interestedServices.join(' ')))
+        .map((c) => ({
+          id: c.id,
+          title: c.contactPerson,
+          subtitle: c.clientName,
+          status: c.stage,
+          details: [
+            ['College', c.clientName],
+            ['Stage', c.stage],
+            ['Phone', c.phone],
+            ['Interested in', c.interestedServices.join(', ')],
+            ['Last contact', formatDateShort(c.dateAdded)],
+          ],
+        }));
     }
 
-    if (activeView === 'AGREEMENTS') {
-      return {
-        title: 'Agreements',
-        items: mockAgreements
-          .filter((a) => matches(a.title, a.collegeName, a.status, a.referenceNumber))
-          .map((a) => ({
-            id: a.id,
-            top: a.collegeName,
-            title: a.title,
-            status: a.status,
-            details: [
-              ['College', a.collegeName],
-              ['Signed on', formatDateShort(a.signingDate)],
-              ['Valid until', formatDateShort(a.expiryDate)],
-              ['Document', a.uploadedDoc || a.referenceNumber],
-              ['Notes', a.description],
-            ],
-          })),
-      };
+    if (view === 'agree') {
+      return mockAgreements
+        .filter((a) => match(a.collegeName, a.title, a.status, a.uploadedDoc))
+        .map((a) => ({
+          id: a.id,
+          title: a.collegeName,
+          subtitle: formatDateShort(a.signingDate),
+          status: a.status,
+          details: [
+            ['Signed on', formatDateShort(a.signingDate)],
+            ['Valid until', formatDateShort(a.expiryDate)],
+            ['Document', a.uploadedDoc || a.referenceNumber],
+            ['Renewal reminder', a.notes || 'Reminder 60 days before expiry'],
+          ],
+        }));
     }
 
-    // FOLLOWUPS
-    return {
-      title: 'Follow-ups',
-      items: [...followUps]
-        .sort((a, b) => a.followUpDate.localeCompare(b.followUpDate))
-        .filter((f) => matches(f.title, f.relatedCollege, f.assignedEmployee, f.status))
-        .map((f) => {
-          const isDone = f.status === 'Completed';
-          const badgeLabel = isDone ? 'Done' : f.status;
-          return {
-            id: f.id,
-            top: `${f.relatedCollege} · ${f.status === 'Overdue' ? 'Overdue' : `Due ${formatDateShort(f.followUpDate)}`}`,
-            title: f.title,
-            status: badgeLabel,
-            canMarkDone: !isDone,
-            details: [
-              ['College', f.relatedCollege],
-              ['Due date', f.status === 'Overdue' ? `Overdue (${formatDateShort(f.followUpDate)})` : formatDateShort(f.followUpDate)],
-              ['Owner', f.assignedEmployee],
-              ['Status', badgeLabel],
-              ['Notes', f.notes],
-            ],
-          };
-        }),
-    };
-  }, [activeView, search, followUps]);
+    // follow-ups
+    return [...followUps]
+      .sort((a, b) => {
+        const aDone = a.status === 'Completed' ? 1 : 0;
+        const bDone = b.status === 'Completed' ? 1 : 0;
+        return aDone - bDone || a.followUpDate.localeCompare(b.followUpDate);
+      })
+      .filter((f) => match(f.title, f.relatedCollege, f.assignedEmployee, f.status))
+      .map((f) => {
+        const isDone = f.status === 'Completed';
+        const overdue = isFollowUpOverdue(f);
+        const statusLabel = isDone ? 'Done' : overdue ? 'Overdue' : 'Pending';
+        return {
+          id: f.id,
+          title: f.title,
+          subtitle: f.relatedCollege,
+          status: statusLabel,
+          canMarkDone: !isDone,
+          details: [
+            ['Task', f.title],
+            ['College', f.relatedCollege],
+            ['Due date', formatDateShort(f.followUpDate)],
+            ['Owner', f.assignedEmployee],
+            ['Status', statusLabel],
+            ['Notes', f.notes],
+          ],
+        };
+      });
+  }, [view, query, followUps]);
+
+  const navigateTo = (nextView: ViewKey) => {
+    setView(nextView);
+    setQuery('');
+  };
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Sales Management"
-        subtitle="College visits, FDP sessions, tie-ups, clients, agreements and follow-ups in one place."
-        icon={TrendingUp}
-        badge="Sales CRM"
-      />
+    <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-0 rounded-2xl overflow-hidden border border-[#e4e7ec] dark:border-[#2a3040] bg-[#f6f7fb] dark:bg-[#0f1218] min-h-[78vh]">
+      {/* Left Menu (260px sticky on desktop, 2-col button grid under 768px) */}
+      <aside className="bg-white dark:bg-[#181c25] border-b md:border-b-0 md:border-r border-[#e4e7ec] dark:border-[#2a3040] p-4 md:p-5 md:sticky md:top-0 md:self-start md:h-[calc(100vh-5rem)] md:overflow-y-auto">
+        <div className="flex items-center gap-3 px-2 pb-5">
+          <div className="w-10 h-10 rounded-xl bg-[#5b3df5] text-white grid place-items-center shrink-0">
+            <TrendingUp className="w-5 h-5" />
+          </div>
+          <div className="leading-tight">
+            <b className="block text-sm font-bold text-[#101828] dark:text-[#eef0f5]">Sales Management</b>
+            <small className="text-xs text-[#667085] dark:text-[#98a2b3]">Colleges and clients</small>
+          </div>
+        </div>
 
-      {/* Seven Summary Boxes — shown identically on every page */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3" role="navigation" aria-label="Sales summary navigation">
-        {summaryBoxes.map((box) => {
-          const isActive = activeView === box.key;
-          return (
-            <button
-              key={box.key}
-              type="button"
-              onClick={() => {
-                setActiveView(box.key);
-                setSearch('');
-              }}
-              aria-pressed={isActive}
-              className={`text-left p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 ${STRIPE_COLORS[box.key]} shadow-sm cursor-pointer select-none transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2 ${
-                isActive ? ACTIVE_OUTLINE[box.key] : ''
-              }`}
-            >
-              <span className="block text-xs font-semibold text-slate-500 dark:text-slate-400">
-                {box.label}
-              </span>
-              <span className="block text-2xl font-bold text-slate-900 dark:text-white mt-1 tabular-nums">
-                {box.value}
-              </span>
-              <span
-                className={`block text-[11px] mt-0.5 ${
-                  box.redSub
-                    ? 'text-rose-600 dark:text-rose-400 font-semibold'
-                    : 'text-slate-400 dark:text-slate-500'
+        <div className="text-[11px] font-semibold text-[#667085] dark:text-[#98a2b3] tracking-wider uppercase px-2.5 pb-1.5">
+          Menu
+        </div>
+
+        <nav className="grid grid-cols-2 md:grid-cols-1 gap-1" aria-label="Sections">
+          <button
+            type="button"
+            onClick={() => navigateTo('home')}
+            aria-current={view === 'home' ? 'page' : undefined}
+            className={`flex items-center gap-2.5 w-full min-h-[42px] px-3 py-2 rounded-xl text-sm font-semibold text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b3df5] ${
+              view === 'home'
+                ? 'bg-[#efecff] text-[#5b3df5] dark:bg-[#26224a] dark:text-[#a99bff]'
+                : 'text-[#667085] dark:text-[#98a2b3] hover:bg-[#f6f7fb] dark:hover:bg-[#0f1218] hover:text-[#101828] dark:hover:text-[#eef0f5]'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4 shrink-0" />
+            <span className="truncate">Overview</span>
+          </button>
+
+          {SECTIONS.map((s) => {
+            const Icon = s.icon;
+            const isCurrent = view === s.key;
+            const countVal = getCount(s.key);
+            const showLateBadge = s.key === 'follow' && overdueCount > 0;
+
+            return (
+              <button
+                key={s.key}
+                type="button"
+                onClick={() => navigateTo(s.key)}
+                aria-current={isCurrent ? 'page' : undefined}
+                className={`flex items-center gap-2.5 w-full min-h-[42px] px-3 py-2 rounded-xl text-sm font-semibold text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b3df5] ${
+                  isCurrent
+                    ? 'bg-[#efecff] text-[#5b3df5] dark:bg-[#26224a] dark:text-[#a99bff]'
+                    : 'text-[#667085] dark:text-[#98a2b3] hover:bg-[#f6f7fb] dark:hover:bg-[#0f1218] hover:text-[#101828] dark:hover:text-[#eef0f5]'
                 }`}
               >
-                {box.sub}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="truncate">{s.label}</span>
+                <span
+                  className={`ml-auto text-xs font-semibold shrink-0 ${
+                    showLateBadge
+                      ? 'bg-[#fee4e2] text-[#d92d20] dark:bg-[#4a1d1a] dark:text-[#ff8a80] rounded-full px-2 py-0.5'
+                      : 'opacity-80'
+                  }`}
+                >
+                  {showLateBadge ? `${overdueCount} overdue` : countVal}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+      </aside>
 
-      {/* DASHBOARD VIEW */}
-      {activeView === 'DASHBOARD' && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Needs your attention</h2>
-
-          {attentionFollowUps.length === 0 ? (
-            <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 text-sm text-slate-500">
-              All caught up. No pending follow-ups.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {attentionFollowUps.map((f) => {
-                const overdue = f.status === 'Overdue';
-                return (
-                  <div
-                    key={f.id}
-                    className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 border-l-rose-600 shadow-sm flex flex-wrap items-center justify-between gap-3"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{f.relatedCollege}</p>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">{f.title}</p>
-                      <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        <span className={overdue ? 'text-rose-600 dark:text-rose-400 font-bold' : ''}>
-                          {overdue ? 'Overdue' : `Due ${formatDateShort(f.followUpDate)}`}
-                        </span>
-                        <span>Owner: {f.assignedEmployee}</span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => markFollowUpDone(f.id)}
-                      className="min-h-[40px] px-4 rounded-xl bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-xs font-semibold shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600"
-                    >
-                      Mark done
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
+      {/* Main Content */}
+      <main className="p-5 sm:p-8 max-w-[1100px] w-full">
+        {/* OVERVIEW PAGE */}
+        {view === 'home' && (
           <div>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveView('FOLLOWUPS');
-                setSearch('');
-              }}
-              className="min-h-[44px] px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-violet-400 text-sm font-semibold text-slate-700 dark:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600"
-            >
-              See all follow-ups
-            </button>
-          </div>
-        </div>
-      )}
+            <header>
+              <h1 className="text-2xl sm:text-[28px] font-bold tracking-tight text-[#101828] dark:text-[#eef0f5]">
+                Overview
+              </h1>
+              <p className="text-sm text-[#667085] dark:text-[#98a2b3] mt-1">
+                A quick look at your sales work. Start with the purple card.
+              </p>
+            </header>
 
-      {/* SECTION LIST VIEW */}
-      {activeView !== 'DASHBOARD' && (
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3 flex-wrap">
+            {/* Purple Start Here Card */}
+            <section className="mt-5 flex flex-wrap items-center justify-between gap-4 p-6 rounded-[18px] bg-gradient-to-br from-[#5b3df5] to-[#8a5cf6] text-white">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider opacity-85">Start here</span>
+                <h2 className="text-xl sm:text-2xl font-bold mt-1">
+                  {pendingFollowUps.length
+                    ? `You have ${pendingFollowUps.length} follow-up${pendingFollowUps.length === 1 ? '' : 's'} to do`
+                    : 'You’re all caught up'}
+                </h2>
+                <p className="text-sm opacity-90 mt-1">
+                  {overdueCount
+                    ? `${overdueCount === 1 ? '1 is' : `${overdueCount} are`} overdue. Do ${overdueCount === 1 ? 'that one' : 'those'} first.`
+                    : 'Nothing is overdue.'}
+                </p>
+              </div>
               <button
                 type="button"
-                onClick={() => {
-                  setActiveView('DASHBOARD');
-                  setSearch('');
-                }}
-                className="min-h-[44px] px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-violet-400 text-sm font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600"
+                onClick={() => navigateTo('follow')}
+                className="min-h-[44px] px-5 rounded-xl bg-white text-[#4a2fd6] font-semibold text-sm hover:bg-purple-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                <ArrowLeft className="w-4 h-4" />
-                Back to dashboard
+                Open follow-ups
               </button>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">{sectionData.title}</h2>
-            </div>
+            </section>
 
-            <div className="relative w-full sm:w-64">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search..."
-                aria-label="Search records"
-                className="w-full min-h-[44px] pl-10 pr-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-violet-600"
-              />
-            </div>
-          </div>
-
-          {sectionData.items.length === 0 ? (
-            <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 text-sm text-slate-500">
-              No records match your search.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {sectionData.items.map((item) => {
-                const isOpen = Boolean(openIds[item.id]);
-                return (
-                  <div
-                    key={item.id}
-                    className={`rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-l-4 ${STRIPE_COLORS[activeView]} shadow-sm overflow-hidden`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => toggleOpen(item.id)}
-                      aria-expanded={isOpen}
-                      className="w-full min-h-[64px] p-4 text-left flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-600"
+            {/* Next Up (3 most urgent pending follow-ups) */}
+            <h3 className="text-base font-bold text-[#101828] dark:text-[#eef0f5] mt-7 mb-3">Next up</h3>
+            <div className="grid gap-2.5">
+              {nextThreeFollowUps.length === 0 ? (
+                <div className="p-6 text-center rounded-2xl bg-white dark:bg-[#181c25] border border-[#e4e7ec] dark:border-[#2a3040] text-sm text-[#667085] dark:text-[#98a2b3]">
+                  Nothing waiting. Nice work.
+                </div>
+              ) : (
+                nextThreeFollowUps.map((f) => {
+                  const late = isFollowUpOverdue(f);
+                  return (
+                    <div
+                      key={f.id}
+                      className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl bg-white dark:bg-[#181c25] border border-[#e4e7ec] dark:border-[#2a3040] shadow-sm"
                     >
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{item.top}</p>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white mt-0.5 truncate">{item.title}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-[#101828] dark:text-[#eef0f5]">{f.title}</p>
+                        <p className="text-xs text-[#667085] dark:text-[#98a2b3] mt-0.5">
+                          {f.relatedCollege} · {f.assignedEmployee}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-2.5 shrink-0">
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${getBadgeClass(item.status)}`}>
-                          {item.status}
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span
+                          className={`text-xs ${
+                            late
+                              ? 'text-[#d92d20] dark:text-[#ff8a80] font-semibold'
+                              : 'text-[#667085] dark:text-[#98a2b3]'
+                          }`}
+                        >
+                          {late ? 'Overdue · ' : 'Due '}
+                          {formatDateShort(f.followUpDate)}
                         </span>
-                        <ChevronRight
-                          className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-90' : ''}`}
-                        />
+                        <button
+                          type="button"
+                          onClick={() => markDone(f.id)}
+                          className="min-h-[38px] px-3.5 rounded-xl border border-[#e4e7ec] dark:border-[#2a3040] bg-white dark:bg-[#181c25] hover:border-[#5b3df5] hover:text-[#5b3df5] text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b3df5]"
+                        >
+                          Mark done
+                        </button>
                       </div>
-                    </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
 
-                    {isOpen && (
-                      <div className="px-4 pb-4 pt-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/30 space-y-3">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-                          {item.details.map(([label, value]) => (
-                            <div key={label}>
-                              <span className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                                {label}
-                              </span>
-                              <span className="text-slate-800 dark:text-slate-200">{value}</span>
-                            </div>
-                          ))}
-                        </div>
-                        {item.canMarkDone && (
-                          <div className="flex justify-end">
-                            <button
-                              type="button"
-                              onClick={() => markFollowUpDone(item.id)}
-                              className="min-h-[40px] px-4 rounded-xl bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600"
-                            >
-                              Mark done
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+            {/* Browse by Topic (6 clickable tiles) */}
+            <h3 className="text-base font-bold text-[#101828] dark:text-[#eef0f5] mt-7 mb-3">Browse by topic</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {SECTIONS.filter((s) => s.key !== 'follow').map((s) => {
+                const Icon = s.icon;
+                return (
+                  <button
+                    key={s.key}
+                    type="button"
+                    onClick={() => navigateTo(s.key)}
+                    className={`text-left p-4.5 p-5 rounded-2xl bg-white dark:bg-[#181c25] border border-[#e4e7ec] dark:border-[#2a3040] ${s.hoverBorder} shadow-sm hover:-translate-y-0.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b3df5]`}
+                  >
+                    <span className={`w-10 h-10 rounded-xl grid place-items-center ${s.tintBg} ${s.tintText}`}>
+                      <Icon className="w-5 h-5" />
+                    </span>
+                    <strong className="block text-[30px] leading-tight font-bold text-[#101828] dark:text-[#eef0f5] mt-3.5 mb-0.5">
+                      {getCount(s.key)}
+                    </strong>
+                    <b className="block text-sm font-bold text-[#101828] dark:text-[#eef0f5]">{s.label}</b>
+                    <small className="block text-xs text-[#667085] dark:text-[#98a2b3] mt-0.5">{s.desc}</small>
+                  </button>
                 );
               })}
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+
+        {/* SECTION PAGES (all 7 share identical structure) */}
+        {view !== 'home' && activeSectionMeta && (
+          <div>
+            <header className="flex flex-wrap items-end justify-between gap-4 mb-5">
+              <div>
+                <h1 className="text-2xl sm:text-[28px] font-bold tracking-tight text-[#101828] dark:text-[#eef0f5]">
+                  {activeSectionMeta.label}
+                </h1>
+                <p className="text-sm text-[#667085] dark:text-[#98a2b3] mt-1">
+                  {activeSectionMeta.desc}. Click a card to see its details.
+                </p>
+              </div>
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={`Search ${activeSectionMeta.label.toLowerCase()}`}
+                aria-label="Search"
+                className="w-full sm:w-64 min-h-[42px] px-3.5 rounded-xl border border-[#e4e7ec] dark:border-[#2a3040] bg-white dark:bg-[#181c25] text-sm focus:outline-none focus:ring-2 focus:ring-[#5b3df5]"
+              />
+            </header>
+
+            {sectionRecords.length === 0 ? (
+              <div className="p-7 text-center rounded-2xl bg-white dark:bg-[#181c25] border border-[#e4e7ec] dark:border-[#2a3040] text-sm text-[#667085] dark:text-[#98a2b3]">
+                Nothing matches your search.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
+                {sectionRecords.map((item) => {
+                  const Icon = activeSectionMeta.icon;
+                  const isOpen = Boolean(openIds[item.id]);
+                  return (
+                    <article
+                      key={item.id}
+                      className={`rounded-2xl bg-white dark:bg-[#181c25] border border-[#e4e7ec] dark:border-[#2a3040] ${activeSectionMeta.hoverBorder} shadow-sm overflow-hidden`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleCard(item.id)}
+                        aria-expanded={isOpen}
+                        className="w-full min-h-[64px] p-3.5 text-left flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#5b3df5]"
+                      >
+                        <span className={`w-9 h-9 rounded-xl grid place-items-center shrink-0 ${activeSectionMeta.tintBg} ${activeSectionMeta.tintText}`}>
+                          <Icon className="w-4 h-4" />
+                        </span>
+                        <span className="flex-1 min-w-0">
+                          <b className="block text-sm font-bold text-[#101828] dark:text-[#eef0f5] leading-snug truncate">
+                            {item.title}
+                          </b>
+                          <small className="block text-xs text-[#667085] dark:text-[#98a2b3] truncate">
+                            {item.subtitle}
+                          </small>
+                        </span>
+                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${getPillClass(item.status)}`}>
+                          {item.status}
+                        </span>
+                        <ChevronDown
+                          className={`w-4 h-4 text-[#667085] dark:text-[#98a2b3] shrink-0 transition-transform ${
+                            isOpen ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+
+                      {isOpen && (
+                        <div className="px-4 pb-4 pt-3 border-t border-[#e4e7ec] dark:border-[#2a3040] text-xs">
+                          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+                            {item.details.map(([dt, dd]) => (
+                              <React.Fragment key={dt}>
+                                <dt className="text-[#667085] dark:text-[#98a2b3] font-medium">{dt}</dt>
+                                <dd className="text-[#101828] dark:text-[#eef0f5] m-0">{dd}</dd>
+                              </React.Fragment>
+                            ))}
+                          </dl>
+                          {item.canMarkDone && (
+                            <div className="mt-3.5">
+                              <button
+                                type="button"
+                                onClick={() => markDone(item.id)}
+                                className="min-h-[38px] px-3.5 rounded-xl border border-[#e4e7ec] dark:border-[#2a3040] bg-white dark:bg-[#181c25] hover:border-[#5b3df5] hover:text-[#5b3df5] text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b3df5]"
+                              >
+                                Mark done
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
