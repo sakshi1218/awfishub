@@ -1,17 +1,22 @@
 import Link from 'next/link';
-import { ArrowUpRight, BookOpen, Sparkles } from 'lucide-react';
+import { ArrowUpRight, BookOpen } from 'lucide-react';
 import type { allCourses } from '@/lib/course-catalogue';
 
 type CatalogueCourse = (typeof allCourses)[number];
 
-export default function CourseCatalogueCard({ course }: { course: CatalogueCourse }) {
+export default function CourseCatalogueCard({ course, onOpen }: { course: CatalogueCourse; onOpen?: () => void }) {
   const isMindLyft = course.provider === 'MindLyftAI';
   const providerLabel = isMindLyft ? 'MindLyft AI Programme' : `${course.provider} Programme`;
 
   return (
     <Link
       href={`/learning/courses/${course.slug}`}
-      className="group relative flex min-h-[320px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 pl-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 sm:p-5 sm:pl-6"
+      onClick={(event) => {
+        if (!onOpen) return;
+        event.preventDefault();
+        onOpen();
+      }}
+      className="group relative flex min-h-[220px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 pl-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 sm:p-5 sm:pl-6"
     >
       <span
         aria-hidden="true"
@@ -62,17 +67,8 @@ export default function CourseCatalogueCard({ course }: { course: CatalogueCours
         ))}
       </div>
 
-      <div className="mt-auto pt-4">
-        <div className="rounded-xl border border-violet-100 bg-violet-50/70 px-3 py-2.5 dark:border-violet-900/50 dark:bg-violet-950/30">
-          <p className="flex items-center gap-1.5 text-[10px] font-bold text-violet-800 dark:text-violet-300">
-            <Sparkles className="h-3 w-3" />
-            Course information
-          </p>
-          <p className="mt-1 text-[11px] leading-4 text-slate-600 dark:text-slate-300">
-            Duration, topic tags, and highlights are not included in the supplied catalogue yet.
-          </p>
-        </div>
-        <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-violet-700 group-hover:text-blue-700 dark:text-violet-300 dark:group-hover:text-blue-300">
+      <div className="mt-5">
+        <span className="inline-flex items-center gap-1 text-xs font-semibold text-violet-700 group-hover:text-blue-700 dark:text-violet-300 dark:group-hover:text-blue-300">
           View course details <ArrowUpRight className="h-3.5 w-3.5" />
         </span>
       </div>

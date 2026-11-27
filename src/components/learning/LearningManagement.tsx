@@ -9,6 +9,7 @@ import {
   ArrowRight,
   ArrowUp,
   ArrowUpRight,
+  BarChart3,
   BookOpen,
   CalendarDays,
   Check,
@@ -46,21 +47,35 @@ import {
 } from 'recharts';
 import { allCourses, courseCatalogue, slugifyCourse } from '@/lib/course-catalogue';
 import CourseCatalogueCard from '@/components/learning/CourseCatalogueCard';
+import DashboardTabs from '@/components/shared/DashboardTabs';
 import {
   demoAssessments,
   demoBatches,
   demoEnrollmentTrend,
   demoFaculty,
   demoLearningOutcomes,
+  demoPlacementApplications,
   demoStudents,
   type LearningAssessment,
   type LearningBatch,
   type LearningFaculty,
+  type LearningPlacementApplication,
   type LearningStudent,
 } from '@/lib/lms-demo-data';
 
-type ModalName = 'batch' | 'student' | 'assessment' | 'faculty' | null;
+type ModalName = 'batch' | 'student' | 'studentDetails' | 'assessment' | 'faculty' | null;
 type StudentSortKey = 'name' | 'progress' | 'attendance';
+
+const lmsDashboardTabs = [
+  { id: 'overview', label: 'Overview', icon: Users, href: '/learning/dashboard' },
+  { id: 'programmes', label: 'Programme Catalogue', icon: BookOpen, href: '/learning/programmes' },
+  { id: 'courses', label: 'Courses', icon: BookOpen, href: '/learning/courses' },
+  { id: 'batches', label: 'Batches', icon: CalendarDays, href: '/learning/batches' },
+  { id: 'students', label: 'Students', icon: Users, href: '/learning/students' },
+  { id: 'faculty', label: 'Faculty', icon: GraduationCap, href: '/learning/faculty' },
+  { id: 'assessments', label: 'Assessments & Progress', icon: ClipboardCheck, href: '/learning/assessments' },
+  { id: 'reports', label: 'Reports', icon: BarChart3, href: '/learning/completion-reports' },
+] as const;
 
 const pageDetails: Record<string, { title: string; description: string }> = {
   dashboard: {
@@ -121,6 +136,12 @@ const statusStyles: Record<string, string> = {
   Assigned: 'bg-violet-50 text-violet-700 ring-violet-600/15 dark:bg-violet-950/40 dark:text-violet-300',
   Present: 'bg-emerald-50 text-emerald-700 ring-emerald-600/15 dark:bg-emerald-950/40 dark:text-emerald-300',
   Absent: 'bg-rose-50 text-rose-700 ring-rose-600/15 dark:bg-rose-950/40 dark:text-rose-300',
+  Applied: 'bg-slate-100 text-slate-600 ring-slate-500/15 dark:bg-slate-800 dark:text-slate-300',
+  'In progress': 'bg-blue-50 text-blue-700 ring-blue-600/15 dark:bg-blue-950/40 dark:text-blue-300',
+  'Offer received': 'bg-emerald-50 text-emerald-700 ring-emerald-600/15 dark:bg-emerald-950/40 dark:text-emerald-300',
+  'Not selected': 'bg-rose-50 text-rose-700 ring-rose-600/15 dark:bg-rose-950/40 dark:text-rose-300',
+  Cleared: 'bg-emerald-50 text-emerald-700 ring-emerald-600/15 dark:bg-emerald-950/40 dark:text-emerald-300',
+  'Not cleared': 'bg-rose-50 text-rose-700 ring-rose-600/15 dark:bg-rose-950/40 dark:text-rose-300',
 };
 
 const buttonClass =
@@ -169,7 +190,7 @@ function LmsShell({
         <nav aria-label="Breadcrumb" className="mb-5 flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
           <Link href="/" className="hover:text-violet-700 dark:hover:text-violet-300">Home</Link>
           <span aria-hidden="true">/</span>
-          <Link href="/learning/dashboard" className="hover:text-violet-700 dark:hover:text-violet-300">Learning Management</Link>
+          <Link href="/learning/dashboard" className="hover:text-violet-700 dark:hover:text-violet-300">LMS Dashboard</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page" className="text-slate-800 dark:text-slate-200">{title}</span>
         </nav>
@@ -196,12 +217,14 @@ function MetricCard({
   detail,
   icon: Icon,
   tone = 'violet',
+  href,
 }: {
   label: string;
   value: string | number;
   detail: string;
   icon: typeof Users;
   tone?: 'violet' | 'blue' | 'emerald' | 'amber';
+  href?: string;
 }) {
   const tones = {
     violet: 'bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300',
@@ -210,20 +233,22 @@ function MetricCard({
     amber: 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300',
   };
 
-  return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
-      <div className="flex items-start justify-between gap-3">
+  const card = (
+    <div className={`rounded-xl border border-slate-200 bg-white p-3 transition dark:border-slate-800 dark:bg-slate-900 sm:p-4 ${href ? 'cursor-pointer hover:border-violet-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500' : ''}`}>
+      <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">{value}</p>
+          <p className="mt-1 text-xl font-bold tracking-tight text-slate-950 dark:text-white">{value}</p>
         </div>
-        <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${tones[tone]}`}>
-          <Icon className="h-5 w-5" />
+        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${tones[tone]}`}>
+          <Icon className="h-4 w-4" />
         </span>
       </div>
-      <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">{detail}</p>
-    </article>
+      <p className="mt-2 truncate text-[10px] text-slate-500 dark:text-slate-400">{detail}</p>
+    </div>
   );
+
+  return href ? <Link href={href} aria-label={`Open ${label}`} className="block">{card}</Link> : card;
 }
 
 function Panel({
@@ -292,16 +317,18 @@ function DemoDialog({
   title,
   onClose,
   children,
+  className = 'max-w-lg',
 }: {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  className?: string;
 }) {
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm" role="presentation" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onClose();
     }}>
-      <section role="dialog" aria-modal="true" aria-labelledby="learning-dialog-title" className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+      <section role="dialog" aria-modal="true" aria-labelledby="learning-dialog-title" className={`max-h-[90vh] w-full ${className} overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900`}>
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-violet-600 dark:text-violet-300">Temporary prototype action</p>
@@ -314,6 +341,131 @@ function DemoDialog({
         <div className="p-5">{children}</div>
       </section>
     </div>
+  );
+}
+
+function formatPlacementDate(value: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function PlacementApplicationCard({ application }: { application: LearningPlacementApplication }) {
+  return (
+    <article className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/50 sm:p-4">
+      <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
+        <div>
+          <h4 className="text-xs font-bold text-slate-900 dark:text-white">{application.company}</h4>
+          <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-300">{application.role}</p>
+          <p className="mt-1 text-[10px] text-slate-500">
+            {application.source} · Applied {formatPlacementDate(application.appliedOn)}
+          </p>
+        </div>
+        <StatusBadge value={application.status} />
+      </div>
+      <div className="mt-4">
+        <h5 className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Interview rounds</h5>
+        {application.rounds.length ? (
+          <ol className="mt-3 space-y-3 border-l border-slate-200 pl-4 dark:border-slate-700">
+            {application.rounds.map((round, index) => (
+              <li key={`${application.id}-${round.name}`} className="relative">
+                <span
+                  className={`absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-800 ${
+                    round.status === 'Cleared'
+                      ? 'bg-emerald-500'
+                      : round.status === 'Not cleared'
+                        ? 'bg-rose-500'
+                        : round.status === 'In progress'
+                          ? 'bg-blue-500'
+                          : 'bg-slate-300 dark:bg-slate-600'
+                  }`}
+                />
+                <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
+                  <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">
+                    {index + 1}. {round.name}
+                  </p>
+                  <StatusBadge value={round.status} />
+                </div>
+                <p className="mt-1 text-[10px] text-slate-500">
+                  {formatPlacementDate(round.date)} · {round.note}
+                </p>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="mt-2 text-[10px] text-slate-500">No interview rounds have been recorded.</p>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function StudentRecordDialog({
+  student,
+  batch,
+  applications,
+  onClose,
+}: {
+  student: LearningStudent;
+  batch?: LearningBatch;
+  applications: LearningPlacementApplication[];
+  onClose: () => void;
+}) {
+  return (
+    <DemoDialog title={`${student.name} · Student record`} onClose={onClose} className="max-w-3xl">
+      <div className="space-y-5">
+        <section className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+            <div>
+              <p className="text-sm font-bold text-slate-900 dark:text-white">{student.name}</p>
+              <p className="mt-1 text-[11px] text-slate-500">{student.id} · {student.email}</p>
+            </div>
+            <StatusBadge value={student.status} />
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Batch</p>
+              <p className="mt-1 text-xs font-semibold text-slate-800 dark:text-slate-200">{batch?.name ?? student.batchId}</p>
+              <p className="mt-1 text-[10px] text-slate-500">{batch?.course ?? 'Course details unavailable'}</p>
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="font-semibold uppercase tracking-wide text-slate-500">Course progress</span>
+                <span className="font-bold text-slate-700 dark:text-slate-200">{student.progress}%</span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                <div className="h-full rounded-full bg-violet-600" style={{ width: `${student.progress}%` }} />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="font-semibold uppercase tracking-wide text-slate-500">Attendance</span>
+                <span className="font-bold text-slate-700 dark:text-slate-200">{student.attendance}%</span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                <div className="h-full rounded-full bg-blue-600" style={{ width: `${student.attendance}%` }} />
+              </div>
+            </div>
+          </div>
+        </section>
+        <Panel title="Placement workflow" subtitle={`${applications.length} demo company ${applications.length === 1 ? 'application' : 'applications'}`}>
+          <div className="space-y-3 p-4">
+            {applications.length ? (
+              applications.map((application) => (
+                <PlacementApplicationCard key={application.id} application={application} />
+              ))
+            ) : (
+              <p className="rounded-lg border border-dashed border-slate-200 px-3 py-5 text-center text-[11px] text-slate-500 dark:border-slate-700">
+                No placement drive participation or company applications recorded for this student.
+              </p>
+            )}
+          </div>
+        </Panel>
+        <p className="text-[10px] text-slate-500">Student and placement details are illustrative demo data. Changes are not saved.</p>
+      </div>
+    </DemoDialog>
   );
 }
 
@@ -335,11 +487,14 @@ function LearningManagement({ pathname }: { pathname: string }) {
   const [sortAscending, setSortAscending] = useState(true);
   const [page, setPage] = useState(1);
   const [modal, setModal] = useState<ModalName>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState('');
   const [toast, setToast] = useState('');
   const [selectedFacultyId, setSelectedFacultyId] = useState(faculty[0]?.id ?? '');
   const [selectedBatchId, setSelectedBatchId] = useState(batches[0]?.id ?? '');
   const [attendanceDate, setAttendanceDate] = useState('2026-11-25');
   const [activeBatchTab, setActiveBatchTab] = useState('Overview');
+  const [activeLmsTab, setActiveLmsTab] = useState('overview');
+  const [selectedCourseSlug, setSelectedCourseSlug] = useState<string | null>(null);
   const [reportPreview, setReportPreview] = useState(false);
 
   useEffect(() => {
@@ -362,10 +517,13 @@ function LearningManagement({ pathname }: { pathname: string }) {
   const detailCourse = leaf === 'courses' && detailSlug
     ? allCourses.find((item) => item.slug === detailSlug)
     : undefined;
+  const inlineCourse = selectedCourseSlug
+    ? allCourses.find((item) => item.slug === selectedCourseSlug)
+    : undefined;
   const detailBatch = leaf === 'batches' && detailSlug
     ? batches.find((batch) => batch.id.toLowerCase() === detailSlug.toLowerCase())
     : undefined;
-  const pageTitle = detailCourse?.course ?? detailBatch?.name ?? pageDetails[leaf]?.title ?? 'Learning Management';
+  const pageTitle = detailCourse?.course ?? detailBatch?.name ?? pageDetails[leaf]?.title ?? 'LMS Dashboard';
   const pageDescription = detailCourse
     ? `${detailCourse.provider} · ${detailCourse.programme}. Course detail preview with no live batch or enrollment records.`
     : detailBatch
@@ -435,6 +593,10 @@ function LearningManagement({ pathname }: { pathname: string }) {
   const pagedStudents = filteredStudents.slice((page - 1) * pageSize, page * pageSize);
 
   const openStudentDialog = () => setModal('student');
+  const openStudentRecord = (studentId: string) => {
+    setSelectedStudentId(studentId);
+    setModal('studentDetails');
+  };
   const openBatchDialog = () => setModal('batch');
   const openAssessmentDialog = () => setModal('assessment');
   const openFacultyDialog = (facultyId?: string, batchId?: string) => {
@@ -569,113 +731,165 @@ function LearningManagement({ pathname }: { pathname: string }) {
 
   function renderDashboard() {
     const activeCount = batches.filter((batch) => batch.status === 'Active').length;
+    const atRiskCount = students.filter((student) => student.status === 'At risk').length;
+    const lowAttendanceCount = students.filter((student) => student.attendance > 0 && student.attendance < 80).length;
+    const dueAssessments = assessments.filter((assessment) => assessment.status !== 'Completed');
+    const placementInProgress = demoPlacementApplications.filter((application) => application.status === 'In progress').length;
+    const offersReceived = demoPlacementApplications.filter((application) => application.status === 'Offer received').length;
     const averageProgress = students.length
       ? Math.round(students.reduce((total, student) => total + student.progress, 0) / students.length)
       : 0;
-    const upcomingAssessments = assessments.filter((assessment) => assessment.status !== 'Completed').length;
+    const averageAttendance = students.length
+      ? Math.round(students.reduce((total, student) => total + student.attendance, 0) / students.length)
+      : 0;
 
     return (
-      <LmsShell title="LMS Dashboard" description={pageDetails.dashboard.description}>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="Programmes" value={courseCatalogue.reduce((total, provider) => total + provider.programmes.length, 0)} detail="Across listed providers · demo catalogue" icon={BookOpen} />
-          <MetricCard label="Active batches" value={activeCount} detail={`${batches.length} sample batches shown`} icon={CalendarDays} tone="blue" />
-          <MetricCard label="Demo students" value={students.length} detail="Sample learner records only" icon={Users} tone="emerald" />
-          <MetricCard label="Average progress" value={`${averageProgress}%`} detail={`${upcomingAssessments} assessments not completed`} icon={Target} tone="amber" />
+      <LmsShell
+        title="LMS Dashboard"
+        description="Manage courses, batches, learners, assessments, and placements from one workspace."
+      >
+        <DashboardTabs
+          id="lms-dashboard"
+          ariaLabel="LMS Dashboard sections"
+          tabs={lmsDashboardTabs}
+          value={activeLmsTab}
+          onChange={setActiveLmsTab}
+        >
+          <span className="sr-only">Use the tabs to switch between LMS workspaces.</span>
+        </DashboardTabs>
+
+        {activeLmsTab === 'overview' && <>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8">
+          <MetricCard label="Programmes" value={courseCatalogue.length} detail="Across programme providers" icon={BookOpen} tone="violet" href="/learning/programmes" />
+          <MetricCard label="Courses" value={allCourses.length} detail="Across programme providers" icon={BookOpen} href="/learning/courses" />
+          <MetricCard label="Active batches" value={activeCount} detail={`${batches.length} batches in total`} icon={CalendarDays} tone="blue" href="/learning/batches" />
+          <MetricCard label="Students" value={students.length} detail="Demo learner records" icon={Users} tone="emerald" href="/learning/students" />
+          <MetricCard label="Faculty" value={faculty.length} detail={`${faculty.filter((member) => member.status === 'Assigned').length} currently assigned`} icon={Users} tone="violet" href="/learning/faculty" />
+          <MetricCard label="Avg. attendance" value={`${averageAttendance}%`} detail={`${lowAttendanceCount} students below 80%`} icon={CheckCircle2} tone="blue" href="/learning/attendance" />
+          <MetricCard label="Avg. progress" value={`${averageProgress}%`} detail={`${dueAssessments.length} assessments due`} icon={Target} tone="amber" href="/learning/progress" />
+          <MetricCard label="Placements" value={offersReceived} detail={`${placementInProgress} applications in progress`} icon={GraduationCap} tone="emerald" href="/learning/completion-reports" />
         </div>
 
-        <div className="grid gap-5 xl:grid-cols-[1.4fr_1fr]">
-          <Panel title="Enrollment trend" subtitle="Illustrative monthly enrollment · demo data">
-            <div className="h-72 p-3 sm:p-5">
+        <div className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
+          <Panel title="Enrollment trend" subtitle="Learners added across the last six months">
+            <div className="h-64 p-4 sm:p-5">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={demoEnrollmentTrend} margin={{ left: -20, right: 8, top: 8, bottom: 0 }}>
+                <AreaChart data={demoEnrollmentTrend} margin={{ left: -18, right: 8, top: 8, bottom: 0 }}>
                   <defs>
                     <linearGradient id="lmsEnrollmentFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.02} />
+                      <stop offset="0%" stopColor="#7c3aed" stopOpacity={0.22} />
+                      <stop offset="100%" stopColor="#7c3aed" stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" vertical={false} />
-                  <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                  <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-                  <Tooltip contentStyle={{ borderRadius: 12, borderColor: '#e2e8f0', fontSize: 12 }} />
-                  <Area type="monotone" dataKey="students" name="Demo learners" stroke="#7c3aed" strokeWidth={2.5} fill="url(#lmsEnrollmentFill)" />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                  <Tooltip contentStyle={{ borderRadius: 10, borderColor: '#e2e8f0', fontSize: 12 }} />
+                  <Area type="monotone" dataKey="students" name="Learners" stroke="#7c3aed" strokeWidth={2} fill="url(#lmsEnrollmentFill)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </Panel>
-
-          <Panel title="Learning outcomes" subtitle="Sample progress distribution">
-            <div className="grid items-center gap-2 p-4 sm:grid-cols-[1fr_1fr]">
-              <div className="h-52">
+          <Panel title="Learning outcomes" subtitle="Current learner distribution">
+            <div className="flex items-center gap-5 p-4 sm:p-5">
+              <div className="h-36 w-36 shrink-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={demoLearningOutcomes} dataKey="value" nameKey="label" innerRadius={52} outerRadius={78} paddingAngle={4}>
-                      {demoLearningOutcomes.map((item, index) => (
-                        <Cell key={item.label} fill={['#7c3aed', '#f59e0b', '#10b981'][index]} />
-                      ))}
+                    <Pie data={demoLearningOutcomes} dataKey="value" nameKey="label" innerRadius={38} outerRadius={58} paddingAngle={3} strokeWidth={0}>
+                      {['#7c3aed', '#f59e0b', '#10b981'].map((fill) => <Cell key={fill} fill={fill} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ borderRadius: 12, borderColor: '#e2e8f0', fontSize: 12 }} />
+                    <Tooltip contentStyle={{ borderRadius: 10, borderColor: '#e2e8f0', fontSize: 12 }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="space-y-3">
-                {demoLearningOutcomes.map((item, index) => (
-                  <div key={item.label} className="flex items-center justify-between gap-3 text-xs">
-                    <span className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: ['#7c3aed', '#f59e0b', '#10b981'][index] }} />
-                      {item.label}
-                    </span>
-                    <span className="font-bold text-slate-900 dark:text-white">{item.value}%</span>
+              <div className="min-w-0 space-y-3">
+                {demoLearningOutcomes.map((outcome, index) => (
+                  <div key={outcome.label} className="flex items-center justify-between gap-4 text-xs">
+                    <span className="flex min-w-0 items-center gap-2 text-slate-600 dark:text-slate-300"><span className={`h-2 w-2 shrink-0 rounded-full ${['bg-violet-600', 'bg-amber-500', 'bg-emerald-500'][index]}`} />{outcome.label}</span>
+                    <strong className="text-slate-900 dark:text-white">{outcome.value}%</strong>
                   </div>
                 ))}
-                <p className="pt-2 text-[10px] leading-4 text-slate-400">Illustrative percentages, not live student results.</p>
               </div>
             </div>
           </Panel>
         </div>
 
-        <div className="grid gap-5 xl:grid-cols-2">
-          <Panel
-            title="Upcoming batches"
-            subtitle="Schedule preview"
-            action={<Link className="text-xs font-semibold text-violet-700 hover:text-violet-900 dark:text-violet-300" href="/learning/batches">View batches <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>}
-          >
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {batches.slice(0, 3).map((batch) => (
-                <Link key={batch.id} href={`/learning/batches/${batch.id}`} className="flex items-center justify-between gap-4 px-4 py-3.5 transition hover:bg-slate-50 dark:hover:bg-slate-800/50 sm:px-5">
-                  <span className="min-w-0">
-                    <span className="block truncate text-xs font-semibold text-slate-900 dark:text-white">{batch.name}</span>
-                    <span className="mt-1 block truncate text-[10px] text-slate-500 dark:text-slate-400">{batch.course}</span>
-                  </span>
-                  <span className="shrink-0 text-right">
-                    <StatusBadge value={batch.status} />
-                    <span className="mt-1 block text-[10px] text-slate-500">{new Date(`${batch.startDate}T00:00:00`).toLocaleDateString()}</span>
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </Panel>
+        <Panel title="Workspace shortcuts" subtitle="Open the detailed LMS workspaces">
+          <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              { title: 'Students', detail: 'Review learner records and enrollment', icon: Users, href: '/learning/students' },
+              { title: 'Attendance', detail: 'Review the batch attendance register', icon: ClipboardCheck, href: '/learning/attendance' },
+              { title: 'Assessments', detail: 'Review assessment schedules and status', icon: Target, href: '/learning/assessments' },
+              { title: 'Reports', detail: 'Review completion and performance reports', icon: BarChart3, href: '/learning/completion-reports' },
+            ].map((item) => {
+              const Icon = item.icon;
+              const content = (
+                <>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300"><Icon className="h-4 w-4" /></span>
+                  <span className="min-w-0"><span className="block text-xs font-bold text-slate-900 dark:text-white">{item.title}</span><span className="mt-1 block text-[10px] leading-4 text-slate-500 dark:text-slate-400">{item.detail}</span></span>
+                  <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-slate-400" />
+                </>
+              );
+              return <Link key={item.title} href={item.href} className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-violet-300 hover:bg-violet-50/40 dark:border-slate-800 dark:hover:border-violet-800 dark:hover:bg-violet-950/30">{content}</Link>;
+            })}
+          </div>
+        </Panel>
 
-          <Panel title="Learning shortcuts" subtitle="Open an LMS workspace">
-            <div className="grid gap-2 p-4 sm:grid-cols-2">
-              {[
-                { title: 'Programme catalogue', href: '/learning/programmes', icon: BookOpen },
-                { title: 'Student directory', href: '/learning/students', icon: Users },
-                { title: 'Batch attendance', href: '/learning/attendance', icon: ClipboardCheck },
-                { title: 'Completion reports', href: '/learning/completion-reports', icon: Download },
-              ].map((item) => {
-                const Icon = item.icon;
+        <div className="grid gap-5 xl:grid-cols-[1.4fr_0.6fr]">
+          <Panel title="Current batches" subtitle="Continue work with the latest cohorts" action={<Link className="text-xs font-semibold text-violet-700 hover:text-violet-900 dark:text-violet-300" href="/learning/batches">View all batches <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>}>
+            <div className="grid gap-3 p-4 sm:grid-cols-2">
+              {batches.map((batch) => {
+                const batchStudents = students.filter((student) => student.batchId === batch.id);
+                const batchAverage = batchStudents.length ? Math.round(batchStudents.reduce((total, student) => total + student.progress, 0) / batchStudents.length) : 0;
+                const batchFaculty = faculty.find((member) => member.id === batch.facultyId);
                 return (
-                  <Link key={item.href} href={item.href} className="flex items-center gap-3 rounded-xl border border-slate-200 p-3 transition hover:border-violet-300 hover:bg-violet-50/50 dark:border-slate-800 dark:hover:border-violet-800 dark:hover:bg-violet-950/30">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300"><Icon className="h-4 w-4" /></span>
-                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">{item.title}</span>
-                    <ArrowUpRight className="ml-auto h-3.5 w-3.5 text-slate-400" />
+                  <Link key={batch.id} href={`/learning/batches/${batch.id}`} className="rounded-xl border border-slate-200 p-4 transition hover:border-violet-300 hover:shadow-sm dark:border-slate-800 dark:hover:border-violet-800">
+                    <div className="flex items-start justify-between gap-3"><span className="min-w-0"><span className="block text-[10px] font-bold uppercase tracking-wide text-violet-700 dark:text-violet-300">{batch.id}</span><span className="mt-1 block text-sm font-bold leading-5 text-slate-900 dark:text-white">{batch.name}</span></span><StatusBadge value={batch.status} /></div>
+                    <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-slate-500 dark:text-slate-400">{batch.course}</p>
+                    <div className="mt-4 grid grid-cols-2 gap-3 text-[10px]"><span className="text-slate-500">Learners<strong className="mt-1 block text-xs text-slate-800 dark:text-slate-200">{batchStudents.length} / {batch.capacity}</strong></span><span className="text-slate-500">Progress<strong className="mt-1 block text-xs text-slate-800 dark:text-slate-200">{batchAverage}%</strong></span><span className="col-span-2 text-slate-500">Faculty<strong className="mt-1 block truncate text-xs text-slate-800 dark:text-slate-200">{batchFaculty?.name ?? 'Unassigned'}</strong></span></div>
                   </Link>
                 );
               })}
             </div>
           </Panel>
+
+          <Panel title="Needs attention" subtitle="Items that should be reviewed">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              <Link href="/learning/students" className="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"><Target className="h-4 w-4" /></span><span className="min-w-0"><span className="block text-xs font-semibold text-slate-900 dark:text-white">{atRiskCount} students at risk</span><span className="mt-1 block text-[10px] text-slate-500">Review progress and attendance</span></span><ArrowRight className="ml-auto h-4 w-4 text-slate-400" /></Link>
+              <Link href="/learning/attendance" className="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"><Clock3 className="h-4 w-4" /></span><span className="min-w-0"><span className="block text-xs font-semibold text-slate-900 dark:text-white">{lowAttendanceCount} low-attendance students</span><span className="mt-1 block text-[10px] text-slate-500">Attendance is below 80%</span></span><ArrowRight className="ml-auto h-4 w-4 text-slate-400" /></Link>
+              <Link href="/learning/assessments" className="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"><ClipboardCheck className="h-4 w-4" /></span><span className="min-w-0"><span className="block text-xs font-semibold text-slate-900 dark:text-white">{dueAssessments.length} assessments pending</span><span className="mt-1 block text-[10px] text-slate-500">Scheduled or awaiting review</span></span><ArrowRight className="ml-auto h-4 w-4 text-slate-400" /></Link>
+              <Link href="/learning/batches/LMS-101" className="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"><GraduationCap className="h-4 w-4" /></span><span className="min-w-0"><span className="block text-xs font-semibold text-slate-900 dark:text-white">{placementInProgress} placement applications</span><span className="mt-1 block text-[10px] text-slate-500">Review upcoming interview rounds</span></span><ArrowRight className="ml-auto h-4 w-4 text-slate-400" /></Link>
+            </div>
+          </Panel>
         </div>
+
+        <div className="grid gap-5 xl:grid-cols-[1.4fr_0.6fr]">
+          <Panel title="Course catalogue" subtitle="Popular courses and programme availability" action={<Link className="text-xs font-semibold text-violet-700 hover:text-violet-900 dark:text-violet-300" href="/learning/courses">View all courses <ArrowRight className="ml-1 inline h-3.5 w-3.5" /></Link>}>
+            <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+              {allCourses.slice(0, 6).map((course) => {
+                const relatedBatch = batches.find((batch) => batch.courseSlug === course.slug);
+                return <Link key={course.slug} href={`/learning/courses/${course.slug}`} className="rounded-xl border border-slate-200 p-4 transition hover:border-violet-300 hover:bg-violet-50/30 dark:border-slate-800 dark:hover:border-violet-800 dark:hover:bg-violet-950/20"><span className="block text-[10px] font-bold uppercase tracking-wide text-violet-700 dark:text-violet-300">{course.provider}</span><span className="mt-2 block text-xs font-bold leading-5 text-slate-900 dark:text-white">{course.course}</span><span className="mt-3 block text-[10px] text-slate-500">{relatedBatch ? `${relatedBatch.id} · ${relatedBatch.status} batch` : 'No active demo batch'}</span></Link>;
+              })}
+            </div>
+          </Panel>
+          <Panel title="LMS overview" subtitle="Main workspace sections">
+            <div className="space-y-2 p-4">
+              {[
+                { title: 'Courses', detail: 'Browse catalogue and course details', href: '/learning/courses', icon: BookOpen },
+                { title: 'Batches', detail: 'Students, faculty, attendance, progress', href: '/learning/batches', icon: CalendarDays },
+                { title: 'Students', detail: 'Learner directory and placement activity', href: '/learning/students', icon: Users },
+              ].map((item) => { const Icon = item.icon; return <Link key={item.title} href={item.href} className="flex items-center gap-3 rounded-xl px-3 py-3 transition hover:bg-slate-50 dark:hover:bg-slate-800/50"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"><Icon className="h-4 w-4" /></span><span><span className="block text-xs font-semibold text-slate-900 dark:text-white">{item.title}</span><span className="mt-0.5 block text-[10px] text-slate-500">{item.detail}</span></span><ArrowRight className="ml-auto h-4 w-4 text-slate-400" /></Link>; })}
+            </div>
+          </Panel>
+        </div>
+        </>}
+        {activeLmsTab === 'programmes' && renderProgrammes()}
+        {activeLmsTab === 'courses' && renderCourses()}
+        {activeLmsTab === 'batches' && renderBatches()}
+        {activeLmsTab === 'students' && renderStudents()}
+        {activeLmsTab === 'faculty' && renderFaculty()}
+        {activeLmsTab === 'assessments' && renderAssessments()}
+        {activeLmsTab === 'reports' && renderCompletionReports()}
       </LmsShell>
     );
   }
@@ -706,6 +920,13 @@ function LearningManagement({ pathname }: { pathname: string }) {
                         <BookOpen className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
                         <Link
                           href={{ pathname: '/learning/courses', query: { provider: provider.name, programme: programme.name } }}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            setSelectedCourseSlug(null);
+                            setProviderFilter(provider.name);
+                            setProgrammeFilter(programme.name);
+                            setActiveLmsTab('courses');
+                          }}
                           className="text-xs font-semibold text-slate-800 hover:text-violet-700 dark:text-slate-100 dark:hover:text-violet-300"
                         >
                           {programme.name}
@@ -716,7 +937,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
                           const item = allCourses.find((entry) => entry.course === course);
                           return (
                             <li key={course} className="list-disc text-xs leading-5 text-slate-600 marker:text-violet-400 dark:text-slate-300">
-                              <Link href={`/learning/courses/${item?.slug ?? slugifyCourse(course)}`} className="hover:text-violet-700 dark:hover:text-violet-300">{course}</Link>
+                              <Link href={`/learning/courses/${item?.slug ?? slugifyCourse(course)}`} onClick={(event) => { event.preventDefault(); setSelectedCourseSlug(item?.slug ?? slugifyCourse(course)); setActiveLmsTab('courses'); }} className="hover:text-violet-700 dark:hover:text-violet-300">{course}</Link>
                             </li>
                           );
                         })}
@@ -737,6 +958,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
   }
 
   function renderCourses() {
+    if (inlineCourse) return renderCourseDetails(inlineCourse);
     return (
       <LmsShell title="Courses" description={pageDetails.courses.description}>
         <Panel title="Course catalogue" subtitle={`${visibleCourses.length} supplied courses · demo catalogue`}>
@@ -779,7 +1001,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
           {visibleCourses.length ? (
             <div className="grid gap-4 border-t border-slate-100 p-4 dark:border-slate-800 sm:grid-cols-2 sm:p-5">
               {visibleCourses.map((item) => (
-                <CourseCatalogueCard key={item.slug} course={item} />
+                <CourseCatalogueCard key={item.slug} course={item} onOpen={() => { setSelectedCourseSlug(item.slug); setActiveLmsTab('courses'); }} />
               ))}
             </div>
           ) : (
@@ -796,61 +1018,59 @@ function LearningManagement({ pathname }: { pathname: string }) {
     );
   }
 
-  function renderCourseDetails() {
-    if (!detailCourse) return <LmsShell title="Course not found" description="This course is not part of the supplied demo catalogue."><EmptyState title="Course not found" description="Return to the course catalogue to select a listed course." /></LmsShell>;
-    const courseBatches = batches.filter((batch) => batch.courseSlug === detailCourse.slug);
+  function renderCourseDetails(courseOverride = detailCourse) {
+    if (!courseOverride) return <LmsShell title="Course not found" description="This course is not part of the supplied demo catalogue."><EmptyState title="Course not found" description="Return to the course catalogue to select a listed course." /></LmsShell>;
+    const courseBatches = batches.filter((batch) => batch.courseSlug === courseOverride?.slug);
     return (
       <LmsShell
-        title={detailCourse.course}
-        description={`${detailCourse.provider} · ${detailCourse.programme}. Course detail preview; additional course information will be defined in a later phase.`}
-        action={<Link href="/learning/courses" className={secondaryButtonClass}><ArrowLeft className="h-3.5 w-3.5" /> Course catalogue</Link>}
+        title={courseOverride.course}
+        description="Review available batches and assigned trainers for this course."
+        action={<button type="button" onClick={() => { setSelectedCourseSlug(null); setActiveLmsTab('courses'); }} className={secondaryButtonClass}><ArrowLeft className="h-3.5 w-3.5" /> Course catalogue</button>}
       >
-        <div className="grid gap-4 sm:grid-cols-3">
-          <MetricCard label="Provider" value={detailCourse.provider} detail="Supplied catalogue category" icon={GraduationCap} />
-          <MetricCard label="Programme" value={detailCourse.programme} detail="Supplied programme category" icon={BookOpen} tone="blue" />
-          <MetricCard label="Demo batches" value={courseBatches.length} detail="Temporary sample records only" icon={CalendarDays} tone="emerald" />
-        </div>
-        <div className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
-          <Panel title="Course overview" subtitle="Catalogue information">
-            <div className="space-y-4 p-5">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Provider</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{detailCourse.provider}</p>
-              </div>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Programme / specialization</p>
-                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{detailCourse.programme}</p>
-              </div>
-              <p className="rounded-xl bg-slate-50 p-4 text-xs leading-5 text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
-                This screen contains only the supplied catalogue details. Syllabus, pricing, delivery commitments, and enrollment rules are not represented.
-              </p>
-            </div>
-          </Panel>
-          <Panel title="Available batches" subtitle="Sample batch links">
+        <Panel title="Available batches" subtitle="Batches and assigned trainers for this course.">
             {courseBatches.length ? (
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {courseBatches.map((batch) => (
-                  <Link key={batch.id} href={`/learning/batches/${batch.id}`} className="flex items-center justify-between gap-3 px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  <Link
+                    key={batch.id}
+                    href={`/learning/batches/${batch.id}`}
+                    className="group flex items-center justify-between gap-3 px-5 py-4 transition-colors hover:bg-violet-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-500 dark:hover:bg-violet-950/20"
+                  >
                     <span>
                       <span className="block text-xs font-semibold text-slate-900 dark:text-white">{batch.name}</span>
                       <span className="mt-1 block text-[10px] text-slate-500">{batch.id} · {batch.delivery}</span>
+                      <span className="mt-2 block text-[11px] font-medium text-slate-700 dark:text-slate-200">Trainer: {faculty.find((member) => member.id === batch.facultyId)?.name ?? 'Unassigned'}</span>
                     </span>
-                    <StatusBadge value={batch.status} />
+                    <span className="flex shrink-0 flex-col items-end gap-2">
+                      <StatusBadge value={batch.status} />
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-violet-700 dark:text-violet-300">
+                        View batch
+                        <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                      </span>
+                    </span>
                   </Link>
                 ))}
               </div>
             ) : (
               <div className="p-5"><EmptyState title="No demo batches" description="There are no sample batches linked to this course yet." /></div>
             )}
-          </Panel>
-        </div>
+        </Panel>
       </LmsShell>
     );
   }
 
   function renderBatches() {
     return (
-      <LmsShell title="Batches" description={pageDetails.batches.description} action={<button type="button" className={buttonClass} onClick={openBatchDialog}><Plus className="h-4 w-4" /> Create demo batch</button>}>
+      <LmsShell
+        title="Batches"
+        description={pageDetails.batches.description}
+        action={
+          <div className="flex flex-wrap gap-2">
+            <Link href="/learning/dashboard" className={secondaryButtonClass}><ArrowLeft className="h-3.5 w-3.5" /> LMS menu</Link>
+            <button type="button" className={buttonClass} onClick={openBatchDialog}><Plus className="h-4 w-4" /> Create demo batch</button>
+          </div>
+        }
+      >
         <div className="grid gap-3 sm:grid-cols-3">
           <MetricCard label="Total batches" value={batches.length} detail="Sample cohorts in this preview" icon={CalendarDays} />
           <MetricCard label="Active" value={batches.filter((batch) => batch.status === 'Active').length} detail="Current sample cohorts" icon={CheckCircle2} tone="emerald" />
@@ -896,14 +1116,30 @@ function LearningManagement({ pathname }: { pathname: string }) {
     if (!detailBatch) return <LmsShell title="Batch not found" description="This batch is not available in the sample records."><EmptyState title="Batch not found" description="Return to the batch list to select a demo batch." /></LmsShell>;
     const batchStudents = students.filter((student) => student.batchId === detailBatch.id);
     const batchAssessments = assessments.filter((assessment) => assessment.batchId === detailBatch.id);
+    const batchPlacementApplications = demoPlacementApplications.filter((application) => application.batchId === detailBatch.id);
     const assignedFaculty = faculty.find((member) => member.id === detailBatch.facultyId);
-    const tabs = ['Overview', 'Students', 'Faculty', 'Attendance', 'Progress', 'Assessments'];
+    const tabs = ['Overview', 'Students', 'Faculty', 'Attendance', 'Progress', 'Assessments', 'Placement'];
+    const placementStudents = batchStudents.map((student) => ({
+      student,
+      applications: batchPlacementApplications.filter((application) => application.studentId === student.id),
+    }));
+    const studentsWithPlacement = placementStudents.filter(({ applications }) => applications.length > 0).length;
+    const clearedPlacementRounds = batchPlacementApplications.reduce(
+      (total, application) => total + application.rounds.filter((round) => round.status === 'Cleared').length,
+      0
+    );
+    const placementOffers = batchPlacementApplications.filter((application) => application.status === 'Offer received').length;
+    const attendanceStudents = batchStudents.filter((student) => student.status !== 'Upcoming');
+    const attendanceKeyForStudent = (studentId: string) => `${detailBatch.id}:${studentId}:${attendanceDate}`;
+    const isPresentForBatch = (student: LearningStudent) =>
+      attendanceMarks[attendanceKeyForStudent(student.id)] ?? student.status !== 'Upcoming';
+    const presentCount = attendanceStudents.filter(isPresentForBatch).length;
 
     return (
       <LmsShell
         title={detailBatch.name}
         description={`${detailBatch.course} · ${detailBatch.provider}`}
-        action={<Link href="/learning/batches" className={secondaryButtonClass}><ArrowLeft className="h-3.5 w-3.5" /> All batches</Link>}
+        action={<Link href={`/learning/courses/${detailBatch.courseSlug}`} className={secondaryButtonClass}><ArrowLeft className="h-3.5 w-3.5" /> Available batches</Link>}
       >
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex gap-1 overflow-x-auto border-b border-slate-100 p-2 dark:border-slate-800">
@@ -920,7 +1156,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
                 <MetricCard label="Delivery" value={detailBatch.delivery} detail="Sample format" icon={BookOpen} tone="amber" />
               </div>
             )}
-            {activeBatchTab === 'Students' && <StudentTable rows={batchStudents} onSort={toggleStudentSort} sortKey={sortKey} ascending={sortAscending} onStudentClick={(id) => showToast(`Opened learner ${id}.`)} />}
+            {activeBatchTab === 'Students' && <StudentTable rows={batchStudents} onSort={toggleStudentSort} sortKey={sortKey} ascending={sortAscending} onStudentClick={openStudentRecord} />}
             {activeBatchTab === 'Faculty' && (
               <div className="flex flex-col justify-between gap-4 rounded-xl bg-slate-50 p-4 dark:bg-slate-800/50 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-3">
@@ -931,9 +1167,77 @@ function LearningManagement({ pathname }: { pathname: string }) {
               </div>
             )}
             {activeBatchTab === 'Attendance' && (
-              <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-                <div><h3 className="text-sm font-semibold text-slate-900 dark:text-white">Batch attendance preview</h3><p className="mt-1 text-xs text-slate-500">Attendance marks are temporary demo state.</p></div>
-                <Link href="/learning/attendance" className={secondaryButtonClass}>Open attendance <ArrowRight className="h-3.5 w-3.5" /></Link>
+              <div className="space-y-4">
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Batch attendance register</h3>
+                    <p className="mt-1 text-xs text-slate-500">Review each learner and toggle today’s demo attendance. Changes are temporary.</p>
+                  </div>
+                  <label className="block text-[10px] font-semibold text-slate-500">
+                    Attendance date
+                    <input
+                      aria-label="Batch attendance date"
+                      className={`${inputClass} mt-1 sm:w-44`}
+                      type="date"
+                      value={attendanceDate}
+                      onChange={(event) => setAttendanceDate(event.target.value)}
+                    />
+                  </label>
+                </div>
+                <div className="flex flex-wrap gap-2 text-[10px] font-semibold">
+                  <span className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700 dark:bg-slate-800 dark:text-slate-200">{attendanceStudents.length} learners</span>
+                  <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">{presentCount} present</span>
+                  <span className="rounded-full bg-rose-50 px-3 py-1.5 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">{attendanceStudents.length - presentCount} absent</span>
+                </div>
+                {attendanceStudents.length ? (
+                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                    <table className="w-full min-w-[600px] text-left text-xs">
+                      <thead className="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500 dark:bg-slate-800/50">
+                        <tr>
+                          <th className="px-4 py-3">Student</th>
+                          <th className="px-4 py-3">Student ID</th>
+                          <th className="px-4 py-3">Overall attendance</th>
+                          <th className="px-4 py-3 text-right">Today · {new Date(`${attendanceDate}T00:00:00`).toLocaleDateString()}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {attendanceStudents.map((student) => {
+                          const present = isPresentForBatch(student);
+                          const key = attendanceKeyForStudent(student.id);
+                          return (
+                            <tr key={student.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30">
+                              <td className="px-4 py-3">
+                                <button
+                                  type="button"
+                                  onClick={() => openStudentRecord(student.id)}
+                                  className="text-left font-semibold text-violet-700 hover:underline dark:text-violet-300"
+                                >
+                                  {student.name}
+                                </button>
+                                <span className="mt-0.5 block text-[10px] text-slate-500">{student.email}</span>
+                              </td>
+                              <td className="px-4 py-3 text-slate-500">{student.id}</td>
+                              <td className="px-4 py-3 text-slate-700 dark:text-slate-200">{student.attendance}%</td>
+                              <td className="px-4 py-3 text-right">
+                                <button
+                                  type="button"
+                                  aria-label={`Mark ${present ? 'absent' : 'present'} for ${student.name}`}
+                                  aria-pressed={present}
+                                  onClick={() => setAttendanceMarks((current) => ({ ...current, [key]: !present }))}
+                                  className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                                >
+                                  <StatusBadge value={present ? 'Present' : 'Absent'} />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <EmptyState title="No attendance roster yet" description="This upcoming batch has no active students to mark in the demo register." />
+                )}
               </div>
             )}
             {activeBatchTab === 'Progress' && <ProgressList rows={batchStudents} />}
@@ -941,6 +1245,60 @@ function LearningManagement({ pathname }: { pathname: string }) {
               <div className="space-y-3">
                 {batchAssessments.length ? batchAssessments.map((assessment) => <AssessmentRow key={assessment.id} assessment={assessment} onAction={() => showToast(`Opened ${assessment.title}.`)} />) : <EmptyState title="No assessments" description="No demo assessments are linked to this batch yet." />}
                 <Link href="/learning/assessments" className="inline-flex items-center gap-1 text-xs font-semibold text-violet-700 dark:text-violet-300">View all assessments <ArrowRight className="h-3.5 w-3.5" /></Link>
+              </div>
+            )}
+            {activeBatchTab === 'Placement' && (
+              <div className="space-y-5">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <MetricCard label="Students with placement activity" value={`${studentsWithPlacement} / ${batchStudents.length}`} detail="Demo students with company activity" icon={Users} />
+                  <MetricCard label="Company applications" value={batchPlacementApplications.length} detail="Campus drives and direct applications" icon={Target} tone="blue" />
+                  <MetricCard label="Rounds cleared" value={clearedPlacementRounds} detail="Across this batch's demo applications" icon={CheckCircle2} tone="emerald" />
+                  <MetricCard label="Offers received" value={placementOffers} detail="Illustrative outcomes only" icon={GraduationCap} tone="amber" />
+                </div>
+                <Panel title="Student placement reports" subtitle="Company applications, current outcomes, and interview-round history">
+                  <div className="border-b border-violet-100 bg-violet-50/60 px-4 py-3 text-[11px] leading-5 text-violet-900 dark:border-violet-900/50 dark:bg-violet-950/30 dark:text-violet-200 sm:px-5">
+                    Demo placement data only. Companies, applications, and interview outcomes are sample records, not live student or employer data.
+                  </div>
+                  {placementStudents.length ? (
+                    <div className="space-y-4 p-4 sm:p-5">
+                      {placementStudents.map(({ student, applications }) => (
+                        <article key={student.id} className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+                          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
+                            <div>
+                              <button
+                                type="button"
+                                onClick={() => openStudentRecord(student.id)}
+                                className="text-left text-sm font-bold text-violet-700 hover:text-violet-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:text-violet-300 dark:hover:text-violet-200"
+                              >
+                                {student.name}
+                              </button>
+                              <p className="mt-1 text-[10px] text-slate-500">{student.id} · {student.email}</p>
+                              <p className="mt-1 text-[10px] font-medium text-slate-400">Select name to open full student record</p>
+                            </div>
+                            <span className="text-[10px] font-semibold text-slate-500">
+                              {applications.length} {applications.length === 1 ? 'application' : 'applications'}
+                            </span>
+                          </div>
+                          {applications.length ? (
+                            <div className="mt-4 space-y-3">
+                              {applications.map((application) => (
+                                <PlacementApplicationCard key={application.id} application={application} />
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="mt-3 rounded-lg border border-dashed border-slate-200 px-3 py-4 text-[11px] text-slate-500 dark:border-slate-700">
+                              No placement drive participation or company applications recorded for this student.
+                            </p>
+                          )}
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-5">
+                      <EmptyState title="No students in this batch" description="Placement reports will appear here when demo students are associated with the batch." />
+                    </div>
+                  )}
+                </Panel>
               </div>
             )}
           </div>
@@ -994,7 +1352,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
         </div>
         <Panel title="Student directory" subtitle={`${filteredStudents.length} matching demo learners`}>
           <div className="p-4 sm:px-5">{filterControls(false, true, studentStatuses)}</div>
-          <StudentTable rows={pagedStudents} onSort={toggleStudentSort} sortKey={sortKey} ascending={sortAscending} onStudentClick={(id) => showToast(`Opened learner ${id}.`)} />
+          <StudentTable rows={pagedStudents} onSort={toggleStudentSort} sortKey={sortKey} ascending={sortAscending} onStudentClick={openStudentRecord} />
           <div className="flex flex-col justify-between gap-3 border-t border-slate-100 px-4 py-3 dark:border-slate-800 sm:flex-row sm:items-center sm:px-5">
             <p className="text-[11px] text-slate-500">Page {page} of {pageCount} · {filteredStudents.length} demo records</p>
             <div className="flex gap-2">
@@ -1068,7 +1426,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {activeStudents.map((student) => {
-                    const key = `${selectedBatchId}:${student.id}`;
+                    const key = `${selectedBatchId}:${student.id}:${attendanceDate}`;
                     const present = attendanceMarks[key] ?? student.status !== 'Upcoming';
                     return (
                       <tr key={student.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30">
@@ -1196,10 +1554,18 @@ function LearningManagement({ pathname }: { pathname: string }) {
   function renderFallback() {
     return (
       <LmsShell title={pageTitle} description={pageDescription}>
-        <EmptyState title="Learning workspace" description="This page is ready for its detailed workflow. Use the Learning Management menu to explore the current programme, batch, faculty, and student previews." />
+        <EmptyState title="LMS workspace" description="This page is ready for its detailed workflow. Use the LMS Dashboard to explore the programme, batch, faculty, and student previews." />
       </LmsShell>
     );
   }
+
+  const selectedStudent = students.find((student) => student.id === selectedStudentId);
+  const selectedStudentBatch = selectedStudent
+    ? batches.find((batch) => batch.id === selectedStudent.batchId)
+    : undefined;
+  const selectedStudentPlacementApplications = selectedStudent
+    ? demoPlacementApplications.filter((application) => application.studentId === selectedStudent.id)
+    : [];
 
   const renderPage = () => {
     if (detailCourse) return renderCourseDetails();
@@ -1232,6 +1598,14 @@ function LearningManagement({ pathname }: { pathname: string }) {
       )}
       {modal === 'batch' && <AddBatchDialog faculty={faculty} onCancel={() => setModal(null)} onSave={addBatch} />}
       {modal === 'student' && <EnrollStudentDialog batches={batches} onCancel={() => setModal(null)} onSave={addStudent} />}
+      {modal === 'studentDetails' && selectedStudent && (
+        <StudentRecordDialog
+          student={selectedStudent}
+          batch={selectedStudentBatch}
+          applications={selectedStudentPlacementApplications}
+          onClose={() => setModal(null)}
+        />
+      )}
       {modal === 'assessment' && <AddAssessmentDialog batches={batches} onCancel={() => setModal(null)} onSave={addAssessment} />}
       {modal === 'faculty' && (
         <AssignFacultyDialog
@@ -1281,14 +1655,23 @@ function StudentTable({
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {rows.map((student) => (
               <tr key={student.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30">
-                <td className="px-5 py-3.5"><span className="font-semibold text-slate-900 dark:text-white">{student.name}</span><span className="mt-0.5 block text-[10px] text-slate-500">{student.id} · {student.email}</span></td>
+                <td className="px-5 py-3.5">
+                  <button
+                    type="button"
+                    onClick={() => onStudentClick(student.id)}
+                    className="text-left font-semibold text-violet-700 hover:text-violet-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:text-violet-300 dark:hover:text-violet-200"
+                  >
+                    {student.name}
+                  </button>
+                  <span className="mt-0.5 block text-[10px] text-slate-500">{student.id} · {student.email}</span>
+                </td>
                 <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">{student.batchId}</td>
                 <td className="px-5 py-3.5">
                   <span className="flex items-center gap-2"><span className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700"><span className="block h-full rounded-full bg-violet-600" style={{ width: `${student.progress}%` }} /></span><span className="text-[10px] text-slate-600 dark:text-slate-300">{student.progress}%</span></span>
                 </td>
                 <td className="px-5 py-3.5 text-slate-600 dark:text-slate-300">{student.attendance}%</td>
                 <td className="px-5 py-3.5"><StatusBadge value={student.status} /></td>
-                <td className="px-5 py-3.5 text-right"><button type="button" onClick={() => onStudentClick(student.id)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label={`More actions for ${student.name}`}><MoreHorizontal className="h-4 w-4" /></button></td>
+                <td className="px-5 py-3.5 text-right"><button type="button" onClick={() => onStudentClick(student.id)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" aria-label={`View record for ${student.name}`}><MoreHorizontal className="h-4 w-4" /></button></td>
               </tr>
             ))}
           </tbody>

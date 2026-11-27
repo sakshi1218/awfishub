@@ -12,9 +12,12 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { flatNavigation } from '@/lib/navigation';
+import { getLeadershipDisplayName } from '@/lib/leadership-display-names';
+import { getRoleNavigationEntries } from '@/lib/role-navigation';
 
 interface NavbarProps {
   onMenuClick: () => void;
+  showAllMenus: boolean;
 }
 
 interface NotificationItem {
@@ -26,7 +29,7 @@ interface NotificationItem {
   message: string;
 }
 
-export default function Navbar({ onMenuClick }: NavbarProps) {
+export default function Navbar({ onMenuClick, showAllMenus }: NavbarProps) {
   const { currentUser, allUsers, switchUser } = useAuth();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -34,19 +37,25 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [search, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
+  const currentUserDisplayName = currentUser ? getLeadershipDisplayName(currentUser) : 'Select User';
+
+  const navigationEntries = useMemo(
+    () => showAllMenus ? flatNavigation : getRoleNavigationEntries(currentUser),
+    [currentUser, showAllMenus]
+  );
 
   const searchResults = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return [];
 
-    return flatNavigation
+    return navigationEntries
       .filter((entry) =>
         `${entry.label} ${entry.section} ${entry.parent ?? ''} ${entry.description ?? ''}`
           .toLowerCase()
           .includes(query)
       )
       .slice(0, 7);
-  }, [search]);
+  }, [navigationEntries, search]);
 
   useEffect(() => {
     fetchNotifications();
@@ -148,7 +157,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-slate-500 dark:text-slate-400 hidden md:inline">Demo preview:</span>
             <span className="font-bold text-blue-700 dark:text-blue-400 truncate max-w-[140px]">
-              {currentUser?.name || 'Select User'}
+              {currentUserDisplayName}
             </span>
             <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-blue-600 text-white shrink-0">
               {currentUser?.role.replace('_', ' ')}
@@ -174,6 +183,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
               <div className="max-h-80 overflow-y-auto py-1 divide-y divide-slate-100 dark:divide-slate-800/60">
                 {allUsers.map((user) => {
                   const isSelected = user.id === currentUser?.id;
+                  const displayName = getLeadershipDisplayName(user);
                   return (
                     <button
                       key={user.id}
@@ -192,12 +202,12 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
                             : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                         }`}
                       >
-                        {user.name.charAt(0)}
+                        {displayName.charAt(0)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                            {user.name}
+                            {displayName}
                           </p>
                           {isSelected && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
                         </div>

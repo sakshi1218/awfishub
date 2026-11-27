@@ -9,6 +9,8 @@ export interface NavigationEntry {
 export interface NavigationSection {
   label: string;
   entries: NavigationEntry[];
+  href?: string;
+  icon?: string;
 }
 
 export const navigationSections: NavigationSection[] = [
@@ -33,6 +35,12 @@ export const navigationSections: NavigationSection[] = [
     ],
   },
   {
+    label: 'LMS Dashboard',
+    href: '/learning/dashboard',
+    icon: 'learning',
+    entries: [],
+  },
+  {
     label: 'Operations',
     entries: [
       { label: 'Tasks', href: '/tasks', description: 'Task board and work queue.', icon: 'tasks' },
@@ -48,6 +56,7 @@ export const navigationSections: NavigationSection[] = [
   {
     label: 'Department Workspaces',
     entries: [
+      { label: 'Employees', href: '/employees', description: 'Employee directory and profiles.', icon: 'people' },
       {
         label: 'Media',
         icon: 'media',
@@ -99,7 +108,12 @@ export const navigationSections: NavigationSection[] = [
           { label: 'TeleCaller Reports', href: '/telecaller/reports', description: 'TeleCaller reporting overview.' },
         ],
       },
-      { label: 'Technical Team', href: '/technical/dashboard', description: 'Technical workspace overview.', icon: 'technical' },
+      {
+        label: 'Technical Team',
+        href: '/technical/dashboard',
+        description: 'Technical workspace overview.',
+        icon: 'technical',
+      },
       {
         label: 'Sales Department',
         icon: 'sales',
@@ -140,22 +154,6 @@ export const navigationSections: NavigationSection[] = [
           { label: 'Operations Reports', href: '/operations/reports', description: 'Operations reporting overview.' },
         ],
       },
-    ],
-  },
-  {
-    label: 'Learning Management',
-    entries: [
-      { label: 'LMS Dashboard', href: '/learning/dashboard', description: 'Learning management overview.', icon: 'learning' },
-      { label: 'Programmes', href: '/learning/programmes', description: 'Browse programme providers and catalogue.', icon: 'learning' },
-      { label: 'Courses', href: '/learning/courses', description: 'Course catalogue and course detail entry points.', icon: 'learning' },
-      { label: 'Batches', href: '/learning/batches', description: 'Batch overview and management entry point.', icon: 'learning' },
-      { label: 'Faculty', href: '/learning/faculty', description: 'Faculty overview and assignment entry point.', icon: 'people' },
-      { label: 'Students', href: '/learning/students', description: 'Student directory and learning overview.', icon: 'people' },
-      { label: 'Enrollment', href: '/learning/enrollment', description: 'Enrollment overview.', icon: 'people' },
-      { label: 'Batch Attendance', href: '/learning/attendance', description: 'Batch attendance overview.', icon: 'attendance' },
-      { label: 'Assessments', href: '/learning/assessments', description: 'Assessment overview.', icon: 'tasks' },
-      { label: 'Student Progress', href: '/learning/progress', description: 'Student progress overview.', icon: 'reports' },
-      { label: 'Completion Reports', href: '/learning/completion-reports', description: 'Course and batch completion reports.', icon: 'reports' },
     ],
   },
   {

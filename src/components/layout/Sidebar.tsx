@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -30,12 +30,17 @@ import {
 } from 'lucide-react';
 import { navigationSections, type NavigationEntry } from '@/lib/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { getLeadershipDisplayName } from '@/lib/leadership-display-names';
+import { countNavigationEntries, getRoleNavigationSections } from '@/lib/role-navigation';
 
 interface SidebarProps {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
   mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
+  showAllMenus: boolean;
+  onShowAllMenus: () => void;
+  onRestoreRoleMenus: () => void;
 }
 
 const iconByName: Record<string, LucideIcon> = {
@@ -74,14 +79,22 @@ export default function Sidebar({
   setCollapsed,
   mobileOpen,
   setMobileOpen,
+  showAllMenus,
+  onShowAllMenus,
+  onRestoreRoleMenus,
 }: SidebarProps) {
   const pathname = usePathname();
   const { currentUser } = useAuth();
+  const currentUserDisplayName = currentUser ? getLeadershipDisplayName(currentUser) : '';
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ Overview: true });
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const roleNavigationSections = useMemo(() => getRoleNavigationSections(currentUser), [currentUser]);
+  const navigationIsLimited =
+    countNavigationEntries(roleNavigationSections) < countNavigationEntries(navigationSections);
+  const visibleNavigationSections = showAllMenus ? navigationSections : roleNavigationSections;
 
   useEffect(() => {
-    const activeSection = navigationSections.find((section) =>
+    const activeSection = visibleNavigationSections.find((section) =>
       section.entries.some((entry) => {
         if (isPathActive(pathname, entry.href)) return true;
         return entry.children?.some((child) => isPathActive(pathname, child.href)) ?? false;
@@ -101,7 +114,7 @@ export default function Sidebar({
         [`${activeSection.label}:${activeGroup.label}`]: true,
       }));
     }
-  }, [pathname]);
+  }, [pathname, visibleNavigationSections]);
 
   const toggleSection = (section: string) => {
     if (collapsed) {
@@ -223,11 +236,11 @@ export default function Sidebar({
         {!collapsed && currentUser && (
           <div className="mx-3 mt-3 flex items-center gap-3 rounded-xl border border-indigo-100 bg-indigo-50/70 px-3 py-2.5 dark:border-indigo-900/50 dark:bg-indigo-950/30">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
-              {currentUser.name.charAt(0)}
+              {currentUserDisplayName.charAt(0)}
             </span>
             <span className="min-w-0">
               <span className="block truncate text-xs font-semibold text-slate-900 dark:text-white">
-                {currentUser.name}
+                {currentUserDisplayName}
               </span>
               <span className="block truncate text-[10px] text-slate-500 dark:text-slate-400">
                 Demo preview · {currentUser.role.replace('_', ' ')}
@@ -236,8 +249,47 @@ export default function Sidebar({
           </div>
         )}
 
+        {!collapsed && currentUser && navigationIsLimited && (
+          <div className="mx-3 mt-2 rounded-xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                {showAllMenus ? 'All menus shown temporarily' : 'Menus tailored to this role'}
+              </span>
+              <button
+                type="button"
+                aria-label={showAllMenus ? 'Restore role-specific navigation' : 'Undo role-specific menu filtering and show all menus'}
+                onClick={showAllMenus ? onRestoreRoleMenus : onShowAllMenus}
+                className="shrink-0 rounded-md px-2 py-1 text-[10px] font-bold text-violet-700 hover:bg-violet-50 dark:text-violet-300 dark:hover:bg-violet-950/40"
+              >
+                {showAllMenus ? 'Restore' : 'Undo'}
+              </button>
+            </div>
+            <p className="mt-1 text-[9px] text-slate-400">Demo navigation only · not access control</p>
+          </div>
+        )}
+
         <nav aria-label="Main navigation" className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
-          {navigationSections.map((section) => {
+          {visibleNavigationSections.map((section) => {
+            if (section.href) {
+              const active = isPathActive(pathname, section.href);
+              const Icon = iconByName[section.icon ?? ''] ?? LayoutDashboard;
+              return (
+                <Link
+                  key={section.label}
+                  href={section.href}
+                  onClick={() => setMobileOpen(false)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs transition-colors ${
+                    active
+                      ? 'bg-indigo-600 font-semibold text-white shadow-sm shadow-indigo-600/20'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {!collapsed && <span className="truncate">{section.label}</span>}
+                </Link>
+              );
+            }
             const expanded = Boolean(openSections[section.label]);
             const sectionActive = section.entries.some((entry) => {
               if (isPathActive(pathname, entry.href)) return true;
