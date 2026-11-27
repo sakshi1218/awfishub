@@ -30,6 +30,16 @@ export interface VerticalProject {
   deadline: string;
   milestones: { name: string; completed: boolean }[];
   description: string;
+  quotation?: {
+    reference: string;
+    amount: string;
+    status: 'Draft' | 'Sent' | 'Approved' | 'Accepted';
+  };
+  agreement?: {
+    reference: string;
+    status: 'Draft' | 'Pending signature' | 'Signed';
+    signedDate?: string;
+  };
 }
 
 export interface VerticalTask {
@@ -377,6 +387,8 @@ export const FOUNDER_PILLARS: Record<string, CompanyPillar> = {
         teamCount: 8,
         deadline: '31 Jan 2027',
         description: 'Unified operational workspace with role isolation, automated task allocation, real-time workload telemetry, and financial ledger integration.',
+        quotation: { reference: 'QT-AIT-301', amount: '₹12,50,000', status: 'Draft' },
+        agreement: { reference: 'AG-AIT-301', status: 'Draft' },
         milestones: [
           { name: 'Core authentication & role-based security layer', completed: true },
           { name: 'Task delegation and workload capacity engine', completed: true },
@@ -394,6 +406,8 @@ export const FOUNDER_PILLARS: Record<string, CompanyPillar> = {
         teamCount: 5,
         deadline: '20 Dec 2026',
         description: 'Autonomous voice and WhatsApp AI agent capable of scheduling appointments, triage intake, and CRM synchronizations for healthcare chains.',
+        quotation: { reference: 'QT-AIT-302', amount: '₹8,40,000', status: 'Sent' },
+        agreement: { reference: 'AG-AIT-302', status: 'Pending signature' },
         milestones: [
           { name: 'HIPAA-compliant vector knowledge base configuration', completed: true },
           { name: 'Hindi and Marathi bilingual speech recognition model', completed: true },
@@ -411,6 +425,8 @@ export const FOUNDER_PILLARS: Record<string, CompanyPillar> = {
         teamCount: 4,
         deadline: '15 Feb 2027',
         description: 'Document intelligence pipeline processing supplier invoices, matching bank ledger entries, and generating audit-ready balance sheets.',
+        quotation: { reference: 'QT-AIT-303', amount: '₹5,60,000', status: 'Approved' },
+        agreement: { reference: 'AG-AIT-303', status: 'Signed', signedDate: '12 Nov 2026' },
         milestones: [
           { name: 'Multimodal OCR pipeline with 99.2% key field accuracy', completed: true },
           { name: 'Integration with ICICI Bank corporate webhook APIs', completed: true },
@@ -428,6 +444,8 @@ export const FOUNDER_PILLARS: Record<string, CompanyPillar> = {
         teamCount: 6,
         deadline: '05 Nov 2026',
         description: 'Browser-based real-time anomaly detection identifying gaze diversion, secondary devices, and audio chatter during university tests.',
+        quotation: { reference: 'QT-AIT-304', amount: '₹9,20,000', status: 'Accepted' },
+        agreement: { reference: 'AG-AIT-304', status: 'Signed', signedDate: '06 Nov 2026' },
         milestones: [
           { name: 'WebAssembly computer vision model running 45 FPS in browser', completed: true },
           { name: 'Zero-latency websocket alert feed for exam invigilators', completed: true },

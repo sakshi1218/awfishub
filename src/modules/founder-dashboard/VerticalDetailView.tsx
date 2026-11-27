@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { jsPDF } from 'jspdf';
 import {
   ArrowLeft,
   Users,
@@ -14,6 +15,8 @@ import {
   Calendar,
   X,
   TrendingUp,
+  FileText,
+  Download,
 } from 'lucide-react';
 import {
   CompanyPillar,
@@ -36,6 +39,36 @@ export default function VerticalDetailView({ pillar, onBack }: VerticalDetailVie
   const completedProjects = pillar.projects.filter((p) => p.status === 'Completed');
   const pendingTasks = pillar.tasks.filter((t) => t.status === 'Pending' || t.status === 'In Progress');
   const overdueTasks = pillar.tasks.filter((t) => t.status === 'Overdue');
+
+  const downloadAgreement = (project: VerticalProject) => {
+    if (!project.agreement) return;
+
+    const pdf = new jsPDF();
+    const agreementSummary = [
+      'SAMPLE AGREEMENT SUMMARY - DEMO DATA ONLY',
+      'This file is for founder dashboard preview only and is not a legal document.',
+      `Project: ${project.title}`,
+      `Agreement reference: ${project.agreement.reference}`,
+      `Status: ${project.agreement.status}`,
+      `Signed date: ${project.agreement.signedDate ?? 'Not signed'}`,
+    ];
+    let positionY = 20;
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.text(agreementSummary[0], 14, positionY);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+
+    agreementSummary.slice(1).forEach((line) => {
+      positionY += 9;
+      const wrappedLine = pdf.splitTextToSize(line, 180);
+      pdf.text(wrappedLine, 14, positionY);
+      positionY += (wrappedLine.length - 1) * 5;
+    });
+
+    pdf.save(`${project.agreement.reference}-sample.pdf`);
+  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -90,69 +123,71 @@ export default function VerticalDetailView({ pillar, onBack }: VerticalDetailVie
         </div>
       </div>
 
-      {/* Assigned Director Details */}
-      <div className="p-6 rounded-2xl bg-white dark:bg-[#141824] border border-slate-200 dark:border-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-slate-700 dark:text-slate-300" />
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-              Assigned Vertical Director
-            </h2>
-          </div>
-          <button
-            onClick={() => setSelectedDirector(pillar.director)}
-            className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            Full Profile →
-          </button>
-        </div>
-
-        <div
-          onClick={() => setSelectedDirector(pillar.director)}
-          className="p-5 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-5"
-        >
-          <div className="flex items-start sm:items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-base flex items-center justify-center shrink-0">
-              {pillar.director.avatar}
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  {pillar.director.name}
-                </h3>
-                <span className="text-[10px] font-mono text-slate-500 bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                  {pillar.director.id}
-                </span>
-              </div>
-              <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-0.5">
-                {pillar.director.role} • {pillar.director.department}
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl line-clamp-2">
-                {pillar.director.bio}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-xs shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-slate-200 dark:border-slate-800">
-            <div className="space-y-1 text-slate-600 dark:text-slate-400">
-              <div className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-slate-400" />
-                <span>{pillar.director.email}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-slate-400" />
-                <span>{pillar.director.phone}</span>
-              </div>
+      {pillar.id !== 'ai-it-solutions' && (
+        <div className="p-6 rounded-2xl bg-white dark:bg-[#141824] border border-slate-200 dark:border-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          {/* Assigned Director Details */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-slate-700 dark:text-slate-300" />
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                Assigned Vertical Director
+              </h2>
             </div>
             <button
-              type="button"
-              className="px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-xs hover:bg-slate-800 transition-colors"
+              onClick={() => setSelectedDirector(pillar.director)}
+              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
             >
-              Contact
+              Full Profile →
             </button>
           </div>
+
+          <div
+            onClick={() => setSelectedDirector(pillar.director)}
+            className="p-5 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-5"
+          >
+            <div className="flex items-start sm:items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-base flex items-center justify-center shrink-0">
+                {pillar.director.avatar}
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    {pillar.director.name}
+                  </h3>
+                  <span className="text-[10px] font-mono text-slate-500 bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                    {pillar.director.id}
+                  </span>
+                </div>
+                <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mt-0.5">
+                  {pillar.director.role} • {pillar.director.department}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl line-clamp-2">
+                  {pillar.director.bio}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-xs shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-slate-200 dark:border-slate-800">
+              <div className="space-y-1 text-slate-600 dark:text-slate-400">
+                <div className="flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{pillar.director.email}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{pillar.director.phone}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold text-xs hover:bg-slate-800 transition-colors"
+              >
+                Contact
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Projects Section: Active & Completed with Progress & Milestones */}
       <div className="p-6 rounded-2xl bg-white dark:bg-[#141824] border border-slate-200 dark:border-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-4">
@@ -554,6 +589,66 @@ export default function VerticalDetailView({ pillar, onBack }: VerticalDetailVie
                 ))}
               </div>
             </div>
+
+            {pillar.id === 'ai-it-solutions' && (
+              <section className="mt-5 space-y-3" aria-label="Project quotations and agreements">
+                <div>
+                  <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                    Quotation & Agreement
+                  </h4>
+                  <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                    Sample commercial details for the founder overview.
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <article className="rounded-xl border border-slate-200/70 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/40">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-slate-500" />
+                      <h5 className="text-xs font-semibold text-slate-800 dark:text-slate-200">Quotation</h5>
+                    </div>
+                    <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+                      {selectedProject.quotation?.reference ?? 'Not available'}
+                    </p>
+                    <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+                      {selectedProject.quotation?.amount ?? '—'}
+                    </p>
+                    <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-300">
+                      Status: {selectedProject.quotation?.status ?? 'Not available'}
+                    </p>
+                  </article>
+                  <article className="rounded-xl border border-slate-200/70 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/40">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-slate-500" />
+                        <h5 className="text-xs font-semibold text-slate-800 dark:text-slate-200">Agreement</h5>
+                      </div>
+                      {selectedProject.agreement && (
+                        <button
+                          type="button"
+                          onClick={() => downloadAgreement(selectedProject)}
+                          aria-label={`Download sample agreement ${selectedProject.agreement.reference}`}
+                          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-slate-600 hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                        >
+                          <Download className="h-3 w-3" />
+                          Download
+                        </button>
+                      )}
+                    </div>
+                    <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+                      {selectedProject.agreement?.reference ?? 'Not available'}
+                    </p>
+                    <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-300">
+                      Status: {selectedProject.agreement?.status ?? 'Not available'}
+                    </p>
+                    {selectedProject.agreement?.signedDate && (
+                      <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                        Signed: {selectedProject.agreement.signedDate}
+                      </p>
+                    )}
+                  </article>
+                </div>
+              </section>
+            )}
 
             <div className="mt-5 flex justify-end">
               <button
