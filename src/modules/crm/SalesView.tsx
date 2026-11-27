@@ -23,6 +23,7 @@ import {
   mockSalesFollowUps,
   FollowUp,
 } from '@/data/mock/salesCRM';
+import { useApp } from '@/context/AppContext';
 
 export type SalesTabType =
   | 'DASHBOARD'
@@ -170,6 +171,7 @@ interface CardRecord {
 }
 
 export function SalesView({ defaultTab = 'DASHBOARD' }: { defaultTab?: SalesTabType }) {
+  const { assets } = useApp();
   const mapInitialView = (t: SalesTabType): ViewKey => {
     if (t === 'COLLEGES') return 'colleges';
     if (t === 'VISITS') return 'visits';
@@ -286,6 +288,10 @@ export function SalesView({ defaultTab = 'DASHBOARD' }: { defaultTab?: SalesTabT
             ['Faculty expected', String(f.expectedParticipants)],
             ['Coordinator', f.assignedEmployee],
             ['Venue', f.meetingDetails || 'College seminar hall'],
+            ['Company assets', assets
+              .filter((asset) => asset.assignedToId === f.assignedEmployeeId)
+              .map((asset) => `${asset.name} (${asset.id}) · ${asset.status}`)
+              .join(' | ') || 'No company assets assigned'],
           ],
         }));
     }
@@ -372,7 +378,7 @@ export function SalesView({ defaultTab = 'DASHBOARD' }: { defaultTab?: SalesTabT
           ],
         };
       });
-  }, [view, query, followUps]);
+  }, [view, query, followUps, assets]);
 
   const navigateTo = (nextView: ViewKey) => {
     setView(nextView);

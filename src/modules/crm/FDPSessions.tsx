@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { mockFDPSessions, FDPSession, FDPStatus } from '@/data/mock/salesCRM';
+import { CompanyAsset } from '@/types';
+import { useApp } from '@/context/AppContext';
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<FDPStatus, { label: string; cls: string }> = {
@@ -329,7 +331,9 @@ function FDPCard({
 }
 
 // ─── View Modal ───────────────────────────────────────────────────────────────
-function ViewModal({ session, onClose }: { session: FDPSession; onClose: () => void }) {
+function ViewModal({ session, assets, onClose }: { session: FDPSession; assets: CompanyAsset[]; onClose: () => void }) {
+  const assignedAssets = assets.filter((asset) => asset.assignedToId === session.assignedEmployeeId);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
@@ -388,6 +392,42 @@ function ViewModal({ session, onClose }: { session: FDPSession; onClose: () => v
               <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{value}</p>
             </div>
           ))}
+
+          <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold text-amber-900">Company assets for this session</p>
+                <p className="mt-1 text-[11px] text-amber-800/80">
+                  Assets currently assigned to {session.assignedEmployee} for the FDP visit.
+                </p>
+              </div>
+              <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold text-amber-800">
+                {assignedAssets.length} {assignedAssets.length === 1 ? 'asset' : 'assets'}
+              </span>
+            </div>
+            {assignedAssets.length ? (
+              <div className="mt-3 space-y-2">
+                {assignedAssets.map((asset) => (
+                  <div key={asset.id} className="rounded-lg border border-amber-100 bg-white p-3">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">{asset.name}</p>
+                        <p className="mt-0.5 text-[11px] text-slate-500">{asset.category} · {asset.id} · Serial: {asset.serialNumber}</p>
+                      </div>
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">{asset.status}</span>
+                    </div>
+                    <p className="mt-2 text-[11px] text-slate-600">
+                      Condition: {asset.condition}{asset.issueDate ? ` · Issued ${fmtDate(asset.issueDate)}` : ''}{asset.expectedReturnDate ? ` · Return by ${fmtDate(asset.expectedReturnDate)}` : ''}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 rounded-lg border border-dashed border-amber-200 bg-white/70 p-3 text-xs italic text-amber-900/70">
+                No company assets are currently assigned to this session coordinator.
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="p-4 border-t border-slate-100 flex justify-end">
@@ -402,6 +442,7 @@ function ViewModal({ session, onClose }: { session: FDPSession; onClose: () => v
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function FDPSessions({ onViewCollege }: { onViewCollege: (collegeId: string) => void }) {
+  const { assets } = useApp();
   const [sessions, setSessions] = useState<FDPSession[]>(mockFDPSessions);
   const [activeTab, setActiveTab] = useState<TabFilter>('All');
   const [viewMode, setViewMode] = useState<'card' | 'table'>('card');
@@ -716,7 +757,7 @@ export default function FDPSessions({ onViewCollege }: { onViewCollege: (college
         />
       )}
       {viewingSession && (
-        <ViewModal session={viewingSession} onClose={() => setViewingSession(null)} />
+        <ViewModal session={viewingSession} assets={assets} onClose={() => setViewingSession(null)} />
       )}
     </div>
   );

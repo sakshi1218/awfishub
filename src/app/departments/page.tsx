@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Building2, CheckSquare, Lock, ArrowRight, Activity } from 'lucide-react';
+import { Building2, CheckSquare, Lock, ArrowRight, Activity, CalendarDays, Flag } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { PERMANENT_DEPARTMENTS } from '@/data/constants/departments';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { DailyWorkReport, DepartmentType, Employee, TaskItem } from '@/types';
+import { MOCK_LEAVE_HISTORY } from '@/data/mock/leave-history';
 
 const departmentWorkflows: Record<DepartmentType, string[]> = {
   Media: [
@@ -62,6 +63,13 @@ function DepartmentEmployeeProfile({
 }) {
   const completedTasks = tasks.filter((task) => task.status === 'Approved');
   const pendingTasks = tasks.filter((task) => task.status !== 'Approved');
+  const priorityTasks = tasks
+    .filter((task) => task.status !== 'Approved' && (task.priority === 'Critical' || task.priority === 'High'))
+    .sort((a, b) => {
+      const priorityOrder = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+      return priorityOrder[a.priority] - priorityOrder[b.priority] || a.dueDate.localeCompare(b.dueDate);
+    });
+  const leaveHistory = MOCK_LEAVE_HISTORY[employee.permanentId] || [];
   const recentReports = [...dailyReports]
     .filter((report) => report.employeeId === employee.id)
     .sort((a, b) => b.date.localeCompare(a.date))
@@ -115,6 +123,48 @@ function DepartmentEmployeeProfile({
         <StatusBadge label={employee.employmentStatus} variant={employee.employmentStatus === 'Active' ? 'success' : 'warning'} />
       </section>
 
+      <section className="rounded-2xl border border-rose-200 bg-gradient-to-br from-rose-50 to-white p-4 dark:border-rose-900/70 dark:from-rose-950/30 dark:to-slate-900">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300">
+              <Flag className="h-4 w-4" />
+            </span>
+            <div>
+              <h4 className="font-bold uppercase tracking-wider text-[11px] text-slate-800 dark:text-slate-200">Priority tasks</h4>
+              <p className="text-[10px] text-slate-500">Critical and high-priority assignments</p>
+            </div>
+          </div>
+          <span className="rounded-full bg-rose-100 px-2.5 py-1 text-[10px] font-bold text-rose-700 dark:bg-rose-900/60 dark:text-rose-300">
+            {priorityTasks.length} {priorityTasks.length === 1 ? 'task' : 'tasks'}
+          </span>
+        </div>
+        {priorityTasks.length ? (
+          <div className="mt-3 space-y-2">
+            {priorityTasks.map((task) => (
+              <div key={task.id} className="rounded-xl border border-rose-100 bg-white/90 p-3 dark:border-rose-900/50 dark:bg-slate-900/70">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-slate-900 dark:text-white">{task.title}</p>
+                    <p className="mt-0.5 text-[10px] text-slate-500">{task.id} · Due {formatDate(task.dueDate)}</p>
+                  </div>
+                  <div className="flex shrink-0 gap-1.5">
+                    <StatusBadge label={task.priority} variant={task.priority === 'Critical' ? 'danger' : 'warning'} />
+                    <StatusBadge label={task.status} variant="info" />
+                  </div>
+                </div>
+                <p className="mt-2 text-[10px] text-slate-600 dark:text-slate-300">{task.description}</p>
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                    <div className={`h-full rounded-full ${task.priority === 'Critical' ? 'bg-rose-600' : 'bg-amber-500'}`} style={{ width: `${task.progressPct}%` }} />
+                  </div>
+                  <span className="w-9 text-right text-[10px] font-semibold text-slate-500">{task.progressPct}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : <p className="mt-3 rounded-xl border border-dashed border-rose-200 p-3 text-xs italic text-slate-500 dark:border-rose-900/50">No priority tasks are assigned.</p>}
+      </section>
+
       <section>
         <h4 className="mb-2 font-bold uppercase tracking-wider text-[11px] text-slate-800 dark:text-slate-200">
           Employee profile
@@ -147,6 +197,29 @@ function DepartmentEmployeeProfile({
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center gap-2">
+          <CalendarDays className="h-4 w-4 text-indigo-600" />
+          <div>
+            <h4 className="font-bold uppercase tracking-wider text-[11px] text-slate-800 dark:text-slate-200">Leave history</h4>
+            <p className="mt-1 text-[10px] text-slate-500">Leave requests recorded for this employee.</p>
+          </div>
+        </div>
+        {leaveHistory.length ? (
+          <div className="mt-3 space-y-2">
+            {leaveHistory.map((record) => (
+              <div key={record.id} className="flex flex-col gap-2 rounded-xl border border-slate-100 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-800/50">
+                <div>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">{record.leaveType} leave · {record.totalDays} day{record.totalDays === 1 ? '' : 's'}</p>
+                  <p className="mt-0.5 text-[10px] text-slate-500">{formatDate(record.startDate)}{record.startDate !== record.endDate ? ` – ${formatDate(record.endDate)}` : ''} · {record.reason}</p>
+                </div>
+                <span className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-bold ${record.status === 'Approved' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : record.status === 'Pending' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' : 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'}`}>{record.status}</span>
+              </div>
+            ))}
+          </div>
+        ) : <p className="mt-3 rounded-xl bg-slate-50 p-3 text-xs italic text-slate-500 dark:bg-slate-800/50">No leave history recorded for this employee.</p>}
       </section>
 
       <section>
@@ -247,9 +320,10 @@ export default function DepartmentsPage() {
   const allowedDirectorDepts =
     currentRole === 'DIRECTOR' ? getDirectorAllowedDepartments(currentEmployee.id) : null;
 
-  const visibleDepartments = allowedDirectorDepts
+  const visibleDepartments = (allowedDirectorDepts
     ? PERMANENT_DEPARTMENTS.filter((d) => allowedDirectorDepts.includes(d.name))
-    : PERMANENT_DEPARTMENTS;
+    : PERMANENT_DEPARTMENTS
+  ).filter((department) => department.name !== 'Interns' && department.name !== 'Operation Team');
 
   const visibleTasks = getVisibleTasksForCurrentUser();
   const allConflicts = getPriorityConflicts();
