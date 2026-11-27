@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { BarChart3, BookOpen, BriefcaseBusiness } from 'lucide-react';
+import { BarChart3, BookOpen, BriefcaseBusiness, Users } from 'lucide-react';
 import ModulePage from '@/components/ui/ModulePage';
+import TechnicalEmployeesContent from '@/components/technical/TechnicalEmployeesContent';
 import TechnicalProjectsContent from '@/components/technical/TechnicalProjectsContent';
 import TechnicalDocumentationContent from '@/components/technical/TechnicalDocumentationContent';
 import TechnicalReportsContent from '@/components/technical/TechnicalReportsContent';
 
 const tabs = [
+  { id: 'employees', label: 'Employees', icon: Users },
   { id: 'projects', label: 'Projects', icon: BriefcaseBusiness },
   { id: 'documentation', label: 'Technical Documentation', icon: BookOpen },
   { id: 'reports', label: 'Technical Reports', icon: BarChart3 },
@@ -16,7 +18,7 @@ const tabs = [
 type TechnicalTab = (typeof tabs)[number]['id'];
 
 export default function TechnicalDashboardPage() {
-  const [activeTab, setActiveTab] = useState<TechnicalTab>('projects');
+  const [activeTab, setActiveTab] = useState<TechnicalTab>('employees');
 
   return (
     <ModulePage pathname="/technical/dashboard" hideQuickLinks>
@@ -52,6 +54,7 @@ export default function TechnicalDashboardPage() {
           aria-labelledby={`technical-tab-${activeTab}`}
           className="mt-5"
         >
+          {activeTab === 'employees' && <TechnicalEmployeesContent />}
           {activeTab === 'projects' && <TechnicalProjectsContent />}
           {activeTab === 'documentation' && <TechnicalDocumentationContent />}
           {activeTab === 'reports' && <TechnicalReportsContent />}
