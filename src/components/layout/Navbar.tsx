@@ -18,6 +18,7 @@ import { RoleType } from '@/types';
 
 interface NavbarProps {
   onMenuClick: () => void;
+  isFounderLanding?: boolean;
 }
 
 const QUICK_ROUTES = [
@@ -42,7 +43,7 @@ const QUICK_ROUTES = [
   { label: 'Settings & Permissions', href: '/settings', section: 'System' },
 ];
 
-export default function Navbar({ onMenuClick }: NavbarProps) {
+export default function Navbar({ onMenuClick, isFounderLanding }: NavbarProps) {
   const {
     currentRole,
     currentEmployee,
@@ -104,15 +105,32 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 lg:px-6 bg-white/95 dark:bg-[#130d26]/95 backdrop-blur-md border-b border-purple-200/80 dark:border-purple-900/50">
-      {/* Left: Menu + Search */}
+      {/* Left: Menu / Logo + Search */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={onMenuClick}
-          className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
-          aria-label="Toggle Menu"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
+        {isFounderLanding ? (
+          <Link href="/" className="flex items-center gap-2.5 mr-2">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-violet-600 via-fuchsia-500 to-blue-500 flex items-center justify-center font-black text-white text-sm shadow-md shadow-fuchsia-500/20">
+              A
+            </div>
+            <div className="leading-tight hidden sm:block">
+              <span className="font-extrabold text-sm tracking-tight text-slate-800 dark:text-white flex items-center gap-1.5">
+                AWFIS HUB
+                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-violet-100 dark:bg-fuchsia-500/20 text-violet-600 dark:text-pink-200 border border-violet-200 dark:border-fuchsia-400/30">
+                  MindLyft
+                </span>
+              </span>
+              <span className="text-[10px] text-slate-400 dark:text-purple-300 block">Founder View</span>
+            </div>
+          </Link>
+        ) : (
+          <button
+            onClick={onMenuClick}
+            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
+            aria-label="Toggle Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
 
         <div className="relative hidden sm:block">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 w-64 md:w-72">

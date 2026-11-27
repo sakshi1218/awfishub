@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useApp } from '@/context/AppContext';
-import ChairpersonDashboard from '@/components/dashboard/ChairpersonDashboard';
+import FounderDashboard from '@/modules/founder-dashboard/FounderDashboard';
 import DirectorDashboard from '@/components/dashboard/DirectorDashboard';
 import OperationHeadDashboard from '@/components/dashboard/OperationHeadDashboard';
 import TeamLeadDashboard from '@/components/dashboard/TeamLeadDashboard';
@@ -14,10 +14,12 @@ import DashboardModuleLauncher from '@/components/dashboard/DashboardModuleLaunc
 export default function MasterDashboardPage() {
   const { currentRole } = useApp();
 
+  if (currentRole === 'CHAIRPERSON') {
+    return <FounderDashboard />;
+  }
+
   const renderRoleOverview = () => {
     switch (currentRole) {
-      case 'CHAIRPERSON':
-        return <ChairpersonDashboard />;
       case 'DIRECTOR':
         return <DirectorDashboard />;
       case 'OPERATION_HEAD':
@@ -31,7 +33,7 @@ export default function MasterDashboardPage() {
       case 'INTERN':
         return <InternDashboard />;
       default:
-        return <ChairpersonDashboard />;
+        return <DirectorDashboard />;
     }
   };
 
