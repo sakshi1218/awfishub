@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { FOUNDER_PILLARS } from '@/data/mock/founderPillars';
 import VerticalDetailView from './VerticalDetailView';
 
 export default function FounderDashboard() {
   const [selectedVertical, setSelectedVertical] = useState<string | null>(null);
+  const router = useRouter();
 
   if (selectedVertical && FOUNDER_PILLARS[selectedVertical]) {
     return (
@@ -41,12 +43,22 @@ export default function FounderDashboard() {
           return (
             <div
               key={pillar.id}
-              onClick={() => setSelectedVertical(pillar.id)}
+              onClick={() => {
+                if (pillar.id === 'education') {
+                  router.push('/education');
+                  return;
+                }
+                setSelectedVertical(pillar.id);
+              }}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
+                  if (pillar.id === 'education') {
+                    router.push('/education');
+                    return;
+                  }
                   setSelectedVertical(pillar.id);
                 }
               }}

@@ -88,6 +88,7 @@ export default function Navbar({ onMenuClick, isFounderLanding }: NavbarProps) {
     dept: string;
   }[] = [
     { role: 'CHAIRPERSON', label: 'Chairperson', name: 'Pooja Ahire', empId: 'AWF-EMP-001', dept: 'Executive Board' },
+    { role: 'CHAIRPERSON', label: 'Administrator', name: 'Administrator', empId: 'ADMIN-001', dept: 'All company modules' },
     { role: 'DIRECTOR', label: 'Education Director', name: 'Anchal Agawane', empId: 'AWF-EMP-002', dept: 'Trainer, Counselor, TeleCaller' },
     { role: 'DIRECTOR', label: 'Innovation Director', name: 'Rutuja Botre', empId: 'AWF-EMP-003', dept: 'Sales, Media, Interns' },
     { role: 'DIRECTOR', label: 'Director (Tech & Accounts)', name: 'Shubham Jadhav', empId: 'AWF-EMP-004', dept: 'Technical Team & Accounts' },
@@ -270,7 +271,7 @@ export default function Navbar({ onMenuClick, isFounderLanding }: NavbarProps) {
               {currentEmployee.name}
             </span>
             <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-              {currentRole.replace('_', ' ')}
+              {currentEmployee.id === 'ADMIN-001' ? 'ADMIN' : currentRole.replace('_', ' ')}
             </span>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </button>
@@ -292,7 +293,7 @@ export default function Navbar({ onMenuClick, isFounderLanding }: NavbarProps) {
                   const selected = currentEmployee.id === opt.empId;
                   return (
                     <button
-                      key={opt.empId}
+                      key={`${opt.empId}-${opt.label}`}
                       onClick={() => {
                         switchRole(opt.role, opt.empId);
                         setRoleOpen(false);

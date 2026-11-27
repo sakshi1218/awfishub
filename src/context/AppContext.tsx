@@ -312,6 +312,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const switchRole = (role: RoleType, employeeId?: string) => {
     setCurrentRole(role);
+    if (role === 'CHAIRPERSON' && employeeId === 'ADMIN-001') {
+      const chairperson = employees.find((employee) => employee.id === 'AWF-EMP-001');
+      if (chairperson) {
+        setCurrentEmployee({
+          ...chairperson,
+          id: 'ADMIN-001',
+          permanentId: 'ADMIN-001',
+          name: 'Administrator',
+          email: 'admin@awfishub.in',
+          designation: 'System Administrator',
+          department: 'Operation Team',
+        });
+        return;
+      }
+    }
     if (employeeId) {
       const target = employees.find((e) => e.id === employeeId);
       if (target) {
