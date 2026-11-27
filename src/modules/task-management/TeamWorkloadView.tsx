@@ -1,22 +1,12 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import {
-  Search,
-  Users,
-  Plus,
-  Clock,
-  AlertTriangle,
-  CheckCircle2,
-  Eye,
-} from 'lucide-react';
+import { Search, Users, Plus, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { Employee, TaskItem } from '@/types';
-import { PERMANENT_DEPARTMENTS } from '@/data/constants/departments';
+import { Employee } from '@/types';
 
 interface TeamWorkloadViewProps {
-  onAssignToEmployee: (employee: Employee) => void;
-  onSelectTask: (task: TaskItem) => void;
+  onGiveTaskToEmployee: (employee: Employee) => void;
 }
 
 type WorkloadGroup = 'ALL' | 'FREE' | 'LIGHT' | 'BUSY' | 'OVERLOADED';
@@ -60,44 +50,22 @@ function formatDueShort(dateStr: string) {
   return new Date(y, m - 1, d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
-export function TeamWorkloadView({ onAssignToEmployee, onSelectTask }: TeamWorkloadViewProps) {
-  const {
-    tasks,
-    currentEmployee,
-    isChairperson,
-    isDirector,
-    getVisibleEmployees,
-    getDirectorAllowedDepartments,
-  } = useApp();
+export function TeamWorkloadView({ onGiveTaskToEmployee }: TeamWorkloadViewProps) {
+  const { tasks, getVisibleEmployees } = useApp();
 
   const [selectedGroup, setSelectedGroup] = useState<WorkloadGroup>('ALL');
-  const [deptFilter, setDeptFilter] = useState<string>('ALL');
-  const [includeOtherTeams, setIncludeOtherTeams] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
 
-  const visibleEmployees = getVisibleEmployees(includeOtherTeams);
+  const visibleEmployees = getVisibleEmployees();
 
-  const isInDirectorScope = (emp: Employee) => {
-    if (isChairperson) return true;
-    if (!isDirector) return emp.id === currentEmployee.id;
-    const allowed = getDirectorAllowedDepartments(currentEmployee.id);
-    return (
-      emp.id === currentEmployee.id ||
-      emp.reportingDirectorId === currentEmployee.id ||
-      allowed.includes(emp.department)
-    );
-  };
-
-  // Single source of truth for both summary card counts and the filtered employee list below
+  // Single source of truth for both summary cards and employee list below
   const baseEmployees = useMemo(() => {
     const q = search.trim().toLowerCase();
     return visibleEmployees
       .filter((emp) => {
-        if (deptFilter !== 'ALL' && emp.department !== deptFilter) return false;
         if (
           q &&
           !emp.name.toLowerCase().includes(q) &&
-          !emp.designation.toLowerCase().includes(q) &&
           !emp.department.toLowerCase().includes(q)
         ) {
           return false;
@@ -116,7 +84,7 @@ export function TeamWorkloadView({ onAssignToEmployee, onSelectTask }: TeamWorkl
           label,
         };
       });
-  }, [visibleEmployees, tasks, deptFilter, search]);
+  }, [visibleEmployees, tasks, search]);
 
   const totalCount = baseEmployees.length;
   const freeCount = baseEmployees.filter((e) => e.group === 'FREE').length;
@@ -140,7 +108,7 @@ export function TeamWorkloadView({ onAssignToEmployee, onSelectTask }: TeamWorkl
 
   return (
     <div className="space-y-5">
-      {/* 4 Clickable Summary Cards (<button> with select-none, cursor-pointer, focus ring) */}
+      {/* 4 Clickable Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <button
           type="button"
@@ -153,7 +121,7 @@ export function TeamWorkloadView({ onAssignToEmployee, onSelectTask }: TeamWorkl
           }`}
         >
           <span className="text-xs text-slate-500 font-semibold flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-violet-600" /> Total Employees
+            <Users className="w-3.5 h-3.5 text-violet-600" /> Total employees
           </span>
           <span className="block text-2xl font-black text-violet-600 dark:text-violet-400 mt-1">
             {totalCount}
@@ -171,7 +139,7 @@ export function TeamWorkloadView({ onAssignToEmployee, onSelectTask }: TeamWorkl
           }`}
         >
           <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Free Now
+            <CheckCircle2 className="w-3.5 h-3.5" /> Free now
           </span>
           <span className="block text-2xl font-black text-emerald-600 mt-1">{freeCount}</span>
         </button>
@@ -187,7 +155,7 @@ export function TeamWorkloadView({ onAssignToEmployee, onSelectTask }: TeamWorkl
           }`}
         >
           <span className="text-xs text-amber-600 font-semibold flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5" /> Busy (3–5 Tasks)
+            <Clock className="w-3.5 h-3.5" /> Busy (3–5)
           </span>
           <span className="block text-2xl font-black text-amber-600 mt-1">{busyCount}</span>
         </button>
@@ -209,51 +177,21 @@ export function TeamWorkloadView({ onAssignToEmployee, onSelectTask }: TeamWorkl
         </button>
       </div>
 
-      {/* Search & Department Filter */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search employee name..."
-              className="pl-9 pr-3 min-h-[40px] text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 outline-none focus:ring-2 focus:ring-violet-600 w-56"
-            />
-          </div>
-
-          <select
-            value={deptFilter}
-            onChange={(e) => setDeptFilter(e.target.value)}
-            className="min-h-[40px] px-3 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 font-semibold"
-          >
-            <option value="ALL">All Departments</option>
-            {PERMANENT_DEPARTMENTS.map((d) => (
-              <option key={d.id} value={d.name}>
-                {d.name}
-              </option>
-            ))}
-          </select>
+      {/* Search */}
+      <div className="flex justify-end">
+        <div className="relative w-full sm:w-64">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name or department..."
+            className="w-full min-h-[42px] pl-9 pr-3 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 outline-none focus:ring-2 focus:ring-violet-600"
+          />
         </div>
-
-        {isDirector && (
-          <button
-            type="button"
-            onClick={() => setIncludeOtherTeams((v) => !v)}
-            className={`px-3 min-h-[40px] rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-colors ${
-              includeOtherTeams
-                ? 'bg-violet-600 text-white border-violet-600'
-                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800'
-            }`}
-          >
-            <Eye className="w-3.5 h-3.5" />
-            {includeOtherTeams ? 'All Teams (Read-Only)' : 'Spot Free Across Teams'}
-          </button>
-        )}
       </div>
 
-      {/* Employee Workload Cards (Sorted fewest open tasks first) */}
+      {/* Employee Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {displayedEmployees.length === 0 ? (
           <div className="col-span-full py-12 text-center rounded-2xl bg-white dark:bg-slate-900 border border-dashed border-slate-200 dark:border-slate-800 text-sm text-slate-500">
@@ -262,7 +200,6 @@ export function TeamWorkloadView({ onAssignToEmployee, onSelectTask }: TeamWorkl
         ) : (
           displayedEmployees.map(({ employee, openTasks, label }) => {
             const badge = AVAILABILITY_BADGE[label];
-            const canAssign = isInDirectorScope(employee);
             const firstName = employee.name.split(' ')[0] || employee.name;
 
             return (
@@ -271,7 +208,6 @@ export function TeamWorkloadView({ onAssignToEmployee, onSelectTask }: TeamWorkl
                 className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between gap-3.5"
               >
                 <div className="space-y-3">
-                  {/* Avatar, Name, Department, Availability Badge */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-3 min-w-0">
                       <div
@@ -295,12 +231,10 @@ export function TeamWorkloadView({ onAssignToEmployee, onSelectTask }: TeamWorkl
                     </span>
                   </div>
 
-                  {/* Open task count */}
                   <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
                     {openTasks.length} open {openTasks.length === 1 ? 'task' : 'tasks'}
                   </p>
 
-                  {/* Open tasks list or ready note */}
                   {openTasks.length === 0 ? (
                     <p className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 text-xs font-medium">
                       No open tasks. Ready for new work.
@@ -308,25 +242,22 @@ export function TeamWorkloadView({ onAssignToEmployee, onSelectTask }: TeamWorkl
                   ) : (
                     <ul className="space-y-1.5 max-h-44 overflow-y-auto">
                       {openTasks.map((t) => {
-                        const overdue = t.dueDate < '2026-11-26';
+                        const overdue = t.dueDate < '2026-11-27';
                         return (
-                          <li key={t.id}>
-                            <button
-                              type="button"
-                              onClick={() => onSelectTask(t)}
-                              className="w-full text-left p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-violet-50 dark:hover:bg-slate-800 border border-slate-200/70 dark:border-slate-700 flex items-center justify-between gap-2 text-xs transition-colors"
+                          <li
+                            key={t.id}
+                            className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700 flex items-center justify-between gap-2 text-xs"
+                          >
+                            <span className="font-medium text-slate-800 dark:text-slate-200 truncate">
+                              {t.title}
+                            </span>
+                            <span
+                              className={`shrink-0 text-[11px] font-semibold ${
+                                overdue ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500'
+                              }`}
                             >
-                              <span className="font-medium text-slate-800 dark:text-slate-200 truncate">
-                                {t.title}
-                              </span>
-                              <span
-                                className={`shrink-0 text-[11px] font-semibold ${
-                                  overdue ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500'
-                                }`}
-                              >
-                                {overdue ? `Overdue · ${formatDueShort(t.dueDate)}` : formatDueShort(t.dueDate)}
-                              </span>
-                            </button>
+                              {overdue ? `Overdue · ${formatDueShort(t.dueDate)}` : formatDueShort(t.dueDate)}
+                            </span>
                           </li>
                         );
                       })}
@@ -334,22 +265,15 @@ export function TeamWorkloadView({ onAssignToEmployee, onSelectTask }: TeamWorkl
                   )}
                 </div>
 
-                {/* Action Button */}
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                  {canAssign ? (
-                    <button
-                      type="button"
-                      onClick={() => onAssignToEmployee(employee)}
-                      className="w-full min-h-[40px] rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      Assign a task to {firstName}
-                    </button>
-                  ) : (
-                    <span className="block w-full py-2 text-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-medium">
-                      Read-Only (Other Director Team)
-                    </span>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => onGiveTaskToEmployee(employee)}
+                    className="w-full min-h-[42px] rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Give a task to {firstName}
+                  </button>
                 </div>
               </div>
             );

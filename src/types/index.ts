@@ -39,6 +39,7 @@ export interface Employee {
   reportingManagerId: string | null;
   reportingManagerName: string;
   reportingDirectorId: string | null;
+  responsibleDepartments?: DepartmentType[];
   roleSeatId: string;
   employmentStatus: EmploymentStatus;
   avatarInitials: string;

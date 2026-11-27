@@ -46,15 +46,17 @@ export default function Sidebar({
   setMobileOpen,
 }: SidebarProps) {
   const pathname = usePathname();
-  const { currentRole, currentEmployee, isChairperson, notifications } = useApp();
+  const { currentRole, currentEmployee, isChairperson, isDirector, isOperationHead, notifications } = useApp();
 
   const roleConfig = ROLE_CONFIGS[currentRole];
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const unreadCount = notifications.filter(
+    (n) => (!n.userId || n.userId === currentEmployee.id) && !n.isRead
+  ).length;
 
   const navItems = [
     { label: 'Overview', href: '/dashboard', icon: LayoutDashboard, visible: true },
-    { label: 'My Tasks', href: '/my-tasks', icon: ListTodo, visible: true },
-    { label: 'Task Management', href: '/tasks', icon: CheckSquare, visible: true },
+    { label: 'My Tasks', href: '/my-tasks', icon: ListTodo, visible: !isChairperson },
+    { label: 'Task Management', href: '/tasks', icon: CheckSquare, visible: isChairperson || isDirector || isOperationHead },
     { label: 'Workspaces', href: '/workspaces', icon: Layers, visible: true },
     { label: 'Employees', href: '/employees', icon: Users, visible: true },
     { label: 'Organization Chart', href: '/organization', icon: GitFork, visible: true },

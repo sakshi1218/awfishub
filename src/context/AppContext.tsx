@@ -155,7 +155,17 @@ interface AppContextType {
     field: 'view' | 'create' | 'edit' | 'delete' | 'approve' | 'export'
   ) => void;
   addTask: (task: Omit<TaskItem, 'id' | 'transferHistory' | 'priorityHistory' | 'comments'>) => void;
-  updateTaskStatus: (taskId: string, status: TaskLifecycleStatus, progressPct?: number) => void;
+  updateTaskStatus: (taskId: string, status: TaskLifecycleStatus, progressPct?: number, note?: string) => void;
+  editTaskDetails: (
+    taskId: string,
+    updates: {
+      title?: string;
+      assignedToId?: string;
+      dueDate?: string;
+      priority?: TaskPriority;
+      status?: TaskLifecycleStatus;
+    }
+  ) => void;
   transferTask: (taskId: string, newAssigneeId: string, reason: string) => void;
   respondToTask: (taskId: string, responseStatus: 'Accepted' | 'Reschedule Requested' | 'Declined', reason?: string) => void;
   addTaskComment: (taskId: string, text: string) => void;
@@ -250,6 +260,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     priority?: TaskPriority;
     dueDate?: string;
   }) => {
+    const recipient = employees.find((e) => e.id === params.userId);
+    const useMyTasksRoute =
+      recipient &&
+      (recipient.role === 'TEAM_LEAD' ||
+        recipient.role === 'STAFF' ||
+        recipient.role === 'INTERN' ||
+        recipient.role === 'FACULTY' ||
+        ((recipient.role === 'DIRECTOR' || recipient.role === 'OPERATION_HEAD') &&
+          (params.type === 'TASK_ASSIGNED' ||
+            params.type === 'TASK_REASSIGNED' ||
+            params.type === 'TASK_APPROVED' ||
+            params.type === 'TASK_RETURNED' ||
+            params.type === 'PRIORITY_OR_DATE_CHANGED')));
+    const baseRoute = useMyTasksRoute ? '/my-tasks' : '/tasks';
     const newNotif: NotificationItem = {
       id: `NOTIF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       userId: params.userId,
@@ -264,7 +288,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       dueDate: params.dueDate,
       timestamp: 'Just now',
       isRead: false,
-      targetUrl: params.taskId ? `/tasks?taskId=${params.taskId}` : '/tasks',
+      targetUrl: params.taskId ? `${baseRoute}?taskId=${params.taskId}` : baseRoute,
     };
     setNotifications((prev) => [newNotif, ...prev]);
     setActiveToast(newNotif);
@@ -307,28 +331,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getDirectorAllowedDepartments = (directorId: string): DepartmentType[] => {
-    if (directorId === 'AWF-EMP-002') return ['Trainer', 'Counselor', 'TeleCaller'];
-    if (directorId === 'AWF-EMP-003') return ['Sales Department', 'Media', 'Interns'];
-    if (directorId === 'AWF-EMP-004') return ['Technical Team', 'Operation Team'];
-    return [];
+    const emp = employees.find((e) => e.id === directorId);
+    if (!emp) return [];
+    if (emp.responsibleDepartments && emp.responsibleDepartments.length > 0) {
+      return emp.responsibleDepartments;
+    }
+    return [emp.department];
   };
 
-  const getVisibleEmployees = (includeOtherTeams = false): Employee[] => {
-    if (currentRole === 'CHAIRPERSON' || currentRole === 'OPERATION_HEAD') {
-      return employees;
+  const getVisibleEmployees = (_includeOtherTeams = false): Employee[] => {
+    if (currentRole === 'CHAIRPERSON') {
+      return employees.filter((e) => e.id !== currentEmployee.id);
     }
-    if (currentRole === 'DIRECTOR') {
-      if (includeOtherTeams) return employees;
+    if (currentRole === 'DIRECTOR' || currentRole === 'OPERATION_HEAD') {
       const allowed = getDirectorAllowedDepartments(currentEmployee.id);
       return employees.filter(
         (e) =>
-          e.id === currentEmployee.id ||
-          e.reportingDirectorId === currentEmployee.id ||
-          allowed.includes(e.department)
+          e.id !== currentEmployee.id &&
+          e.role !== 'CHAIRPERSON' &&
+          (e.reportingDirectorId === currentEmployee.id ||
+            e.reportingManagerId === currentEmployee.id ||
+            allowed.includes(e.department))
       );
-    }
-    if (currentRole === 'TEAM_LEAD') {
-      return employees.filter((e) => e.department === currentEmployee.department);
     }
     return employees.filter((e) => e.id === currentEmployee.id);
   };
@@ -373,43 +397,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getVisibleTasksForCurrentUser = (): TaskItem[] => {
-    if (currentRole === 'CHAIRPERSON' || currentRole === 'OPERATION_HEAD') return tasks;
-    if (currentRole === 'DIRECTOR') {
+    if (currentRole === 'CHAIRPERSON') return tasks;
+    const founder = employees.find((e) => e.role === 'CHAIRPERSON');
+    const founderId = founder?.id;
+
+    if (currentRole === 'DIRECTOR' || currentRole === 'OPERATION_HEAD') {
       const allowed = getDirectorAllowedDepartments(currentEmployee.id);
+      const areaEmployeeIds = new Set(getVisibleEmployees().map((e) => e.id));
       return tasks.filter((t) => {
-        // Strictly hide Founder's tasks (assigned to or by Founder AWF-EMP-001)
-        if (t.assignedToId === 'AWF-EMP-001' || t.assignedById === 'AWF-EMP-001') {
+        // Always allow tasks assigned directly to this Director / Operational Head
+        if (t.assignedToId === currentEmployee.id) {
+          return true;
+        }
+        // Strictly hide Founder's tasks and other Directors' tasks
+        if (founderId && (t.assignedToId === founderId || t.assignedById === founderId)) {
           return false;
         }
-        // Strictly hide tasks assigned by other Directors
         if (t.assigningDirectorId && t.assigningDirectorId !== currentEmployee.id) {
           return false;
         }
-        // Cannot see private tasks of others
-        if (t.isPrivate && t.assignedById !== currentEmployee.id && t.assignedToId !== currentEmployee.id) {
+        if (t.isPrivate && t.assignedById !== currentEmployee.id) {
           return false;
         }
         return (
           t.assigningDirectorId === currentEmployee.id ||
           t.assignedById === currentEmployee.id ||
-          t.assignedToId === currentEmployee.id ||
+          areaEmployeeIds.has(t.assignedToId) ||
           allowed.includes(t.department)
         );
       });
     }
-    if (currentRole === 'TEAM_LEAD') {
-      return tasks.filter(
-        (t) =>
-          !t.isPrivate &&
-          (t.department === currentEmployee.department || t.assignedToId === currentEmployee.id)
-      );
-    }
-    // Employee / Faculty / Staff / Intern: own assigned tasks + authorized collaborative tasks (never private tasks of others)
-    return tasks.filter(
-      (t) =>
-        t.assignedToId === currentEmployee.id ||
-        (!t.isPrivate && t.visibility === 'Collaborative' && t.department === currentEmployee.department)
-    );
+
+    // Team Leads, Faculty, Staff, Interns: strictly only their own assigned tasks
+    return tasks.filter((t) => t.assignedToId === currentEmployee.id);
   };
 
   const getPriorityConflicts = () => {
@@ -623,19 +643,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateTaskStatus = (taskId: string, status: TaskLifecycleStatus, progressPct?: number) => {
+  const updateTaskStatus = (
+    taskId: string,
+    status: TaskLifecycleStatus,
+    progressPct?: number,
+    note?: string
+  ) => {
     const targetTask = tasks.find((t) => t.id === taskId);
+    const founder = employees.find((e) => e.role === 'CHAIRPERSON');
     setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId
-          ? {
-              ...t,
-              status,
-              progressPct: progressPct !== undefined ? progressPct : status === 'Approved' ? 100 : t.progressPct,
-              completionDate: status === 'Approved' ? new Date().toISOString().split('T')[0] : t.completionDate,
-            }
-          : t
-      )
+      prev.map((t) => {
+        if (t.id !== taskId) return t;
+        const nextComments =
+          note && note.trim()
+            ? [
+                ...t.comments,
+                {
+                  id: `CMT-${Date.now()}`,
+                  author: currentEmployee.name,
+                  role: currentEmployee.designation,
+                  text: note.trim(),
+                  timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+                },
+              ]
+            : t.comments;
+        return {
+          ...t,
+          status,
+          progressPct: progressPct !== undefined ? progressPct : status === 'Approved' ? 100 : t.progressPct,
+          completionDate: status === 'Approved' ? new Date().toISOString().split('T')[0] : t.completionDate,
+          comments: nextComments,
+        };
+      })
     );
     if (targetTask) {
       if (status === 'Approved' || status === 'Returned') {
@@ -643,11 +682,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           userId: targetTask.assignedToId,
           taskId,
           type: status === 'Approved' ? 'TASK_APPROVED' : 'TASK_RETURNED',
-          title: `Task ${status}: ${targetTask.id}`,
-          message: `${currentEmployee.name} marked "${targetTask.title}" as ${status}.`,
+          title: `Task ${status === 'Approved' ? 'approved' : 'sent back'}: ${targetTask.id}`,
+          message: note
+            ? `${currentEmployee.name} sent back "${targetTask.title}": ${note}`
+            : `${currentEmployee.name} marked "${targetTask.title}" as ${status}.`,
           category: 'Approval',
           priority: targetTask.priority,
           dueDate: targetTask.dueDate,
+        });
+      } else if (status === 'Submitted') {
+        const recipients = new Set<string>();
+        if (targetTask.assigningDirectorId) recipients.add(targetTask.assigningDirectorId);
+        if (targetTask.assignedById) recipients.add(targetTask.assignedById);
+        if (founder?.id) recipients.add(founder.id);
+        recipients.forEach((uid) => {
+          if (uid === currentEmployee.id) return;
+          pushTaskNotification({
+            userId: uid,
+            taskId,
+            type: 'TASK_SUBMITTED',
+            title: `${targetTask.assignedToName} submitted ${targetTask.id}`,
+            message: `"${targetTask.title}" is ready for review.`,
+            category: 'Approval',
+            priority: targetTask.priority,
+            dueDate: targetTask.dueDate,
+          });
         });
       } else if (status === 'In Progress' && targetTask.assignedById) {
         pushTaskNotification({
@@ -661,6 +720,60 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           dueDate: targetTask.dueDate,
         });
       }
+    }
+  };
+
+  const editTaskDetails = (
+    taskId: string,
+    updates: {
+      title?: string;
+      assignedToId?: string;
+      dueDate?: string;
+      priority?: TaskPriority;
+      status?: TaskLifecycleStatus;
+    }
+  ) => {
+    const targetTask = tasks.find((t) => t.id === taskId);
+    if (!targetTask) return;
+    const nextAssignee = updates.assignedToId
+      ? employees.find((e) => e.id === updates.assignedToId)
+      : undefined;
+
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== taskId) return t;
+        return {
+          ...t,
+          title: updates.title ?? t.title,
+          assignedToId: nextAssignee ? nextAssignee.id : t.assignedToId,
+          assignedToName: nextAssignee ? nextAssignee.name : t.assignedToName,
+          department: nextAssignee ? nextAssignee.department : t.department,
+          dueDate: updates.dueDate ?? t.dueDate,
+          priority: updates.priority ?? t.priority,
+          status: updates.status ?? t.status,
+          employeeResponse:
+            nextAssignee && nextAssignee.id !== t.assignedToId
+              ? { status: 'Pending' }
+              : t.employeeResponse,
+        };
+      })
+    );
+
+    const notifyId = nextAssignee?.id || targetTask.assignedToId;
+    if (notifyId) {
+      pushTaskNotification({
+        userId: notifyId,
+        taskId,
+        type: nextAssignee && nextAssignee.id !== targetTask.assignedToId ? 'TASK_REASSIGNED' : 'PRIORITY_OR_DATE_CHANGED',
+        title:
+          nextAssignee && nextAssignee.id !== targetTask.assignedToId
+            ? `Task given to you by ${currentEmployee.name}`
+            : `Task updated: ${taskId}`,
+        message: `${updates.title ?? targetTask.title} (Due ${updates.dueDate ?? targetTask.dueDate}, ${updates.priority ?? targetTask.priority})`,
+        category: 'Task Assignment',
+        priority: updates.priority ?? targetTask.priority,
+        dueDate: updates.dueDate ?? targetTask.dueDate,
+      });
     }
   };
 
@@ -730,17 +843,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       })
     );
     if (targetTask) {
-      pushTaskNotification({
-        userId: targetTask.assigningDirectorId || targetTask.assignedById,
-        taskId,
-        type: 'EMPLOYEE_RESPONSE',
-        title: `${currentEmployee.name} ${responseStatus} ${targetTask.id}`,
-        message: reason
-          ? `${currentEmployee.name} (${responseStatus}) on "${targetTask.title}": ${reason}`
-          : `${currentEmployee.name} accepted "${targetTask.title}" and started work.`,
-        category: 'Task Assignment',
-        priority: targetTask.priority,
-        dueDate: targetTask.dueDate,
+      const founder = employees.find((e) => e.role === 'CHAIRPERSON');
+      const recipients = new Set<string>();
+      if (targetTask.assigningDirectorId) recipients.add(targetTask.assigningDirectorId);
+      if (targetTask.assignedById) recipients.add(targetTask.assignedById);
+      if (founder?.id) recipients.add(founder.id);
+      recipients.forEach((uid) => {
+        if (uid === currentEmployee.id) return;
+        pushTaskNotification({
+          userId: uid,
+          taskId,
+          type: 'EMPLOYEE_RESPONSE',
+          title: `${currentEmployee.name} ${responseStatus} ${targetTask.id}`,
+          message: reason
+            ? `${currentEmployee.name} (${responseStatus}) on "${targetTask.title}": ${reason}`
+            : `${currentEmployee.name} accepted "${targetTask.title}" and started work.`,
+          category: 'Task Assignment',
+          priority: targetTask.priority,
+          dueDate: targetTask.dueDate,
+        });
       });
     }
   };
@@ -976,6 +1097,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         togglePermission,
         addTask,
         updateTaskStatus,
+        editTaskDetails,
         transferTask,
         respondToTask,
         addTaskComment,
