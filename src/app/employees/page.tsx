@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import type { DailyReport, Department, Prisma, ReportingHistory, Task } from '@prisma/client';
+import type { DailyReport, Department, LeaveRequest, Prisma, ReportingHistory, Task } from '@prisma/client';
 import {
   Users,
   UserPlus,
@@ -13,6 +13,9 @@ import {
   History,
   X,
   Save,
+  ChevronRight,
+  Flag,
+  CalendarDays,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -34,7 +37,74 @@ type EmployeeRecord = EmployeeSummary & {
   }>;
   tasksReceived?: Task[];
   dailyReports?: DailyReport[];
+  leaveRequests?: LeaveRequest[];
 };
+
+const EMPLOYEE_GROUPS = [
+  {
+    name: 'Counselors',
+    description: 'Student guidance and career counseling',
+    matches: (employee: EmployeeSummary) =>
+      employee.department?.name.toLowerCase().includes('counsel') ||
+      employee.designation.toLowerCase().includes('counsel'),
+    accent: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
+    border: 'border-emerald-200 hover:border-emerald-400 dark:border-emerald-900',
+  },
+  {
+    name: 'Directors',
+    description: 'Company and department leadership',
+    matches: (employee: EmployeeSummary) =>
+      employee.role.includes('DIRECTOR') || employee.role === 'FOUNDER',
+    accent: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
+    border: 'border-indigo-200 hover:border-indigo-400 dark:border-indigo-900',
+  },
+  {
+    name: 'Trainers',
+    description: 'Faculty, training and learning delivery',
+    matches: (employee: EmployeeSummary) =>
+      /training|education|trainer/i.test(employee.department?.name || '') ||
+      /trainer|faculty|instructor/i.test(employee.designation),
+    accent: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300',
+    border: 'border-violet-200 hover:border-violet-400 dark:border-violet-900',
+  },
+  {
+    name: 'Media Team',
+    description: 'Content, podcast and social media',
+    matches: (employee: EmployeeSummary) =>
+      /media|marketing/i.test(employee.department?.name || '') ||
+      /media|content|podcast/i.test(employee.designation),
+    accent: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300',
+    border: 'border-rose-200 hover:border-rose-400 dark:border-rose-900',
+  },
+  {
+    name: 'Interns',
+    description: 'Internship cohorts and apprentices',
+    matches: (employee: EmployeeSummary) =>
+      employee.role.includes('INTERN') || /intern/i.test(employee.designation),
+    accent: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
+    border: 'border-amber-200 hover:border-amber-400 dark:border-amber-900',
+  },
+  {
+    name: 'TeleCallers',
+    description: 'Student outreach and follow-ups',
+    matches: (employee: EmployeeSummary) =>
+      /tele.?caller|calling/i.test(employee.department?.name || '') ||
+      /tele.?caller/i.test(employee.designation),
+    accent: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300',
+    border: 'border-orange-200 hover:border-orange-400 dark:border-orange-900',
+  },
+  {
+    name: 'Operation Team',
+    description: 'Coordination, logistics and operations',
+    matches: (employee: EmployeeSummary) =>
+      /operation/i.test(employee.department?.name || '') ||
+      /operation/i.test(employee.designation),
+    accent: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+    border: 'border-slate-300 hover:border-slate-500 dark:border-slate-700',
+  },
+];
+
+type LeaveGrouping = 'date' | 'month' | 'year';
 
 function parseReportItems(value: string): string[] {
   try {
@@ -56,6 +126,8 @@ export default function EmployeesPage() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
   const [deptFilter, setDeptFilter] = useState('ALL');
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [leaveGrouping, setLeaveGrouping] = useState<LeaveGrouping>('date');
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -254,8 +326,10 @@ export default function EmployeesPage() {
 
     const matchesRole = roleFilter === 'ALL' || emp.role === roleFilter;
     const matchesDept = deptFilter === 'ALL' || emp.departmentId === deptFilter;
+    const activeGroup = EMPLOYEE_GROUPS.find((group) => group.name === selectedGroup);
+    const matchesGroup = !activeGroup || activeGroup.matches(emp);
 
-    return matchesSearch && matchesRole && matchesDept;
+    return matchesSearch && matchesRole && matchesDept && matchesGroup;
   });
 
   const managersList = employees.filter(
@@ -269,6 +343,27 @@ export default function EmployeesPage() {
   const pendingTasks = employeeTasks.filter(
     (task) => task.status !== 'COMPLETED' && task.status !== 'CANCELLED'
   );
+  const priorityTasks = employeeTasks
+    .filter((task) => task.status !== 'CANCELLED' && ['CRITICAL', 'HIGH'].includes(task.priority.toUpperCase()))
+    .sort((a, b) => {
+      const priorityOrder: Record<string, number> = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+      return (priorityOrder[a.priority.toUpperCase()] ?? 4)
+        - (priorityOrder[b.priority.toUpperCase()] ?? 4)
+        || new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+    });
+  const leaveRequests = selectedEmp?.leaveRequests || [];
+  const groupedLeaveRequests = leaveRequests.reduce<{ label: string; records: LeaveRequest[] }[]>((groups, record) => {
+    const date = new Date(record.startDate);
+    const label = leaveGrouping === 'date'
+      ? date.toLocaleDateString()
+      : leaveGrouping === 'month'
+        ? date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+        : String(date.getFullYear());
+    const group = groups.find((item) => item.label === label);
+    if (group) group.records.push(record);
+    else groups.push({ label, records: [record] });
+    return groups;
+  }, []);
   const employmentType = selectedEmp
     ? selectedEmp.designation.toLowerCase().includes('intern')
       ? 'Intern'
@@ -305,6 +400,59 @@ export default function EmployeesPage() {
           </button>
         )}
       </div>
+
+      <section aria-label="Employee groups" className="space-y-3">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Browse by team</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Choose a group to view its employees and profiles.</p>
+          </div>
+          {selectedGroup && (
+            <button
+              type="button"
+              onClick={() => setSelectedGroup(null)}
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+            >
+              Show all employees
+            </button>
+          )}
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {EMPLOYEE_GROUPS.map((group) => {
+            const count = employees.filter(group.matches).length;
+            const selected = selectedGroup === group.name;
+            return (
+              <button
+                key={group.name}
+                type="button"
+                onClick={() => {
+                  setSelectedGroup(selected ? null : group.name);
+                  setSearch('');
+                  setRoleFilter('ALL');
+                  setDeptFilter('ALL');
+                }}
+                aria-pressed={selected}
+                className={`rounded-2xl border p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                  selected
+                    ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50 dark:bg-blue-950/30'
+                    : `bg-white dark:bg-slate-900 ${group.border}`
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <span className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${group.accent}`}>
+                    <Users className="h-5 w-5" />
+                  </span>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    {count}
+                  </span>
+                </div>
+                <h3 className="mt-3 text-sm font-bold text-slate-900 dark:text-white">{group.name}</h3>
+                <p className="mt-1 text-[11px] leading-4 text-slate-500">{group.description}</p>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       {/* Filters Bar */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -349,7 +497,45 @@ export default function EmployeesPage() {
         </div>
       </div>
 
-      {/* Employees Table */}
+      {selectedGroup ? (
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">{selectedGroup}</h2>
+            <p className="text-xs text-slate-500 mt-0.5">{filteredEmployees.length} matching employees</p>
+          </div>
+          {loading ? (
+            <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-xs text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+              Loading employees...
+            </div>
+          ) : filteredEmployees.length ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              {filteredEmployees.map((employee) => (
+                <button
+                  key={employee.id}
+                  type="button"
+                  onClick={() => handleOpenView(employee)}
+                  className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:border-blue-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+                >
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-sm font-bold text-white">
+                    {employee.name.charAt(0)}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-bold text-slate-900 dark:text-white">{employee.name}</span>
+                    <span className="mt-0.5 block truncate text-[11px] text-slate-500">{employee.designation}</span>
+                    <span className="mt-1 block truncate text-[10px] font-mono text-blue-600">{employee.employeeId} · {employee.department?.name || 'Leadership Office'}</span>
+                  </span>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center text-xs text-slate-500 dark:border-slate-700">
+              No employees match the current search and filters.
+            </div>
+          )}
+        </section>
+      ) : (
+      <>
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -488,6 +674,8 @@ export default function EmployeesPage() {
           </table>
         </div>
       </div>
+      </>
+      )}
 
       {/* Add / Edit Employee Modal */}
       {(isAddModalOpen || isEditModalOpen) && (
@@ -922,6 +1110,71 @@ export default function EmployeesPage() {
                 </div>
               </div>
 
+              <section className="rounded-2xl border border-rose-200 bg-gradient-to-br from-rose-50 to-white p-4 dark:border-rose-900/70 dark:from-rose-950/30 dark:to-slate-900">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-900/60 dark:text-rose-300">
+                      <Flag className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <h4 className="font-bold uppercase tracking-wider text-[11px] text-slate-800 dark:text-slate-200">
+                        Priority Tasks
+                      </h4>
+                      <p className="text-[10px] text-slate-500">Critical and high-priority assignments</p>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-rose-100 px-2.5 py-1 text-[10px] font-bold text-rose-700 dark:bg-rose-900/60 dark:text-rose-300">
+                    {priorityTasks.length} {priorityTasks.length === 1 ? 'task' : 'tasks'}
+                  </span>
+                </div>
+                {priorityTasks.length ? (
+                  <div className="mt-3 space-y-2">
+                    {priorityTasks.map((task) => (
+                      <div key={task.id} className="rounded-xl border border-rose-100 bg-white/90 p-3 dark:border-rose-900/50 dark:bg-slate-900/70">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <p className="font-semibold text-slate-900 dark:text-white">{task.title}</p>
+                            <p className="mt-0.5 text-[10px] text-slate-500">
+                              {task.taskId} · Due {new Date(task.deadline).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 flex-wrap gap-1.5">
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                              task.priority.toUpperCase() === 'CRITICAL'
+                                ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                                : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+                            }`}>
+                              {task.priority}
+                            </span>
+                            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+                              {task.status.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                        </div>
+                        {task.description && (
+                          <p className="mt-2 text-[10px] text-slate-600 dark:text-slate-300">{task.description}</p>
+                        )}
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                            <div
+                              className={`h-full rounded-full ${task.priority.toUpperCase() === 'CRITICAL' ? 'bg-rose-600' : 'bg-amber-500'}`}
+                              style={{ width: `${Math.min(100, Math.max(0, task.progressPercentage))}%` }}
+                            />
+                          </div>
+                          <span className="w-9 text-right text-[10px] font-semibold text-slate-500">
+                            {Math.min(100, Math.max(0, task.progressPercentage))}%
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-3 rounded-xl border border-dashed border-rose-200 p-3 text-xs italic text-slate-500 dark:border-rose-900/50">
+                    No priority tasks are assigned to this employee.
+                  </p>
+                )}
+              </section>
+
               <section>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[11px]">
@@ -955,6 +1208,84 @@ export default function EmployeesPage() {
                     </div>
                   ))}
                 </div>
+              </section>
+
+              <section className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4 text-indigo-600" />
+                      <h4 className="font-bold uppercase tracking-wider text-[11px] text-slate-800 dark:text-slate-200">
+                        Leave History
+                      </h4>
+                    </div>
+                    <p className="mt-1 text-[10px] text-slate-500">Leave requests recorded for this employee.</p>
+                  </div>
+                  <div className="flex rounded-lg bg-slate-100 p-1 dark:bg-slate-800" aria-label="Group leave history">
+                    {([
+                      ['date', 'Date'],
+                      ['month', 'Month'],
+                      ['year', 'Year'],
+                    ] as const).map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setLeaveGrouping(value)}
+                        aria-pressed={leaveGrouping === value}
+                        className={`rounded-md px-2.5 py-1 text-[10px] font-bold ${
+                          leaveGrouping === value
+                            ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-900 dark:text-blue-300'
+                            : 'text-slate-500'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {groupedLeaveRequests.length ? (
+                  <div className="mt-3 space-y-3">
+                    {groupedLeaveRequests.map(({ label, records }) => (
+                      <div key={label}>
+                        <h5 className="mb-2 text-[11px] font-bold text-slate-600 dark:text-slate-300">{label}</h5>
+                        <div className="space-y-2">
+                          {records.map((record) => (
+                            <div
+                              key={record.id}
+                              className="flex flex-col gap-2 rounded-xl border border-slate-100 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-800/50"
+                            >
+                              <div>
+                                <p className="font-semibold text-slate-800 dark:text-slate-200">
+                                  {record.leaveType.replace(/_/g, ' ')} leave · {record.totalDays} day{record.totalDays === 1 ? '' : 's'}
+                                </p>
+                                <p className="mt-0.5 text-[10px] text-slate-500">
+                                  {new Date(record.startDate).toLocaleDateString()}
+                                  {new Date(record.startDate).toDateString() !== new Date(record.endDate).toDateString() &&
+                                    ` – ${new Date(record.endDate).toLocaleDateString()}`}
+                                  {' · '}{record.reason}
+                                  {record.rejectionReason && ` · Rejection: ${record.rejectionReason}`}
+                                </p>
+                              </div>
+                              <span className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                                record.status === 'APPROVED'
+                                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                  : record.status === 'PENDING'
+                                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+                                    : 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                              }`}>
+                                {record.status}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-3 rounded-xl bg-slate-50 p-3 text-xs italic text-slate-500 dark:bg-slate-800/50">
+                    No leave history recorded for this employee.
+                  </p>
+                )}
               </section>
 
               <section>

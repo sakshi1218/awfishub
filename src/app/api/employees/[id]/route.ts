@@ -17,6 +17,7 @@ export async function GET(
         tasksAssigned: { take: 5, orderBy: { createdAt: 'desc' } },
         tasksReceived: { orderBy: { updatedAt: 'desc' } },
         dailyReports: { take: 7, orderBy: { reportDate: 'desc' } },
+        leaveRequests: { orderBy: { startDate: 'desc' } },
       },
     });
 
