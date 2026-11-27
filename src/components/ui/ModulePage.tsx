@@ -8,6 +8,7 @@ interface ModulePageProps {
   title?: string;
   description?: string;
   children?: ReactNode;
+  hideQuickLinks?: boolean;
 }
 
 export default function ModulePage({
@@ -15,6 +16,7 @@ export default function ModulePage({
   title,
   description,
   children,
+  hideQuickLinks = false,
 }: ModulePageProps) {
   const entry = getNavigationEntry(pathname);
   const resolvedTitle = title ?? entry?.label ?? pathname.split('/').pop()?.replace(/-/g, ' ') ?? 'Module';
@@ -113,7 +115,7 @@ export default function ModulePage({
         </section>
       )}
 
-      {quickLinks.length > 0 && (
+      {!hideQuickLinks && quickLinks.length > 0 && (
         <section>
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
