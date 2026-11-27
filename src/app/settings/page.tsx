@@ -1,108 +1,118 @@
 'use client';
 
-import React from 'react';
-import {
-  Settings,
-  Check,
-  X,
-} from 'lucide-react';
+import React, { useState } from 'react';
+import { Settings, ShieldCheck, AlertCircle, Sun, Moon } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
+import { RoleType } from '@/types';
+import { ROLE_CONFIGS } from '@/data/constants/roles';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 
-export default function SettingsPage() {
-  const permissionMatrix = [
-    { module: 'Company Hierarchy & Department Creation', founder: true, director: false, manager: false, employee: false },
-    { module: 'Employee Add / Deactivate / Restructure', founder: true, director: true, manager: false, employee: false },
-    { module: 'Assign Tasks & Set Deadlines', founder: true, director: true, manager: true, employee: false },
-    { module: 'Review & Approve Daily Reports', founder: true, director: true, manager: true, employee: false },
-    { module: 'Schedule Review Meetings & Sessions', founder: true, director: true, manager: true, employee: true },
-    { module: 'Sales College Visits & FDP Sessions', founder: true, director: true, manager: true, employee: true },
-    { module: 'College Agreement Sign-off & Renewals', founder: true, director: true, manager: false, employee: false },
-    { module: 'CRM Deals & Pipeline Management', founder: true, director: true, manager: true, employee: true },
-    { module: 'Approve Leave Applications', founder: true, director: true, manager: true, employee: false },
-    { module: 'Company-Wide Performance & Financials', founder: true, director: true, manager: false, employee: false },
-  ];
+const ROLES: RoleType[] = [
+  'CHAIRPERSON',
+  'DIRECTOR',
+  'OPERATION_HEAD',
+  'TEAM_LEAD',
+  'FACULTY',
+  'STAFF',
+  'INTERN',
+];
+
+export default function SettingsAndPermissionsPage() {
+  const { permissionMatrix, togglePermission, currentRole, darkMode, toggleDarkMode } = useApp();
+  const [selectedRole, setSelectedRole] = useState<RoleType>(currentRole);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
-              <Settings className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-                Settings & Role Preview
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Application preferences and an illustrative role capability preview
-              </p>
-            </div>
-          </div>
-        </div>
+      <PageHeader
+        title="Role & Permission Simulation Matrix"
+        subtitle="Configure visual module permissions (View, Create, Edit, Delete, Approve, Export) and scopes across all 7 roles."
+        icon={Settings}
+        actions={
+          <button
+            onClick={toggleDarkMode}
+            className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold flex items-center gap-1.5"
+          >
+            {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+            {darkMode ? 'Light Theme' : 'Dark Theme'}
+          </button>
+        }
+      />
 
-        <span className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-          UI Preview Only · No Access Enforcement
-        </span>
+      {/* Explicit Frontend Simulation Notice */}
+      <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-start gap-3 text-xs text-amber-900 dark:text-amber-200">
+        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <div>
+          <span className="font-bold">Visual Permission Simulation Only:</span> This matrix demonstrates frontend role-based UI visibility and scopes using mock state. It does not implement server-side authentication or backend security enforcement.
+        </div>
       </div>
 
-      {/* Illustrative role capability preview */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-        <div className="p-5 border-b border-slate-200 dark:border-slate-800">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-            Demo Capability Preview
-          </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Illustrative interface content only. This prototype does not authenticate users or enforce permissions.
-          </p>
+      {/* Role Selector */}
+      <div className="flex flex-wrap gap-2">
+        {ROLES.map((r) => (
+          <button
+            key={r}
+            onClick={() => setSelectedRole(r)}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+              selectedRole === r
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+            }`}
+          >
+            {ROLE_CONFIGS[r].title}
+          </button>
+        ))}
+      </div>
+
+      {/* Permission Matrix Table */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-x-auto">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-blue-600" />
+            <span className="text-xs font-bold text-slate-900 dark:text-white">
+              Permissions for: {ROLE_CONFIGS[selectedRole].title}
+            </span>
+          </div>
+          <span className="text-[11px] text-slate-500">{ROLE_CONFIGS[selectedRole].description}</span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="px-5 py-3.5">System Capability / Operational Scope</th>
-                <th className="px-4 py-3.5 text-center">Founder</th>
-                <th className="px-4 py-3.5 text-center">Director</th>
-                <th className="px-4 py-3.5 text-center">Manager</th>
-                <th className="px-4 py-3.5 text-center">Employee</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-              {permissionMatrix.map((item, idx) => (
-                <tr key={idx} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
-                  <td className="px-5 py-3.5 font-semibold text-slate-900 dark:text-white">
-                    {item.module}
+        <table className="w-full text-left text-xs">
+          <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-[10px] font-bold uppercase text-slate-500">
+            <tr>
+              <th className="py-3 px-4">Module</th>
+              <th className="py-3 px-4">Scope</th>
+              <th className="py-3 px-4 text-center">View</th>
+              <th className="py-3 px-4 text-center">Create</th>
+              <th className="py-3 px-4 text-center">Edit</th>
+              <th className="py-3 px-4 text-center">Delete</th>
+              <th className="py-3 px-4 text-center">Approve</th>
+              <th className="py-3 px-4 text-center">Export</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            {permissionMatrix.map((row) => {
+              const p = row.rolePermissions[selectedRole];
+              return (
+                <tr key={row.module} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                  <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">{row.module}</td>
+                  <td className="py-3 px-4">
+                    <StatusBadge label={p.scope} variant={p.scope === 'Company' ? 'success' : p.scope === 'None' ? 'danger' : 'info'} />
                   </td>
-                  <td className="px-4 py-3.5 text-center">
-                    <Check className="w-4 h-4 text-emerald-500 mx-auto" />
-                  </td>
-                  <td className="px-4 py-3.5 text-center">
-                    {item.director ? (
-                      <Check className="w-4 h-4 text-emerald-500 mx-auto" />
-                    ) : (
-                      <X className="w-4 h-4 text-slate-300 dark:text-slate-600 mx-auto" />
-                    )}
-                  </td>
-                  <td className="px-4 py-3.5 text-center">
-                    {item.manager ? (
-                      <Check className="w-4 h-4 text-emerald-500 mx-auto" />
-                    ) : (
-                      <X className="w-4 h-4 text-slate-300 dark:text-slate-600 mx-auto" />
-                    )}
-                  </td>
-                  <td className="px-4 py-3.5 text-center">
-                    {item.employee ? (
-                      <Check className="w-4 h-4 text-emerald-500 mx-auto" />
-                    ) : (
-                      <X className="w-4 h-4 text-slate-300 dark:text-slate-600 mx-auto" />
-                    )}
-                  </td>
+                  {(['view', 'create', 'edit', 'delete', 'approve', 'export'] as const).map((field) => (
+                    <td key={field} className="py-3 px-4 text-center">
+                      <input
+                        type="checkbox"
+                        checked={p[field]}
+                        onChange={() => togglePermission(row.module, selectedRole, field)}
+                        className="rounded text-blue-600 cursor-pointer"
+                      />
+                    </td>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );

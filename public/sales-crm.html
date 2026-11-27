@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f8f7fc;
+      --surface: #ffffff;
+      --surface-muted: #f1eff7;
+      --border: #e3dff0;
+      --text: #181622;
+      --text-muted: #625d75;
+      --brand: #7c3aed;
+      --brand-hover: #6d28d9;
+      --brand-soft: #ede9fe;
+
+      --c-colleges: #7c3aed;
+      --c-visits: #ec4899;
+      --c-fdp: #2563eb;
+      --c-tieups: #16a34a;
+      --c-clients: #d97706;
+      --c-agreements: #4f46e5;
+      --c-followups: #dc2626;
+
+      --b-green-text: #15803d;
+      --b-green-bg: #dcfce7;
+      --b-amber-text: #b45309;
+      --b-amber-bg: #fef3c7;
+      --b-blue-text: #1d4ed8;
+      --b-blue-bg: #dbeafe;
+      --b-red-text: #b91c1c;
+      --b-red-bg: #fee2e2;
+
+      --shadow: 0 1px 3px rgba(24, 22, 34, 0.06), 0 1px 2px rgba(24, 22, 34, 0.04);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #110f1a;
+        --surface: #1b1829;
+        --surface-muted: #242036;
+        --border: #332e4d;
+        --text: #f3f1fa;
+        --text-muted: #a9a3c2;
+        --brand: #9366f9;
+        --brand-hover: #7c3aed;
+        --brand-soft: #2e2152;
+
+        --c-colleges: #a78bfa;
+        --c-visits: #f472b6;
+        --c-fdp: #60a5fa;
+        --c-tieups: #4ade80;
+        --c-clients: #fbbf24;
+        --c-agreements: #818cf8;
+        --c-followups: #f87171;
+
+        --b-green-text: #86efac;
+        --b-green-bg: rgba(22, 163, 74, 0.22);
+        --b-amber-text: #fde68a;
+        --b-amber-bg: rgba(217, 119, 6, 0.22);
+        --b-blue-text: #93c5fd;
+        --b-blue-bg: rgba(37, 99, 235, 0.22);
+        --b-red-text: #fca5a5;
+        --b-red-bg: rgba(220, 38, 38, 0.22);
+
+        --shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+      }
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input {
+      font-family: inherit;
+      font-size: 0.9375rem;
+      color: inherit;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--brand);
+      outline-offset: 2px;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 20px 64px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .header-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: var(--brand);
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      margin: 0;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .header-sub {
+      margin: 2px 0 0;
+      font-size: 0.9375rem;
+      color: var(--text-muted);
+    }
+
+    /* 7 Summary Boxes */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .summary-box {
+      text-align: left;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left-width: 4px;
+      border-radius: 14px;
+      padding: 14px 14px 14px 15px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: transform 0.12s ease, box-shadow 0.15s ease, outline-color 0.15s ease;
+    }
+
+    .summary-box:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(24, 22, 34, 0.08);
+    }
+
+    .summary-box[data-section="colleges"] { border-left-color: var(--c-colleges); }
+    .summary-box[data-section="visits"] { border-left-color: var(--c-visits); }
+    .summary-box[data-section="fdp"] { border-left-color: var(--c-fdp); }
+    .summary-box[data-section="tieups"] { border-left-color: var(--c-tieups); }
+    .summary-box[data-section="clients"] { border-left-color: var(--c-clients); }
+    .summary-box[data-section="agreements"] { border-left-color: var(--c-agreements); }
+    .summary-box[data-section="followups"] { border-left-color: var(--c-followups); }
+
+    .summary-box.active[data-section="colleges"] { outline: 2px solid var(--c-colleges); }
+    .summary-box.active[data-section="visits"] { outline: 2px solid var(--c-visits); }
+    .summary-box.active[data-section="fdp"] { outline: 2px solid var(--c-fdp); }
+    .summary-box.active[data-section="tieups"] { outline: 2px solid var(--c-tieups); }
+    .summary-box.active[data-section="clients"] { outline: 2px solid var(--c-clients); }
+    .summary-box.active[data-section="agreements"] { outline: 2px solid var(--c-agreements); }
+    .summary-box.active[data-section="followups"] { outline: 2px solid var(--c-followups); }
+
+    .sum-label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .sum-num {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sum-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .sum-sub-red {
+      color: var(--c-followups);
+      font-weight: 600;
+    }
+
+    /* Section Headings & Controls */
+    .section-heading {
+      margin: 0 0 14px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .section-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .section-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-secondary {
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+
+    .btn-primary {
+      min-height: 44px;
+      padding: 0 18px;
+      border-radius: 12px;
+      border: none;
+      background: var(--brand);
+      color: #ffffff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-hover);
+    }
+
+    .btn-done {
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: 10px;
+      border: 1px solid var(--c-tieups);
+      background: var(--b-green-bg);
+      color: var(--b-green-text);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-done:hover {
+      filter: brightness(0.96);
+    }
+
+    .search-box {
+      min-height: 44px;
+      min-width: 240px;
+      padding: 0 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    /* Record & Follow-up Boxes */
+    .records-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .record-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left-width: 4px;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .record-box[data-stripe="colleges"] { border-left-color: var(--c-colleges); }
+    .record-box[data-stripe="visits"] { border-left-color: var(--c-visits); }
+    .record-box[data-stripe="fdp"] { border-left-color: var(--c-fdp); }
+    .record-box[data-stripe="tieups"] { border-left-color: var(--c-tieups); }
+    .record-box[data-stripe="clients"] { border-left-color: var(--c-clients); }
+    .record-box[data-stripe="agreements"] { border-left-color: var(--c-agreements); }
+    .record-box[data-stripe="followups"] { border-left-color: var(--c-followups); }
+
+    .record-trigger {
+      width: 100%;
+      min-height: 64px;
+      padding: 14px 16px;
+      border: none;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .record-trigger:hover {
+      background: var(--surface-muted);
+    }
+
+    .record-main {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .record-top {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .record-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .record-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .badge-green { background: var(--b-green-bg); color: var(--b-green-text); }
+    .badge-amber { background: var(--b-amber-bg); color: var(--b-amber-text); }
+    .badge-blue { background: var(--b-blue-bg); color: var(--b-blue-text); }
+    .badge-red { background: var(--b-red-bg); color: var(--b-red-text); }
+
+    .arrow {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      transition: transform 0.15s ease;
+    }
+
+    .record-box.open .arrow {
+      transform: rotate(90deg);
+    }
+
+    .record-details {
+      padding: 0 16px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px 16px;
+      padding-top: 14px;
+    }
+
+    .detail-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .detail-val {
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .details-actions {
+      margin-top: 14px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* Dashboard Follow-up Box */
+    .attn-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--c-followups);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .attn-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+    }
+
+    .attn-overdue {
+      color: var(--c-followups);
+      font-weight: 700;
+    }
+
+    .dash-footer {
+      margin-top: 16px;
+    }
+
+    .empty-state {
+      padding: 28px 18px;
+      text-align: center;
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 600px) {
+      .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .search-box {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-icon" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+          <polyline points="16 7 22 7 22 13" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="header-title">Sales CRM</h1>
+        <p class="header-sub">College visits, FDP sessions, tie-ups, clients, agreements and follow-ups in one place.</p>
+      </div>
+    </header>
+
+    <!-- Seven Summary Boxes (identical on every view) -->
+    <section class="summary-grid" id="summaryGrid" aria-label="Sales summary navigation"></section>
+
+    <!-- Dashboard View -->
+    <section id="dashboardView">
+      <h2 class="section-heading">Needs your attention</h2>
+      <div class="records-list" id="attentionList"></div>
+      <div class="dash-footer">
+        <button type="button" class="btn-secondary" id="seeAllFollowupsBtn">See all follow-ups</button>
+      </div>
+    </section>
+
+    <!-- Section List View -->
+    <section id="sectionView" hidden>
+      <div class="section-bar">
+        <div class="section-bar-left">
+          <button type="button" class="btn-secondary" id="backToDashBtn">Back to dashboard</button>
+          <h2 class="section-heading" id="sectionTitle" style="margin:0;"></h2>
+        </div>
+        <input
+          type="search"
+          class="search-box"
+          id="sectionSearch"
+          placeholder="Search..."
+          aria-label="Search records"
+        />
+      </div>
+      <div class="records-list" id="recordsList"></div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = 'awfis_sales_crm_done_v1';
+
+      function offsetDate(days) {
+        const d = new Date();
+        d.setDate(d.getDate() + days);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      }
+
+      function todayISO() {
+        return offsetDate(0);
+      }
+
+      function formatDate(dateStr) {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        return new Date(y, m - 1, d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+      }
+
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      // 11 Pune colleges
+      const colleges = [
+        { id: 'COL-01', name: 'COEP Technological University', city: 'Pune (Shivajinagar)', contact: 'Dr. S. Kulkarni', stage: 'Active', phone: '+91 00000 00001', notes: 'Flagship engineering partner for AI & Placement bootcamps.' },
+        { id: 'COL-02', name: 'MIT-WPU', city: 'Pune (Kothrud)', contact: 'Prof. R. Joshi', stage: 'Negotiating', phone: '+91 00000 00002', notes: 'Interested in 2-day Faculty Development Program.' },
+        { id: 'COL-03', name: 'VIT Pune', city: 'Pune (Bibwewadi)', contact: 'Dr. A. Deshpande', stage: 'Interested', phone: '+91 00000 00003', notes: 'Requested placement readiness proposal for 240 students.' },
+        { id: 'COL-04', name: 'PICT', city: 'Pune (Dhankawadi)', contact: 'Prof. M. Patwardhan', stage: 'Pitched', phone: '+91 00000 00004', notes: 'Strong coding club; awaiting Dean meeting slot.' },
+        { id: 'COL-05', name: 'PCCOE', city: 'Pune (Nigdi)', contact: 'Dr. S. Patil', stage: 'Approved', phone: '+91 00000 00005', notes: 'FDP approved for December; MoU under review.' },
+        { id: 'COL-06', name: 'VIIT Pune', city: 'Pune (Kondhwa)', contact: 'Prof. N. Gokhale', stage: 'Contacted', phone: '+91 00000 00006', notes: 'Initial call completed; campus visit planned next week.' },
+        { id: 'COL-07', name: 'Sinhgad College of Engineering', city: 'Pune (Vadgaon)', contact: 'Dr. V. Bhosale', stage: 'Interested', phone: '+91 00000 00007', notes: 'High student volume; interested in CDAC prep workshops.' },
+        { id: 'COL-08', name: 'Cummins College of Engineering', city: 'Pune (Karvenagar)', contact: 'Prof. P. More', stage: 'Meeting set', phone: '+91 00000 00008', notes: 'Meeting set with TPO for MindlyftAI curriculum.' },
+        { id: 'COL-09', name: 'Bharati Vidyapeeth COE', city: 'Pune (Katraj)', contact: 'Dr. K. Sawant', stage: 'Proposed', phone: '+91 00000 00009', notes: 'Proposal shared for semester-long training tie-up.' },
+        { id: 'COL-10', name: 'DY Patil COE Akurdi', city: 'Pune (Akurdi)', contact: 'Prof. R. Shinde', stage: 'Signed', phone: '+91 00000 00010', notes: 'Signed FDP agreement; scheduling batch dates.' },
+        { id: 'COL-11', name: 'AISSMS COE', city: 'Pune (Kennedy Road)', contact: 'Dr. T. Naik', stage: 'Contacted', phone: '+91 00000 00011', notes: 'TPO asked for sample student outcomes deck.' }
+      ];
+
+      // 11 visits
+      const visits = [
+        { id: 'VIS-01', college: 'COEP Technological University', date: offsetDate(-12), visitedBy: 'Ritesh Deshmukh', outcome: 'Signed', met: 'Dr. S. Kulkarni (TPO)', notes: 'Reviewed annual MoU renewal terms.', nextStep: 'Send final signed copy to Dean office.' },
+        { id: 'VIS-02', college: 'MIT-WPU', date: offsetDate(-9), visitedBy: 'Rutuja Botre', outcome: 'Negotiating', met: 'Prof. R. Joshi (HoD CSE)', notes: 'Discussed AI lab setup & faculty training.', nextStep: 'Share revised commercial quote.' },
+        { id: 'VIS-03', college: 'VIT Pune', date: offsetDate(-7), visitedBy: 'Ritesh Deshmukh', outcome: 'Interested', met: 'Dr. A. Deshpande', notes: 'Strong interest in 6-week placement bootcamp.', nextStep: 'Prepare custom syllabus for 240 students.' },
+        { id: 'VIS-04', college: 'PICT', date: offsetDate(-6), visitedBy: 'Anchal Agawane', outcome: 'Pitched', met: 'Prof. M. Patwardhan', notes: 'Presented MindlyftAI student assessment demo.', nextStep: 'Confirm Principal presentation date.' },
+        { id: 'VIS-05', college: 'PCCOE', date: offsetDate(-5), visitedBy: 'Ritesh Deshmukh', outcome: 'Approved', met: 'Dr. S. Patil (Principal)', notes: 'Approved 2-day FDP for 60 faculty members.', nextStep: 'Confirm trainer roster and auditorium.' },
+        { id: 'VIS-06', college: 'VIIT Pune', date: offsetDate(-4), visitedBy: 'Priya Sharma', outcome: 'Contacted', met: 'Prof. N. Gokhale', notes: 'Dropped off brochure and collected TPO contacts.', nextStep: 'Call back for formal pitch slot.' },
+        { id: 'VIS-07', college: 'Sinhgad College of Engineering', date: offsetDate(-3), visitedBy: 'Ritesh Deshmukh', outcome: 'Interested', met: 'Dr. V. Bhosale', notes: 'Needs weekend technical sessions for 3rd year.', nextStep: 'Send weekend batch calendar.' },
+        { id: 'VIS-08', college: 'Cummins College of Engineering', date: offsetDate(-2), visitedBy: 'Anchal Agawane', outcome: 'Meeting set', met: 'Prof. P. More', notes: 'Aligned on Women-in-Tech workshop series.', nextStep: 'Attend follow-up meeting on Friday.' },
+        { id: 'VIS-09', college: 'Bharati Vidyapeeth COE', date: offsetDate(-2), visitedBy: 'Ritesh Deshmukh', outcome: 'Proposed', met: 'Dr. K. Sawant', notes: 'Handed over semester tie-up proposal.', nextStep: 'Follow up on management approval.' },
+        { id: 'VIS-10', college: 'DY Patil COE Akurdi', date: offsetDate(-1), visitedBy: 'Rutuja Botre', outcome: 'Signed', met: 'Prof. R. Shinde', notes: 'Collected signed FDP agreement.', nextStep: 'Kick off session scheduling.' },
+        { id: 'VIS-11', college: 'AISSMS COE', date: offsetDate(0), visitedBy: 'Priya Sharma', outcome: 'Contacted', met: 'Dr. T. Naik', notes: 'Introductory meeting at campus placement cell.', nextStep: 'Email case studies and outcomes deck.' }
+      ];
+
+      // 8 FDP sessions (2 Approved)
+      const fdpSessions = [
+        { id: 'FDP-01', title: 'Generative AI in Engineering Pedagogy', college: 'COEP Technological University', date: offsetDate(10), status: 'Approved', faculty: '45 faculty', coordinator: 'Dr. Kunal More', venue: 'Main Auditorium, COEP' },
+        { id: 'FDP-02', title: 'Cloud Native & DevOps Lab Enablement', college: 'PCCOE', date: offsetDate(14), status: 'Approved', faculty: '60 faculty', coordinator: 'Amit Verma', venue: 'Seminar Hall B, PCCOE' },
+        { id: 'FDP-03', title: 'Full-Stack Microservices Architecture', college: 'MIT-WPU', date: offsetDate(18), status: 'Negotiating', faculty: '50 faculty', coordinator: 'Rutuja Botre', venue: 'CSE Block, MIT-WPU' },
+        { id: 'FDP-04', title: 'Data Science & ML Project Mentoring', college: 'VIT Pune', date: offsetDate(21), status: 'Proposed', faculty: '35 faculty', coordinator: 'Anchal Agawane', venue: 'Auditorium 2, VIT' },
+        { id: 'FDP-05', title: 'Competitive Coding & System Design', college: 'PICT', date: offsetDate(25), status: 'Pitched', faculty: '40 faculty', coordinator: 'Tanvi Patil', venue: 'IT Seminar Room, PICT' },
+        { id: 'FDP-06', title: 'Outcome-Based Assessment Design', college: 'Cummins College of Engineering', date: offsetDate(28), status: 'Meeting set', faculty: '30 faculty', coordinator: 'Dr. Kunal More', venue: 'Conference Hall, Cummins' },
+        { id: 'FDP-07', title: 'Python Automation for Faculty Research', college: 'Sinhgad College of Engineering', date: offsetDate(32), status: 'Proposed', faculty: '55 faculty', coordinator: 'Amit Verma', venue: 'Central Hall, Sinhgad' },
+        { id: 'FDP-08', title: 'Industry 4.0 & Applied AI Tools', college: 'DY Patil COE Akurdi', date: offsetDate(35), status: 'Contacted', faculty: '40 faculty', coordinator: 'Ritesh Deshmukh', venue: 'DYP Seminar Hall' }
+      ];
+
+      // 6 tie-ups (1 Active)
+      const tieups = [
+        { id: 'TIE-01', college: 'COEP Technological University', type: 'Annual Placement & AI MoU', owner: 'Rutuja Botre', status: 'Active', duration: '24 months', students: '450 students', nextStep: 'Schedule Q1 assessment drive.' },
+        { id: 'TIE-02', college: 'DY Patil COE Akurdi', type: 'FDP & Training Partnership', owner: 'Ritesh Deshmukh', status: 'Signed', duration: '12 months', students: '280 students', nextStep: 'Onboard batch coordinator.' },
+        { id: 'TIE-03', college: 'MIT-WPU', type: 'Innovation Lab Collaboration', owner: 'Rutuja Botre', status: 'Negotiating', duration: '12 months', students: '320 students', nextStep: 'Finalize lab equipment list.' },
+        { id: 'TIE-04', college: 'Bharati Vidyapeeth COE', type: 'Semester Skill Partnership', owner: 'Ritesh Deshmukh', status: 'Proposed', duration: '12 months', students: '200 students', nextStep: 'Await trustee sign-off.' },
+        { id: 'TIE-05', college: 'VIT Pune', type: 'Campus Placement Readiness', owner: 'Anchal Agawane', status: 'Pitched', duration: '6 months', students: '240 students', nextStep: 'Confirm pilot batch dates.' },
+        { id: 'TIE-06', college: 'Cummins College of Engineering', type: 'Women-in-Tech Fellowship', owner: 'Anchal Agawane', status: 'Meeting set', duration: '12 months', students: '180 students', nextStep: 'Review syllabus with HoD.' }
+      ];
+
+      // 8 clients
+      const clients = [
+        { id: 'CLI-01', college: 'VIT Pune', stage: 'Interested', phone: '+91 00000 00003', interestedIn: 'Placement Bootcamp (240 students)', lastContact: offsetDate(-2) },
+        { id: 'CLI-02', college: 'MIT-WPU', stage: 'Negotiating', phone: '+91 00000 00002', interestedIn: 'AI Innovation Lab + FDP', lastContact: offsetDate(-1) },
+        { id: 'CLI-03', college: 'PICT', stage: 'Pitched', phone: '+91 00000 00004', interestedIn: 'MindlyftAI Assessment Suite', lastContact: offsetDate(-3) },
+        { id: 'CLI-04', college: 'Sinhgad College of Engineering', stage: 'Interested', phone: '+91 00000 00007', interestedIn: 'CDAC Prep Weekend Batch', lastContact: offsetDate(-3) },
+        { id: 'CLI-05', college: 'Cummins College of Engineering', stage: 'Meeting set', phone: '+91 00000 00008', interestedIn: 'Women-in-Tech Mentorship', lastContact: offsetDate(-2) },
+        { id: 'CLI-06', college: 'Bharati Vidyapeeth COE', stage: 'Proposed', phone: '+91 00000 00009', interestedIn: 'Semester Skill Training', lastContact: offsetDate(-2) },
+        { id: 'CLI-07', college: 'VIIT Pune', stage: 'Contacted', phone: '+91 00000 00006', interestedIn: 'Campus Coding Drive', lastContact: offsetDate(-4) },
+        { id: 'CLI-08', college: 'AISSMS COE', stage: 'Contacted', phone: '+91 00000 00011', interestedIn: 'FDP & Student Workshops', lastContact: offsetDate(0) }
+      ];
+
+      // 3 signed agreements (0 expiring soon)
+      const agreements = [
+        { id: 'AGR-01', title: 'Annual Placement & AI Training MoU', college: 'COEP Technological University', signedOn: '15 Sep 2026', validUntil: '14 Sep 2028', status: 'Signed', document: 'COEP_Placement_MoU_2026.pdf', reminder: 'Valid for 22 months' },
+        { id: 'AGR-02', title: 'FDP & Faculty Enablement Agreement', college: 'DY Patil COE Akurdi', signedOn: '20 Nov 2026', validUntil: '19 Nov 2027', status: 'Signed', document: 'DYP_FDP_Agreement_2026.pdf', reminder: 'Valid for 12 months' },
+        { id: 'AGR-03', title: 'Two-Day Cloud & DevOps FDP MoU', college: 'PCCOE', signedOn: '22 Nov 2026', validUntil: '21 Nov 2027', status: 'Signed', document: 'PCCOE_FDP_MoU_2026.pdf', reminder: 'Valid for 12 months' }
+      ];
+
+      // 10 follow-ups (1 overdue, 9 upcoming)
+      const initialFollowUps = [
+        { id: 'FUP-01', college: 'MIT-WPU', task: 'Send revised AI lab & FDP quote to Prof. Joshi', dueDate: offsetDate(-2), owner: 'Rutuja Botre', notes: 'Promised updated pricing before Friday.' },
+        { id: 'FUP-02', college: 'VIT Pune', task: 'Share 6-week placement bootcamp syllabus', dueDate: offsetDate(1), owner: 'Ritesh Deshmukh', notes: 'Include sample assessment scores.' },
+        { id: 'FUP-03', college: 'Cummins College of Engineering', task: 'Attend Women-in-Tech follow-up meeting', dueDate: offsetDate(2), owner: 'Anchal Agawane', notes: 'Prepare 12-week schedule.' },
+        { id: 'FUP-04', college: 'PCCOE', task: 'Confirm FDP trainer roster and hall AV check', dueDate: offsetDate(2), owner: 'Amit Verma', notes: '60 faculty members confirmed.' },
+        { id: 'FUP-05', college: 'PICT', task: 'Confirm Principal presentation slot', dueDate: offsetDate(3), owner: 'Anchal Agawane', notes: 'Coordinate with Prof. Patwardhan.' },
+        { id: 'FUP-06', college: 'Bharati Vidyapeeth COE', task: 'Check management sign-off on semester proposal', dueDate: offsetDate(4), owner: 'Ritesh Deshmukh', notes: 'Follow up with Dr. Sawant.' },
+        { id: 'FUP-07', college: 'Sinhgad College of Engineering', task: 'Send weekend batch calendar for 3rd year', dueDate: offsetDate(5), owner: 'Ritesh Deshmukh', notes: 'Focus on Java & DSA tracks.' },
+        { id: 'FUP-08', college: 'VIIT Pune', task: 'Call Prof. Gokhale to lock campus visit date', dueDate: offsetDate(6), owner: 'Priya Sharma', notes: 'Prefers Tuesday or Thursday morning.' },
+        { id: 'FUP-09', college: 'DY Patil COE Akurdi', task: 'Collect student registration sheet for FDP batch', dueDate: offsetDate(7), owner: 'Rutuja Botre', notes: 'Agreement already signed.' },
+        { id: 'FUP-10', college: 'AISSMS COE', task: 'Email MindLyft student outcomes deck', dueDate: offsetDate(8), owner: 'Priya Sharma', notes: 'Include COEP & PCCOE case studies.' }
+      ];
+
+      let doneMap = loadDoneMap();
+      let currentView = 'dashboard'; // 'dashboard' or one of the 7 section keys
+      let searchQuery = '';
+      let openIds = {};
+
+      function loadDoneMap() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') return parsed;
+          }
+        } catch (e) {}
+        return {};
+      }
+
+      function saveDoneMap() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(doneMap));
+        } catch (e) {}
+      }
+
+      function isFollowUpDone(f) {
+        return Boolean(doneMap[f.id]);
+      }
+
+      function isFollowUpOverdue(f) {
+        return !isFollowUpDone(f) && f.dueDate < todayISO();
+      }
+
+      function badgeClass(status) {
+        const s = String(status || '').toLowerCase();
+        if (s === 'active' || s === 'approved' || s === 'signed' || s === 'interested' || s === 'done') return 'badge-green';
+        if (s === 'overdue') return 'badge-red';
+        if (s === 'pitched' || s === 'negotiating' || s === 'meeting set') return 'badge-blue';
+        return 'badge-amber';
+      }
+
+      function renderSummaryBoxes() {
+        const approvedFdpCount = fdpSessions.filter((f) => f.status === 'Approved').length;
+        const activeTieupsCount = tieups.filter((t) => t.status === 'Active').length;
+        const signedAgreementsCount = agreements.filter((a) => a.status === 'Signed').length;
+        const pendingFollowUps = initialFollowUps.filter((f) => !isFollowUpDone(f));
+        const overdueCount = pendingFollowUps.filter((f) => isFollowUpOverdue(f)).length;
+
+        const boxes = [
+          { key: 'colleges', label: 'Total colleges', num: colleges.length, sub: 'Unified profiles', redSub: false },
+          { key: 'visits', label: 'College visits', num: visits.length, sub: 'Logged field visits', redSub: false },
+          { key: 'fdp', label: 'FDP sessions', num: fdpSessions.length, sub: `${approvedFdpCount} approved`, redSub: false },
+          { key: 'tieups', label: 'Active tie-ups', num: activeTieupsCount, sub: `${tieups.length} total partnerships`, redSub: false },
+          { key: 'clients', label: 'Interested clients', num: clients.length, sub: 'In your pipeline', redSub: false },
+          { key: 'agreements', label: 'Agreements signed', num: signedAgreementsCount, sub: '0 expiring soon', redSub: false },
+          { key: 'followups', label: 'Follow-ups pending', num: pendingFollowUps.length, sub: `${overdueCount} overdue`, redSub: overdueCount > 0 }
+        ];
+
+        const grid = document.getElementById('summaryGrid');
+        grid.innerHTML = boxes.map((b) => `
+          <button
+            type="button"
+            class="summary-box ${currentView === b.key ? 'active' : ''}"
+            data-section="${b.key}"
+            aria-pressed="${currentView === b.key ? 'true' : 'false'}"
+          >
+            <span class="sum-label">${escapeHtml(b.label)}</span>
+            <span class="sum-num">${b.num}</span>
+            <span class="sum-sub ${b.redSub ? 'sum-sub-red' : ''}">${escapeHtml(b.sub)}</span>
+          </button>
+        `).join('');
+      }
+
+      function renderDashboard() {
+        const pending = initialFollowUps
+          .filter((f) => !isFollowUpDone(f))
+          .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+          .slice(0, 4);
+
+        const list = document.getElementById('attentionList');
+        if (pending.length === 0) {
+          list.innerHTML = '<div class="empty-state">All caught up. No pending follow-ups.</div>';
+          return;
+        }
+
+        list.innerHTML = pending.map((f) => {
+          const overdue = isFollowUpOverdue(f);
+          const dueText = overdue ? 'Overdue' : `Due ${formatDate(f.dueDate)}`;
+          return `
+            <div class="attn-box">
+              <div>
+                <div class="record-top">${escapeHtml(f.college)}</div>
+                <div class="record-title">${escapeHtml(f.task)}</div>
+                <div class="attn-meta">
+                  <span class="${overdue ? 'attn-overdue' : ''}">${escapeHtml(dueText)}</span>
+                  <span>Owner: ${escapeHtml(f.owner)}</span>
+                </div>
+              </div>
+              <button type="button" class="btn-done" data-done-id="${escapeHtml(f.id)}">Mark done</button>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function getSectionConfig(key) {
+        const q = searchQuery.trim().toLowerCase();
+        const match = (...fields) => !q || fields.some((v) => String(v || '').toLowerCase().includes(q));
+
+        if (key === 'colleges') {
+          return {
+            title: 'Colleges',
+            items: colleges
+              .filter((c) => match(c.name, c.city, c.contact, c.stage))
+              .map((c) => ({
+                id: c.id,
+                top: c.city,
+                title: c.name,
+                status: c.stage,
+                details: [
+                  ['City', c.city],
+                  ['Contact', c.contact],
+                  ['Stage', c.stage],
+                  ['Phone', c.phone],
+                  ['Notes', c.notes]
+                ]
+              }))
+          };
+        }
+
+        if (key === 'visits') {
+          return {
+            title: 'College visits',
+            items: visits
+              .filter((v) => match(v.college, v.visitedBy, v.outcome, v.met))
+              .map((v) => ({
+                id: v.id,
+                top: formatDate(v.date),
+                title: v.college,
+                status: v.outcome,
+                details: [
+                  ['Date', formatDate(v.date)],
+                  ['Visited by', v.visitedBy],
+                  ['Outcome', v.outcome],
+                  ['Who they met', v.met],
+                  ['Notes', v.notes],
+                  ['Next step', v.nextStep]
+                ]
+              }))
+          };
+        }
+
+        if (key === 'fdp') {
+          return {
+            title: 'FDP sessions',
+            items: fdpSessions
+              .filter((f) => match(f.title, f.college, f.status, f.coordinator))
+              .map((f) => ({
+                id: f.id,
+                top: f.college,
+                title: f.title,
+                status: f.status,
+                details: [
+                  ['College', f.college],
+                  ['Date', formatDate(f.date)],
+                  ['Status', f.status],
+                  ['Faculty expected', f.faculty],
+                  ['Coordinator', f.coordinator],
+                  ['Venue', f.venue]
+                ]
+              }))
+          };
+        }
+
+        if (key === 'tieups') {
+          return {
+            title: 'Tie-ups',
+            items: tieups
+              .filter((t) => match(t.college, t.type, t.owner, t.status))
+              .map((t) => ({
+                id: t.id,
+                top: t.type,
+                title: t.college,
+                status: t.status,
+                details: [
+                  ['College', t.college],
+                  ['Type', t.type],
+                  ['Owner', t.owner],
+                  ['Status', t.status],
+                  ['Duration', t.duration],
+                  ['Students covered', t.students],
+                  ['Next step', t.nextStep]
+                ]
+              }))
+          };
+        }
+
+        if (key === 'clients') {
+          return {
+            title: 'Clients',
+            items: clients
+              .filter((c) => match(c.college, c.stage, c.interestedIn))
+              .map((c) => ({
+                id: c.id,
+                top: c.interestedIn,
+                title: c.college,
+                status: c.stage,
+                details: [
+                  ['College', c.college],
+                  ['Stage', c.stage],
+                  ['Phone', c.phone],
+                  ['Interested in', c.interestedIn],
+                  ['Last contact', formatDate(c.lastContact)]
+                ]
+              }))
+          };
+        }
+
+        if (key === 'agreements') {
+          return {
+            title: 'Agreements',
+            items: agreements
+              .filter((a) => match(a.title, a.college, a.document, a.status))
+              .map((a) => ({
+                id: a.id,
+                top: a.college,
+                title: a.title,
+                status: a.status,
+                details: [
+                  ['College', a.college],
+                  ['Signed on', a.signedOn],
+                  ['Valid until', a.validUntil],
+                  ['Document', a.document],
+                  ['Renewal reminder', a.reminder]
+                ]
+              }))
+          };
+        }
+
+        // followups
+        return {
+          title: 'Follow-ups',
+          items: initialFollowUps
+            .slice()
+            .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+            .filter((f) => match(f.college, f.task, f.owner))
+            .map((f) => {
+              const done = isFollowUpDone(f);
+              const overdue = isFollowUpOverdue(f);
+              const status = done ? 'Done' : overdue ? 'Overdue' : 'Pending';
+              return {
+                id: f.id,
+                top: `${f.college} · ${overdue ? 'Overdue' : `Due ${formatDate(f.dueDate)}`}`,
+                title: f.task,
+                status,
+                canMarkDone: !done,
+                details: [
+                  ['College', f.college],
+                  ['Due date', overdue ? `Overdue (${formatDate(f.dueDate)})` : formatDate(f.dueDate)],
+                  ['Owner', f.owner],
+                  ['Status', status],
+                  ['Notes', f.notes]
+                ]
+              };
+            })
+        };
+      }
+
+      function renderSection() {
+        const cfg = getSectionConfig(currentView);
+        document.getElementById('sectionTitle').textContent = cfg.title;
+        const list = document.getElementById('recordsList');
+
+        if (cfg.items.length === 0) {
+          list.innerHTML = '<div class="empty-state">No records match your search.</div>';
+          return;
+        }
+
+        list.innerHTML = cfg.items.map((item) => {
+          const isOpen = Boolean(openIds[item.id]);
+          return `
+            <div class="record-box ${isOpen ? 'open' : ''}" data-stripe="${currentView}">
+              <button
+                type="button"
+                class="record-trigger"
+                data-toggle-id="${escapeHtml(item.id)}"
+                aria-expanded="${isOpen ? 'true' : 'false'}"
+              >
+                <div class="record-main">
+                  <div class="record-top">${escapeHtml(item.top)}</div>
+                  <div class="record-title">${escapeHtml(item.title)}</div>
+                </div>
+                <div class="record-right">
+                  <span class="badge ${badgeClass(item.status)}">${escapeHtml(item.status)}</span>
+                  <span class="arrow" aria-hidden="true">›</span>
+                </div>
+              </button>
+              <div class="record-details" ${isOpen ? '' : 'hidden'}>
+                <div class="details-grid">
+                  ${item.details.map(([lbl, val]) => `
+                    <div>
+                      <span class="detail-label">${escapeHtml(lbl)}</span>
+                      <span class="detail-val">${escapeHtml(val)}</span>
+                    </div>
+                  `).join('')}
+                </div>
+                ${item.canMarkDone ? `
+                  <div class="details-actions">
+                    <button type="button" class="btn-done" data-done-id="${escapeHtml(item.id)}">Mark done</button>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function render() {
+        renderSummaryBoxes();
+        const isDash = currentView === 'dashboard';
+        document.getElementById('dashboardView').hidden = !isDash;
+        document.getElementById('sectionView').hidden = isDash;
+
+        if (isDash) {
+          renderDashboard();
+        } else {
+          renderSection();
+        }
+      }
+
+      // Click summary box
+      document.getElementById('summaryGrid').addEventListener('click', (e) => {
+        const box = e.target.closest('.summary-box');
+        if (!box) return;
+        currentView = box.dataset.section;
+        searchQuery = '';
+        document.getElementById('sectionSearch').value = '';
+        render();
+      });
+
+      // See all follow-ups & Back to dashboard
+      document.getElementById('seeAllFollowupsBtn').addEventListener('click', () => {
+        currentView = 'followups';
+        searchQuery = '';
+        document.getElementById('sectionSearch').value = '';
+        render();
+      });
+
+      document.getElementById('backToDashBtn').addEventListener('click', () => {
+        currentView = 'dashboard';
+        render();
+      });
+
+      // Search
+      document.getElementById('sectionSearch').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderSection();
+      });
+
+      // Expand/collapse records & Mark done
+      document.addEventListener('click', (e) => {
+        const doneBtn = e.target.closest('.btn-done');
+        if (doneBtn) {
+          const id = doneBtn.dataset.doneId;
+          doneMap[id] = true;
+          saveDoneMap();
+          render();
+          return;
+        }
+
+        const trigger = e.target.closest('.record-trigger');
+        if (trigger) {
+          const id = trigger.dataset.toggleId;
+          openIds[id] = !openIds[id];
+          renderSection();
+        }
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
