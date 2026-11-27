@@ -380,36 +380,34 @@ export function SalesView({ defaultTab = 'DASHBOARD' }: { defaultTab?: SalesTabT
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-0 rounded-2xl overflow-hidden border border-[#e4e7ec] dark:border-[#2a3040] bg-[#f6f7fb] dark:bg-[#0f1218] min-h-[78vh]">
-      {/* Left Menu (260px sticky on desktop, 2-col button grid under 768px) */}
-      <aside className="bg-white dark:bg-[#181c25] border-b md:border-b-0 md:border-r border-[#e4e7ec] dark:border-[#2a3040] p-4 md:p-5 md:sticky md:top-0 md:self-start md:h-[calc(100vh-5rem)] md:overflow-y-auto">
-        <div className="flex items-center gap-3 px-2 pb-5">
-          <div className="w-10 h-10 rounded-xl bg-[#5b3df5] text-white grid place-items-center shrink-0">
-            <TrendingUp className="w-5 h-5" />
-          </div>
-          <div className="leading-tight">
-            <b className="block text-sm font-bold text-[#101828] dark:text-[#eef0f5]">Sales Management</b>
-            <small className="text-xs text-[#667085] dark:text-[#98a2b3]">Colleges and clients</small>
+    <div className="rounded-2xl overflow-hidden border border-[#e4e7ec] dark:border-[#2a3040] bg-[#f6f7fb] dark:bg-[#0f1218]">
+      {/* Horizontal Top Bar */}
+      <header className="bg-white dark:bg-[#181c25] border-b border-[#e4e7ec] dark:border-[#2a3040] px-5 py-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#5b3df5] text-white grid place-items-center shrink-0">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <div className="leading-tight">
+              <b className="block text-base font-bold text-[#101828] dark:text-[#eef0f5]">Sales Management</b>
+              <small className="text-xs text-[#667085] dark:text-[#98a2b3]">Colleges and clients</small>
+            </div>
           </div>
         </div>
 
-        <div className="text-[11px] font-semibold text-[#667085] dark:text-[#98a2b3] tracking-wider uppercase px-2.5 pb-1.5">
-          Menu
-        </div>
-
-        <nav className="grid grid-cols-2 md:grid-cols-1 gap-1" aria-label="Sections">
+        <nav className="flex flex-wrap items-center gap-1.5" aria-label="Sections">
           <button
             type="button"
             onClick={() => navigateTo('home')}
             aria-current={view === 'home' ? 'page' : undefined}
-            className={`flex items-center gap-2.5 w-full min-h-[42px] px-3 py-2 rounded-xl text-sm font-semibold text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b3df5] ${
+            className={`inline-flex items-center gap-2 min-h-[40px] px-3.5 py-2 rounded-xl text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b3df5] ${
               view === 'home'
                 ? 'bg-[#efecff] text-[#5b3df5] dark:bg-[#26224a] dark:text-[#a99bff]'
                 : 'text-[#667085] dark:text-[#98a2b3] hover:bg-[#f6f7fb] dark:hover:bg-[#0f1218] hover:text-[#101828] dark:hover:text-[#eef0f5]'
             }`}
           >
             <LayoutGrid className="w-4 h-4 shrink-0" />
-            <span className="truncate">Overview</span>
+            <span>Overview</span>
           </button>
 
           {SECTIONS.map((s) => {
@@ -424,16 +422,16 @@ export function SalesView({ defaultTab = 'DASHBOARD' }: { defaultTab?: SalesTabT
                 type="button"
                 onClick={() => navigateTo(s.key)}
                 aria-current={isCurrent ? 'page' : undefined}
-                className={`flex items-center gap-2.5 w-full min-h-[42px] px-3 py-2 rounded-xl text-sm font-semibold text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b3df5] ${
+                className={`inline-flex items-center gap-2 min-h-[40px] px-3.5 py-2 rounded-xl text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b3df5] ${
                   isCurrent
                     ? 'bg-[#efecff] text-[#5b3df5] dark:bg-[#26224a] dark:text-[#a99bff]'
                     : 'text-[#667085] dark:text-[#98a2b3] hover:bg-[#f6f7fb] dark:hover:bg-[#0f1218] hover:text-[#101828] dark:hover:text-[#eef0f5]'
                 }`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
-                <span className="truncate">{s.label}</span>
+                <span>{s.label}</span>
                 <span
-                  className={`ml-auto text-xs font-semibold shrink-0 ${
+                  className={`text-xs font-semibold shrink-0 ${
                     showLateBadge
                       ? 'bg-[#fee4e2] text-[#d92d20] dark:bg-[#4a1d1a] dark:text-[#ff8a80] rounded-full px-2 py-0.5'
                       : 'opacity-80'
@@ -445,10 +443,10 @@ export function SalesView({ defaultTab = 'DASHBOARD' }: { defaultTab?: SalesTabT
             );
           })}
         </nav>
-      </aside>
+      </header>
 
       {/* Main Content */}
-      <main className="p-5 sm:p-8 max-w-[1100px] w-full">
+      <main className="p-5 sm:p-7 w-full">
         {/* OVERVIEW PAGE */}
         {view === 'home' && (
           <div>
@@ -585,7 +583,7 @@ export function SalesView({ defaultTab = 'DASHBOARD' }: { defaultTab?: SalesTabT
                 Nothing matches your search.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 items-start">
                 {sectionRecords.map((item) => {
                   const Icon = activeSectionMeta.icon;
                   const isOpen = Boolean(openIds[item.id]);
