@@ -19,6 +19,7 @@ import {
   X,
   ExternalLink,
 } from 'lucide-react';
+import { getLeadershipDisplayName } from '@/lib/leadership-display-names';
 
 interface HierarchyNode {
   id: string;
@@ -36,34 +37,20 @@ interface HierarchyNode {
   children?: HierarchyNode[];
 }
 
-const leadershipNamesByEmployeeId: Record<string, string> = {
-  'ML-F01': 'Pooja Ahire',
-  'ML-D01': 'Anchal Agawane',
-  'ML-D02': 'Rutuja Botre',
-  'ML-D03': 'Shubham Jadhav',
-};
-
-const leadershipNamesByDesignation: Record<string, string> = {
-  'Founder & Managing Director': 'Pooja Ahire',
-  'Director of Sales & Partnerships': 'Anchal Agawane',
-  'Director of Technology & Product': 'Rutuja Botre',
-  'Director of Operations & People': 'Shubham Jadhav',
-};
-
 function applyLeadershipDisplayNames(node: HierarchyNode): HierarchyNode {
   return {
     ...node,
-    name: leadershipNamesByEmployeeId[node.employeeId] ?? node.name,
+    name: getLeadershipDisplayName(node),
     reportingManager: node.reportingManager
       ? {
           ...node.reportingManager,
-          name: leadershipNamesByDesignation[node.reportingManager.designation] ?? node.reportingManager.name,
+          name: getLeadershipDisplayName(node.reportingManager),
         }
       : node.reportingManager,
     reportingDirector: node.reportingDirector
       ? {
           ...node.reportingDirector,
-          name: leadershipNamesByDesignation[node.reportingDirector.designation] ?? node.reportingDirector.name,
+          name: getLeadershipDisplayName(node.reportingDirector),
         }
       : node.reportingDirector,
     children: node.children?.map(applyLeadershipDisplayNames),

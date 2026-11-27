@@ -1,5 +1,8 @@
 import ModulePage from '@/components/ui/ModulePage';
 import ProgrammeCatalogue from '@/components/learning/ProgrammeCatalogue';
+import CounselorDashboard from '@/components/counselor/CounselorDashboard';
+import TeleCallerDashboard from '@/components/telecaller/TeleCallerDashboard';
+import TrainerDashboard from '@/components/trainer/TrainerDashboard';
 import { allCourses } from '@/lib/course-catalogue';
 import { getNavigationEntry } from '@/lib/navigation';
 
@@ -22,6 +25,18 @@ export default function CatchAllPage({ params }: CatchAllPageProps) {
 
   if (pathname === '/learning/programmes' || pathname === '/learning/courses') {
     return <ProgrammeCatalogue pathname={pathname} />;
+  }
+
+  if (pathname === '/trainer/dashboard') {
+    return <TrainerDashboard />;
+  }
+
+  if (pathname === '/counselor/dashboard') {
+    return <CounselorDashboard />;
+  }
+
+  if (pathname === '/telecaller/dashboard') {
+    return <TeleCallerDashboard />;
   }
 
   const course = pathname.startsWith('/learning/courses/')
