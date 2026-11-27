@@ -56,6 +56,7 @@ export const navigationSections: NavigationSection[] = [
   {
     label: 'Department Workspaces',
     entries: [
+      { label: 'Employees', href: '/employees', description: 'Employee directory and profiles.', icon: 'people' },
       {
         label: 'Media',
         icon: 'media',

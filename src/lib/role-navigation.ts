@@ -109,7 +109,7 @@ function allowedLabelsForSection(
       if (persona === 'intern') return ['Tasks', 'Daily Reports', 'Attendance'];
       return ['Tasks', 'Projects', 'Meetings', 'Daily Reports', 'Attendance', 'Leave Management'];
     case 'Department Workspaces':
-      return departmentWorkspace ? [departmentWorkspace] : [];
+      return departmentWorkspace ? [departmentWorkspace, 'Employees'] : ['Employees'];
     case 'LMS Dashboard':
       return ['Overview'];
     case 'Events & Network':
@@ -146,7 +146,7 @@ export function getRoleNavigationSections(user: CurrentEmployee | null): Navigat
     const allowedLabels = allowedLabelsForSection(section, persona, user, departmentWorkspace);
     const entries = section.entries.flatMap((entry): NavigationEntry[] => {
       if (section.label === 'Department Workspaces') {
-        if (entry.label !== departmentWorkspace) return [];
+        if (entry.label !== departmentWorkspace && entry.label !== 'Employees') return [];
         if (!entry.children) return entry.href ? [entry] : [];
         const allowedChildren = getAllowedWorkspaceItems(persona, entry.label);
         const children = allowedChildren
