@@ -94,12 +94,14 @@ export function TasksView({ defaultMyTasks = false }: { defaultMyTasks?: boolean
   // Give a task modal (4 fields: what, who, due date, priority)
   const areaEmployees = getVisibleEmployees();
   const [showGiveModal, setShowGiveModal] = useState(false);
+  const [assignmentMode, setAssignmentMode] = useState<'Individual' | 'Collaborative'>('Individual');
   const [giveForm, setGiveForm] = useState({
     title: '',
     assignedToId: areaEmployees[0]?.id || '',
     dueDate: '2026-11-30',
     priority: 'High' as TaskPriority,
   });
+  const [collaborativeAssigneeIds, setCollaborativeAssigneeIds] = useState<string[]>([]);
 
   // Edit task modal (for managers on open tasks not their own)
   const [editingTask, setEditingTask] = useState<TaskItem | null>(null);
@@ -217,10 +219,12 @@ export function TasksView({ defaultMyTasks = false }: { defaultMyTasks?: boolean
 
   const handleGiveSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const assignee = areaEmployees.find((emp) => emp.id === giveForm.assignedToId);
-    if (!giveForm.title.trim() || !assignee) return;
+    const selectedIds = assignmentMode === 'Collaborative' ? collaborativeAssigneeIds : [giveForm.assignedToId];
+    const assignees = selectedIds.map((id) => areaEmployees.find((emp) => emp.id === id)).filter((employee): employee is Employee => Boolean(employee));
+    if (!giveForm.title.trim() || !assignees.length || (assignmentMode === 'Collaborative' && assignees.length < 2)) return;
 
-    addTask({
+    const collaborationId = assignmentMode === 'Collaborative' ? `COLLAB-${Date.now()}` : undefined;
+    assignees.forEach((assignee) => addTask({
       title: giveForm.title.trim(),
       description: giveForm.title.trim(),
       assignedById: currentEmployee.id,
@@ -229,11 +233,15 @@ export function TasksView({ defaultMyTasks = false }: { defaultMyTasks?: boolean
       assigningDirectorName: isDirector ? currentEmployee.name : currentEmployee.name,
       assignedToId: assignee.id,
       assignedToName: assignee.name,
+      assignmentMode,
+      collaborationId,
+      collaborationGroupName: assignmentMode === 'Collaborative' ? giveForm.title.trim() : undefined,
+      collaborationMemberIds: assignmentMode === 'Collaborative' ? assignees.map((member) => member.id) : undefined,
       department: assignee.department,
       team: assignee.team,
-      project: 'Team Tasks',
+      project: assignmentMode === 'Collaborative' ? 'Collaborative Team Tasks' : 'Team Tasks',
       category: 'Daily',
-      visibility: 'Team',
+      visibility: assignmentMode === 'Collaborative' ? 'Collaborative' : 'Team',
       priority: giveForm.priority,
       directorPriority: giveForm.priority === 'Critical' ? 'Priority 1' : giveForm.priority === 'High' ? 'Priority 2' : 'Priority 3',
       startDate: '2026-11-27',
@@ -241,9 +249,11 @@ export function TasksView({ defaultMyTasks = false }: { defaultMyTasks?: boolean
       status: 'Assigned',
       progressPct: 0,
       attachments: [],
-    });
+    }));
 
     setShowGiveModal(false);
+    setAssignmentMode('Individual');
+    setCollaborativeAssigneeIds([]);
     setGiveForm((prev) => ({ ...prev, title: '' }));
     setActiveTab('TASKS');
     setActiveStatus('Assigned');
@@ -493,6 +503,9 @@ export function TasksView({ defaultMyTasks = false }: { defaultMyTasks?: boolean
                         <p>
                           Assigned to: <strong>{t.assignedToName || 'Unassigned'}</strong>
                         </p>
+                        {t.assignmentMode === 'Collaborative' && (
+                          <p className="font-semibold text-violet-600 dark:text-violet-300">Collaborative group task</p>
+                        )}
                         <p className="text-slate-500 dark:text-slate-400">From {t.assignedByName}</p>
                       </div>
 
@@ -605,7 +618,7 @@ export function TasksView({ defaultMyTasks = false }: { defaultMyTasks?: boolean
         />
       )}
 
-      {/* GIVE A TASK MODAL (4 fields: What, Who, Due date, Priority) */}
+      {/* GIVE A TASK MODAL */}
       {showGiveModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
@@ -632,19 +645,31 @@ export function TasksView({ defaultMyTasks = false }: { defaultMyTasks?: boolean
               </div>
 
               <div>
-                <label className="font-semibold block mb-1.5">Who</label>
-                <select
-                  value={giveForm.assignedToId}
-                  onChange={(e) => setGiveForm({ ...giveForm, assignedToId: e.target.value })}
-                  className="w-full min-h-[44px] px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-600"
-                >
-                  {areaEmployees.map((emp) => (
-                    <option key={emp.id} value={emp.id}>
-                      {emp.name} ({emp.department})
-                    </option>
+                <label className="font-semibold block mb-1.5">Assignment type</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['Individual', 'Collaborative'] as const).map((mode) => (
+                    <button key={mode} type="button" onClick={() => setAssignmentMode(mode)} className={`min-h-[42px] rounded-xl border text-xs font-semibold ${assignmentMode === mode ? 'border-violet-600 bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300' : 'border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300'}`}>
+                      {mode === 'Individual' ? 'One employee' : 'Collaborative group'}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
+
+              {assignmentMode === 'Individual' ? (
+                <div>
+                  <label className="font-semibold block mb-1.5">Employee</label>
+                  <select value={giveForm.assignedToId} onChange={(e) => setGiveForm({ ...giveForm, assignedToId: e.target.value })} className="w-full min-h-[44px] px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-600">
+                    {areaEmployees.map((emp) => <option key={emp.id} value={emp.id}>{emp.name} ({emp.department})</option>)}
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="font-semibold block mb-1.5">Employees <span className="text-xs font-normal text-slate-500">(select at least two)</span></label>
+                  <div className="max-h-40 space-y-1 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-800">
+                    {areaEmployees.map((emp) => <label key={emp.id} className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-xs hover:bg-white dark:hover:bg-slate-700"><input type="checkbox" checked={collaborativeAssigneeIds.includes(emp.id)} onChange={(event) => setCollaborativeAssigneeIds((current) => event.target.checked ? [...current, emp.id] : current.filter((id) => id !== emp.id))} className="accent-violet-600" /><span>{emp.name} <span className="text-slate-500">({emp.department})</span></span></label>)}
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div>

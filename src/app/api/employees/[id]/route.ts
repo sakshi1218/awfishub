@@ -23,9 +23,9 @@ export async function GET(
         reportingDirector: { select: { id: true, name: true, designation: true } },
         subordinates: { select: { id: true, employeeId: true, name: true, designation: true, status: true } },
         directorSubordinates: { select: { id: true, employeeId: true, name: true, designation: true, status: true } },
-        tasksAssigned: { take: 5, orderBy: { createdAt: 'desc' }, select: { id: true, taskId: true, title: true, status: true, createdAt: true } },
-        tasksReceived: { take: 5, orderBy: { createdAt: 'desc' }, select: { id: true, taskId: true, title: true, status: true, createdAt: true } },
-        dailyReports: { take: 5, orderBy: { reportDate: 'desc' }, select: { id: true, reportDate: true, status: true } },
+        tasksAssigned: { orderBy: { createdAt: 'desc' }, select: { id: true, taskId: true, title: true, status: true, priority: true, deadline: true, progressPercentage: true, createdAt: true } },
+        tasksReceived: { orderBy: { createdAt: 'desc' }, select: { id: true, taskId: true, title: true, status: true, priority: true, deadline: true, progressPercentage: true, createdAt: true } },
+        dailyReports: { take: 20, orderBy: { reportDate: 'desc' }, select: { id: true, reportDate: true, status: true, tasksWorkedOn: true, tasksCompleted: true, tasksPending: true, timeSpentHours: true, workDescription: true } },
       },
     });
 

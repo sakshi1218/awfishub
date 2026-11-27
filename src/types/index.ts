@@ -149,6 +149,10 @@ export interface TaskItem {
   assigningDirectorName?: string;
   assignedToId: string;
   assignedToName: string;
+  assignmentMode?: 'Individual' | 'Collaborative';
+  collaborationId?: string;
+  collaborationGroupName?: string;
+  collaborationMemberIds?: string[];
   department: DepartmentType;
   team: string;
   project: string;
