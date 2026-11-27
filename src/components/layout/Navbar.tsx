@@ -104,22 +104,21 @@ export default function Navbar({ onMenuClick, isFounderLanding }: NavbarProps) {
   );
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 lg:px-6 bg-white/95 dark:bg-[#130d26]/95 backdrop-blur-md border-b border-purple-200/80 dark:border-purple-900/50">
+    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 lg:px-6 bg-white dark:bg-[#111622] border-b border-slate-200 dark:border-slate-800">
       {/* Left: Menu / Logo + Search */}
       <div className="flex items-center gap-3">
         {isFounderLanding ? (
           <Link href="/" className="flex items-center gap-2.5 mr-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-violet-600 via-fuchsia-500 to-blue-500 flex items-center justify-center font-black text-white text-sm shadow-md shadow-fuchsia-500/20">
+            <div className="w-8 h-8 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-bold text-sm shadow-sm">
               A
             </div>
             <div className="leading-tight hidden sm:block">
-              <span className="font-extrabold text-sm tracking-tight text-slate-800 dark:text-white flex items-center gap-1.5">
+              <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                 AWFIS HUB
-                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-violet-100 dark:bg-fuchsia-500/20 text-violet-600 dark:text-pink-200 border border-violet-200 dark:border-fuchsia-400/30">
-                  MindLyft
+                <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                  Founder
                 </span>
               </span>
-              <span className="text-[10px] text-slate-400 dark:text-purple-300 block">Founder View</span>
             </div>
           </Link>
         ) : (
@@ -264,16 +263,16 @@ export default function Navbar({ onMenuClick, isFounderLanding }: NavbarProps) {
         <div className="relative">
           <button
             onClick={() => setRoleOpen(!roleOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-50 via-fuchsia-50 to-blue-50 dark:from-purple-950/60 dark:to-blue-950/60 border border-purple-200 dark:border-purple-700 text-xs font-medium hover:border-fuchsia-400 transition-all"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-medium hover:border-slate-300 dark:hover:border-slate-600 shadow-sm transition-all"
           >
-            <span className="w-2 h-2 rounded-full bg-fuchsia-500" />
-            <span className="font-bold text-violet-700 dark:text-violet-300 truncate max-w-[130px]">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[130px]">
               {currentEmployee.name}
             </span>
-            <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white">
+            <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
               {currentRole.replace('_', ' ')}
             </span>
-            <ChevronDown className="w-3.5 h-3.5 text-purple-500" />
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </button>
 
           {roleOpen && (

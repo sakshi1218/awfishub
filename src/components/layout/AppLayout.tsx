@@ -16,7 +16,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const isFounderLanding = isChairperson && (pathname === '/' || pathname === '/dashboard');
 
   return (
-    <div className="min-h-screen bg-[#faf8ff] dark:bg-[#0b0718] flex">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#0b0f19] flex">
       {!isFounderLanding && (
         <Sidebar
           collapsed={collapsed}

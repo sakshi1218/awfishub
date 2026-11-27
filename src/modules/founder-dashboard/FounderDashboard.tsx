@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { FOUNDER_PILLARS, CompanyPillar } from '@/data/mock/founderPillars';
+import { FOUNDER_PILLARS } from '@/data/mock/founderPillars';
 import VerticalDetailView from './VerticalDetailView';
 
 export default function FounderDashboard() {
@@ -24,13 +24,13 @@ export default function FounderDashboard() {
   ];
 
   return (
-    <div className="w-full space-y-8 sm:space-y-10 py-2 sm:py-6 animate-in fade-in duration-300">
-      {/* Welcome Header */}
-      <header className="space-y-2 text-left">
-        <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold tracking-tight text-[#0f172a] dark:text-white leading-tight">
+    <div className="w-full space-y-8 sm:space-y-10 py-3 sm:py-6">
+      {/* Executive Welcome Header */}
+      <header className="space-y-1.5 text-left">
+        <h1 className="text-2xl sm:text-3xl lg:text-[34px] font-bold tracking-tight text-slate-900 dark:text-white">
           Welcome Back, Founder!
         </h1>
-        <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400 font-medium">
+        <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400">
           Manage all three business verticals from one central workspace.
         </p>
       </header>
@@ -50,30 +50,32 @@ export default function FounderDashboard() {
                   setSelectedVertical(pillar.id);
                 }
               }}
-              className={`group text-left p-7 sm:p-8 rounded-[28px] border ${pillar.accentColor.cardBorder} ${pillar.accentColor.cardTint} shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple-500`}
+              className="group text-left p-7 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#141824] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-lg hover:border-slate-400 dark:hover:border-slate-600 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-white"
             >
               <div>
                 {/* Vertical Name */}
-                <h2 className="text-2xl sm:text-[26px] font-black tracking-tight text-[#0f172a] dark:text-white group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">
-                  {pillar.name}
-                </h2>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl sm:text-[22px] font-bold tracking-tight text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {pillar.name}
+                  </h2>
+                </div>
 
                 {/* Short Description */}
-                <p className="text-sm text-slate-600 dark:text-slate-300 mt-2.5 leading-relaxed min-h-[44px]">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed min-h-[42px]">
                   {pillar.description}
                 </p>
 
                 {/* Relevant Summary Statistics */}
-                <div className="mt-8 space-y-3.5 border-t border-slate-200/70 dark:border-slate-800/80 pt-6">
+                <div className="mt-7 space-y-3 border-t border-slate-100 dark:border-slate-800/80 pt-5">
                   {pillar.stats.map((stat) => (
                     <div
                       key={stat.label}
                       className="flex items-center justify-between text-sm py-0.5"
                     >
-                      <span className="text-slate-600 dark:text-slate-400 font-medium">
+                      <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">
                         {stat.label}
                       </span>
-                      <span className="font-extrabold text-[#0f172a] dark:text-white tabular-nums text-base">
+                      <span className="font-semibold text-slate-900 dark:text-white tabular-nums text-sm">
                         {stat.value}
                       </span>
                     </div>
@@ -82,13 +84,11 @@ export default function FounderDashboard() {
               </div>
 
               {/* Simple Text Link at the bottom */}
-              <div className="mt-9 pt-5 border-t border-slate-200/70 dark:border-slate-800/80 flex items-center justify-between">
-                <span className="text-sm font-extrabold text-purple-700 dark:text-purple-300 group-hover:underline flex items-center gap-1.5">
+              <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
                   Open {pillar.name === 'AI IT SOLUTIONS' ? 'AI IT Solutions' : pillar.name.charAt(0) + pillar.name.slice(1).toLowerCase()}
                 </span>
-                <span className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                  <ArrowRight className="w-4 h-4" />
-                </span>
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
               </div>
             </div>
           );
