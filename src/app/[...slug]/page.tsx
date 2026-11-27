@@ -1,4 +1,5 @@
 import ModulePage from '@/components/ui/ModulePage';
+import { notFound } from 'next/navigation';
 import ProgrammeCatalogue from '@/components/learning/ProgrammeCatalogue';
 import CounselorDashboard from '@/components/counselor/CounselorDashboard';
 import TeleCallerDashboard from '@/components/telecaller/TeleCallerDashboard';
@@ -22,6 +23,14 @@ function humanize(value: string) {
 
 export default function CatchAllPage({ params }: CatchAllPageProps) {
   const pathname = `/${params.slug.join('/')}`;
+
+  if (
+    pathname === '/technical/bug-tracking' ||
+    pathname === '/technical/release-tracking' ||
+    pathname === '/technical/development-tasks'
+  ) {
+    notFound();
+  }
 
   if (pathname === '/learning/programmes' || pathname === '/learning/courses') {
     return <ProgrammeCatalogue pathname={pathname} />;
