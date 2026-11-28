@@ -457,7 +457,7 @@ export interface BatchItem {
 export interface CompanyEvent {
   id: string;
   name: string;
-  eventType: 'Campaign' | 'Expo' | 'College Workshop' | 'FDP' | 'Podcast' | 'External Event';
+  eventType: 'Campaign' | 'Expo' | 'College Workshop' | 'FDP' | 'Podcast' | 'External Event' | 'Internal Event';
   date: string;
   venue: string;
   organizer: string;

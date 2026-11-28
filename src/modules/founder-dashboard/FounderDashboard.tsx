@@ -77,22 +77,6 @@ export default function FounderDashboard() {
                   {pillar.description}
                 </p>
 
-                {/* Relevant Summary Statistics */}
-                <div className="mt-7 space-y-3 border-t border-slate-100 dark:border-slate-800/80 pt-5">
-                  {pillar.stats.map((stat) => (
-                    <div
-                      key={stat.label}
-                      className="flex items-center justify-between text-sm py-0.5"
-                    >
-                      <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">
-                        {stat.label}
-                      </span>
-                      <span className="font-semibold text-slate-900 dark:text-white tabular-nums text-sm">
-                        {stat.value}
-                      </span>
-                    </div>
-                  ))}
-                </div>
               </div>
 
               {/* Simple Text Link at the bottom */}

@@ -3,27 +3,31 @@
 import React, { useState } from 'react';
 import { CalendarDays, MapPin, Lock } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { CompanyEvent } from '@/types';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 
 export default function EventsPage() {
   const { events, isChairperson } = useApp();
-  const [typeFilter, setTypeFilter] = useState<'ALL' | CompanyEvent['eventType']>('ALL');
+  const [typeFilter, setTypeFilter] = useState<'ALL' | 'Expo' | 'External Event' | 'Internal Event'>('ALL');
 
-  const filtered = events.filter((e) => typeFilter === 'ALL' || e.eventType === typeFilter);
+  const filtered = events.filter((e) =>
+    typeFilter === 'ALL' ||
+    (typeFilter === 'External Event'
+      ? e.eventType !== 'Expo' && e.eventType !== 'Internal Event'
+      : e.eventType === typeFilter)
+  );
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Events, Expos & Post-Event ROI"
-        subtitle="Unified management for Expos, Campaigns, College Workshops, FDPs, and External Events."
+        subtitle="Unified management for Expos, Internal Workshops, College Workshops, FDPs, and External Events."
         icon={CalendarDays}
         badge={`${filtered.length} Events`}
       />
 
       <div className="flex flex-wrap gap-1.5">
-        {(['ALL', 'Expo', 'Campaign', 'College Workshop', 'FDP', 'Podcast', 'External Event'] as const).map((t) => (
+        {(['ALL', 'Expo', 'External Event', 'Internal Event'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTypeFilter(t)}

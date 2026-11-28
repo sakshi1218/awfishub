@@ -11,8 +11,12 @@ import { MOCK_DAILY_REPORTS } from '@/data/mock/tasks';
 
 const DEMO_EMPLOYEES: EmployeeRow[] = [
   { id: 'demo-counselor', employeeId: 'DEMO-C01', name: 'Meera Kulkarni', email: 'meera.kulkarni@mindlyft.in', designation: 'Student Counselor', role: 'EMPLOYEE', status: 'ACTIVE', avatarUrl: null, department: { id: 'demo-counselor-dept', name: 'Counselor' }, reportingManager: null },
+  { id: 'demo-counselor-2', employeeId: 'DEMO-C02', name: 'Priya Nair', email: 'priya.nair@mindlyft.in', designation: 'Career Counselor', role: 'EMPLOYEE', status: 'ACTIVE', avatarUrl: null, department: { id: 'demo-counselor-dept', name: 'Counselor' }, reportingManager: null },
+  { id: 'demo-trainer', employeeId: 'DEMO-TN01', name: 'Amit Verma', email: 'amit.verma@mindlyft.in', designation: 'Technical Trainer', role: 'EMPLOYEE', status: 'ACTIVE', avatarUrl: null, department: { id: 'demo-trainer-dept', name: 'Trainer' }, reportingManager: null },
+  { id: 'demo-trainer-2', employeeId: 'DEMO-TN02', name: 'Pooja Verma', email: 'pooja.verma@mindlyft.in', designation: 'Senior Trainer', role: 'EMPLOYEE', status: 'ACTIVE', avatarUrl: null, department: { id: 'demo-trainer-dept', name: 'Trainer' }, reportingManager: null },
   { id: 'demo-media', employeeId: 'DEMO-M01', name: 'Ishita Roy', email: 'ishita.roy@mindlyft.in', designation: 'Content Producer', role: 'EMPLOYEE', status: 'ACTIVE', avatarUrl: null, department: { id: 'demo-media-dept', name: 'Media' }, reportingManager: null },
   { id: 'demo-telecaller', employeeId: 'DEMO-T01', name: 'Gaurav Kulkarni', email: 'gaurav.kulkarni@mindlyft.in', designation: 'TeleCaller Executive', role: 'EMPLOYEE', status: 'ACTIVE', avatarUrl: null, department: { id: 'demo-telecaller-dept', name: 'TeleCaller' }, reportingManager: null },
+  { id: 'demo-telecaller-2', employeeId: 'DEMO-T02', name: 'Sneha Pawar', email: 'sneha.pawar@mindlyft.in', designation: 'TeleCaller Executive', role: 'EMPLOYEE', status: 'ACTIVE', avatarUrl: null, department: { id: 'demo-telecaller-dept', name: 'TeleCaller' }, reportingManager: null },
   { id: 'demo-intern', employeeId: 'DEMO-I01', name: 'Aarav Sharma', email: 'aarav.sharma@mindlyft.in', designation: 'Technology Intern', role: 'INTERN', status: 'ACTIVE', avatarUrl: null, department: { id: 'demo-intern-dept', name: 'Interns' }, reportingManager: null },
 ];
 
@@ -45,12 +49,8 @@ type EmployeeTask = NonNullable<EmployeeDetails['tasksReceived']>[number];
 const SYSTEM_ROLES = ['SUPER_ADMIN', 'ADMIN', 'DIRECTOR', 'DEPARTMENT_MANAGER', 'TEAM_LEADER', 'EMPLOYEE'];
 const EMPLOYEE_GROUPS = [
   { name: 'Counselors', description: 'Student guidance and career counseling', accent: 'bg-emerald-100 text-emerald-700', border: 'border-emerald-200 hover:border-emerald-400', matches: (employee: EmployeeRow) => employee.department?.name === 'Counselor' },
-  { name: 'Directors', description: 'Company and department leadership', accent: 'bg-indigo-100 text-indigo-700', border: 'border-indigo-200 hover:border-indigo-400', matches: (employee: EmployeeRow) => employee.role === 'DIRECTOR' },
   { name: 'Trainers', description: 'Faculty, training and learning delivery', accent: 'bg-violet-100 text-violet-700', border: 'border-violet-200 hover:border-violet-400', matches: (employee: EmployeeRow) => employee.department?.name === 'Trainer' && employee.role !== 'DIRECTOR' },
-  { name: 'Media Team', description: 'Content, podcast and social media', accent: 'bg-rose-100 text-rose-700', border: 'border-rose-200 hover:border-rose-400', matches: (employee: EmployeeRow) => employee.department?.name === 'Media' },
-  { name: 'Interns', description: 'Internship cohorts and apprentices', accent: 'bg-amber-100 text-amber-700', border: 'border-amber-200 hover:border-amber-400', matches: (employee: EmployeeRow) => employee.role === 'INTERN' || employee.department?.name === 'Interns' },
   { name: 'TeleCallers', description: 'Student outreach and follow-ups', accent: 'bg-orange-100 text-orange-700', border: 'border-orange-200 hover:border-orange-400', matches: (employee: EmployeeRow) => employee.department?.name === 'TeleCaller' },
-  { name: 'Operation Team', description: 'Coordination, logistics and operations', accent: 'bg-slate-100 text-slate-700', border: 'border-slate-300 hover:border-slate-500', matches: (employee: EmployeeRow) => employee.department?.name === 'Operation Team' },
 ];
 
 export default function EmployeesPage() {
@@ -83,7 +83,16 @@ export default function EmployeesPage() {
           setDepartments(departmentData.filter((d: { isActive?: boolean }) => d.isActive !== false));
         }
       })
-      .catch((e: Error) => { if (active) setError(e.message); })
+      .catch((e: Error) => {
+        if (!active) return;
+        setEmployees(DEMO_EMPLOYEES);
+        setDepartments([
+          { id: 'demo-counselor-dept', name: 'Counselor' },
+          { id: 'demo-trainer-dept', name: 'Trainer' },
+          { id: 'demo-telecaller-dept', name: 'TeleCaller' },
+        ]);
+        setError(`${e.message} Showing demo employee data.`);
+      })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);
@@ -194,7 +203,7 @@ export default function EmployeesPage() {
         </div>
         {selectedGroup && <button type="button" onClick={() => setSelectedGroup(null)} className="text-xs font-semibold text-blue-600 hover:text-blue-700">Show all employees</button>}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+      <div role="tablist" aria-label="Employee team filters" className="flex w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         {EMPLOYEE_GROUPS.map((group) => {
           const count = employees.filter(group.matches).length;
           const selected = selectedGroup === group.name;
@@ -202,12 +211,16 @@ export default function EmployeesPage() {
             <button
               key={group.name}
               type="button"
-              aria-pressed={selected}
-              onClick={() => { setSelectedGroup(selected ? null : group.name); window.setTimeout(() => employeeDirectoryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0); }}
-              className={`rounded-xl border p-3 text-left shadow-sm transition-colors ${selected ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30' : `${group.border} bg-white dark:bg-slate-900`}`}
+              role="tab"
+              aria-selected={selected}
+              onClick={() => { setSelectedGroup(group.name); window.setTimeout(() => employeeDirectoryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0); }}
+              className={`flex min-w-[220px] flex-1 items-center justify-between gap-3 border-r border-slate-200 px-5 py-4 text-left transition-colors last:border-r-0 dark:border-slate-800 ${selected ? 'bg-blue-50/70 dark:bg-blue-950/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'}`}
             >
-              <div className="flex items-center justify-between gap-2"><span className={`flex h-8 w-8 items-center justify-center rounded-lg ${group.accent}`}><Users className="h-4 w-4" /></span><span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">{count}</span></div>
-              <span className="mt-3 block text-sm font-bold text-slate-900 dark:text-white">{group.name}</span>
+              <span className="flex min-w-0 items-center gap-3">
+                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${group.accent}`}><Users className="h-4 w-4" /></span>
+                <span className={`truncate text-sm font-semibold ${selected ? 'text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-300'}`}>{group.name}</span>
+              </span>
+              <span className="shrink-0 text-lg font-bold tabular-nums text-slate-900 dark:text-white">{count}</span>
             </button>
           );
         })}
@@ -224,7 +237,7 @@ export default function EmployeesPage() {
       <button onClick={clearFilters} className="inline-flex gap-1.5 items-center text-xs text-blue-700 dark:text-blue-300"><RotateCcw className="w-3.5 h-3.5"/>Clear filters</button>
     </section>
     {error && <div role="alert" className="p-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-sm">{error}</div>}
-    {loading ? <div className="p-12 text-center text-sm text-slate-500">Loading team members…</div> : !error && <div ref={employeeDirectoryRef} className="scroll-mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-x-auto">
+    {loading ? <div className="p-12 text-center text-sm text-slate-500">Loading team members…</div> : <div ref={employeeDirectoryRef} className="scroll-mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-x-auto">
       <table className="w-full min-w-[980px] text-left text-xs">
         <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase text-slate-500"><tr>{['Team member', 'Designation', 'System role', 'Department', 'Email', 'Reporting manager', 'Status'].map((h) => <th className="py-3 px-4 font-bold" key={h}>{h}</th>)}</tr></thead>
         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">{filtered.map((employee) => <tr key={employee.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30">
