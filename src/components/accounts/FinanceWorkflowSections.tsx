@@ -114,7 +114,7 @@ export default function FinanceWorkflowSections({
   };
 
   return (
-    <div className={active ? 'space-y-4' : 'hidden'} aria-hidden={!active}>
+    <div className={`accounts-workspace ${active ? 'space-y-4' : 'hidden'}`} aria-hidden={!active}>
       <div className="p-3 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 text-[11px] text-amber-800 dark:text-amber-200">
         <b>Prototype workspace:</b> new records are held in page memory only and clear on refresh. No real payment or approval is made.
       </div>
@@ -172,3 +172,4 @@ export default function FinanceWorkflowSections({
     </div>
   );
 }
+

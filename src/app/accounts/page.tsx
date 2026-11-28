@@ -1,12 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
 import {
   BadgeDollarSign,
-  ShieldAlert,
+  FileCheck2,
   Receipt,
-  Calculator,
   Download,
   Search,
   TrendingUp,
@@ -34,6 +32,7 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { DashboardMetricCard } from '@/components/shared/DashboardMetricCard';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import FinanceWorkflowSections from '@/components/accounts/FinanceWorkflowSections';
+import TdsFilingWorkspace from '@/components/accounts/TdsFilingWorkspace';
 
 export default function AccountsAndFinancePage() {
   const {
@@ -49,8 +48,6 @@ export default function AccountsAndFinancePage() {
   } = useApp();
 
   const [tab, setTab] = useState<'OVERVIEW' | 'CLAIMS' | 'BILLS' | 'GST' | 'TDS' | 'BUDGETS' | 'PURCHASES' | 'ALLOWANCES' | 'RENT_GST' | 'REPORTS' | 'APPROVALS'>('OVERVIEW');
-  const [tdsAmount, setTdsAmount] = useState(50000);
-  const [tdsRate, setTdsRate] = useState(10);
   const [claimSearch, setClaimSearch] = useState('');
   const [claimStatus, setClaimStatus] = useState('All statuses');
   const [claimCategory, setClaimCategory] = useState('All categories');
@@ -58,8 +55,6 @@ export default function AccountsAndFinancePage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  const deduction = Math.round((tdsAmount * tdsRate) / 100);
-  const netPayable = tdsAmount - deduction;
   const recordedClaims = expenseClaims.filter((claim) => claim.status === 'Paid');
   const paidBills = recurringBills.filter((bill) => bill.paymentStatus === 'Paid');
   const recordedExpenditure = recordedClaims.reduce((total, claim) => total + claim.amount, 0)
@@ -94,35 +89,19 @@ export default function AccountsAndFinancePage() {
 
   if (!isChairperson) {
     return (
-      <div className="p-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm text-center max-w-lg mx-auto my-12 space-y-3">
-        <div className="w-12 h-12 mx-auto rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
-          <ShieldAlert className="w-6 h-6" />
+      <div className="accounts-workspace space-y-5 text-slate-700 dark:text-slate-200">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center gap-3">
+            <span className="rounded-xl bg-rose-50 p-2.5 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"><FileCheck2 className="h-5 w-5" /></span>
+            <div><h1 className="text-lg font-semibold text-slate-900 dark:text-white">TDS Filing</h1><p className="text-xs text-slate-500">Secure filing records workspace</p></div>
+          </div>
         </div>
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Chairperson Finance UI Only</h2>
-        <p className="text-xs text-slate-500">
-          All finance, GST, TDS, and company expenditure modules appear only in the Chairperson role simulation.
-        </p>
-        <Link href="/dashboard" className="inline-block px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold">
-          Return to Dashboard
-        </Link>
+        <TdsFilingWorkspace />
       </div>
     );
   }
 
   const chartColors = ['#4f46e5', '#0f9f9a', '#f59e0b', '#e76f51', '#3182ce', '#7c3aed'];
-
-  return (
-    <div className="space-y-6">
-      <PageHeader title="Accounts" subtitle="Accounts sections" icon={BadgeDollarSign} />
-      <div className="flex flex-wrap gap-1.5">
-        {(['OVERVIEW', 'BUDGETS', 'PURCHASES', 'ALLOWANCES', 'RENT_GST', 'CLAIMS', 'BILLS', 'APPROVALS', 'REPORTS', 'GST', 'TDS'] as const).map((id) => (
-          <button key={id} onClick={() => setTab(id)} className={`px-3.5 py-2 rounded-xl text-xs font-bold ${tab === id ? 'bg-violet-600 text-white' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'}`}>
-            {id.replace('_', ' ')}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
 
   const exportFinanceExcel = () => {
     const wb = XLSX.utils.book_new();
@@ -153,7 +132,7 @@ export default function AccountsAndFinancePage() {
   const formatCurrency = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
 
   return (
-    <div className="space-y-6">
+    <div className="accounts-workspace space-y-6 text-slate-700 dark:text-slate-200">
       <PageHeader
         title="Accounts & Finance Interface (Chairperson Only)"
         subtitle="Finance overview from available prototype records — income, approved budgets and bank balances are not present in the source data."
@@ -168,7 +147,7 @@ export default function AccountsAndFinancePage() {
         }
       />
 
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex max-w-full flex-nowrap gap-1.5 overflow-x-auto rounded-2xl border border-slate-200 bg-white/80 p-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
         {(
           [
             ['OVERVIEW', 'Executive Overview'],
@@ -181,19 +160,19 @@ export default function AccountsAndFinancePage() {
             ['APPROVALS', 'Approvals'],
             ['REPORTS', 'Reports'],
             ['GST', 'GST Repository'],
-            ['TDS', 'TDS Calculator'],
+            ['TDS', 'TDS Filing'],
           ] as const
         ).map(([id, label]) => (
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold ${
+            className={`shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold transition-colors ${
               tab === id
                 ? 'bg-violet-600 text-white shadow-sm shadow-violet-500/25'
                 : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'
             }`}
           >
-            {label}
+            {id === 'TDS' && <FileCheck2 className="mr-1 inline h-3.5 w-3.5" />}{label}
           </button>
         ))}
       </div>
@@ -203,8 +182,8 @@ export default function AccountsAndFinancePage() {
           <div className="p-3 rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 text-[11px] text-amber-800 dark:text-amber-200">
             Prototype data only. Figures below are derived from existing mock records; income, approved budgets and cash/bank balances are unavailable and are intentionally not estimated.
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
-            <div className="lg:col-span-2 min-h-28 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div className="lg:col-span-2 min-h-28 p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">Welcome back, CFO</h3>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Here&apos;s your financial overview for today.</p>
@@ -219,7 +198,7 @@ export default function AccountsAndFinancePage() {
             <DashboardMetricCard label="Total Expenditure" value={formatCurrency(recordedExpenditure)} subtext="Paid claims and bills" icon={Receipt} tone="rose" />
             <DashboardMetricCard label="Cash Balance" value="Unavailable" subtext="No bank balance records" icon={Wallet} tone="purple" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <DashboardMetricCard label="Total Company Budget" value="Unavailable" subtext="No approved budget records" icon={Wallet} tone="purple" />
             <DashboardMetricCard label="Remaining Budget" value="Unavailable" subtext="Requires an approved budget" icon={PiggyBank} tone="indigo" />
             <DashboardMetricCard label="Outstanding Payables" value={formatCurrency(outstandingExpenditure)} subtext="Approved claims and unpaid bills" icon={Landmark} tone="blue" />
@@ -339,33 +318,11 @@ export default function AccountsAndFinancePage() {
         </div>
       )}
 
-      {tab === 'TDS' && (
-        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm max-w-lg space-y-4 text-xs">
-          <div className="flex items-center gap-2 font-bold text-sm text-slate-900 dark:text-white">
-            <Calculator className="w-4 h-4 text-violet-600" /> TDS Deduction Interface (UI Prototype)
-          </div>
-          <p className="text-[11px] text-amber-600 bg-amber-50 dark:bg-amber-950/30 p-2.5 rounded-xl">
-            Disclaimer: This is a frontend UI prototype for display demonstration, not a validated tax calculation system.
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="font-semibold block mb-1">Taxable Amount (₹)</label>
-              <input type="number" value={tdsAmount} onChange={(e) => setTdsAmount(Number(e.target.value) || 0)} className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800" />
-            </div>
-            <div>
-              <label className="font-semibold block mb-1">Configurable %</label>
-              <input type="number" value={tdsRate} onChange={(e) => setTdsRate(Number(e.target.value) || 0)} className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800" />
-            </div>
-          </div>
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 space-y-1.5">
-            <div className="flex justify-between"><span>Deduction Amount:</span><b className="text-rose-600">₹{deduction.toLocaleString('en-IN')}</b></div>
-            <div className="flex justify-between text-sm"><span>Net Payable Amount:</span><b className="text-emerald-600">₹{netPayable.toLocaleString('en-IN')}</b></div>
-          </div>
-        </div>
-      )}
+      {tab === 'TDS' && <TdsFilingWorkspace />}
       {(['BUDGETS', 'PURCHASES', 'ALLOWANCES', 'RENT_GST', 'REPORTS', 'APPROVALS'] as const).map((section) => (
         <FinanceWorkflowSections key={section} activeSection={section} active={tab === section} departmentSpending={departmentSpending} />
       ))}
     </div>
   );
 }
+

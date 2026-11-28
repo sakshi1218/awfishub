@@ -1,0 +1,58 @@
+/* Scoped polish for Media and Accounts; intentionally not imported by the app shell. */
+.media-workspace,
+.accounts-workspace {
+  --workspace-line: #e2e8f0;
+  --workspace-muted: #64748b;
+}
+
+.dark .media-workspace,
+.dark .accounts-workspace {
+  --workspace-line: #334155;
+  --workspace-muted: #94a3b8;
+}
+
+.media-workspace button,
+.media-workspace select,
+.media-workspace input,
+.accounts-workspace button,
+.accounts-workspace select,
+.accounts-workspace input {
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.media-workspace :is(button, select, input):focus-visible,
+.accounts-workspace :is(button, select, input):focus-visible {
+  outline: 2px solid #be123c;
+  outline-offset: 2px;
+}
+
+.media-workspace button:hover,
+.accounts-workspace button:hover {
+  filter: brightness(0.97);
+}
+
+.media-workspace :is(table) th,
+.accounts-workspace :is(table) th {
+  color: var(--workspace-muted);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.media-workspace :is(table) tbody tr,
+.accounts-workspace :is(table) tbody tr {
+  transition: background-color 140ms ease;
+}
+
+.media-workspace :is(table) tbody tr:hover,
+.accounts-workspace :is(table) tbody tr:hover {
+  background-color: rgb(148 163 184 / 7%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .media-workspace *,
+  .accounts-workspace * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
