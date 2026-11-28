@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Building2, CalendarDays, Search, Users } from 'lucide-react';
+import { ArrowLeft, Building2, CalendarDays, ClipboardList, FileText, Search, ShieldCheck, Users } from 'lucide-react';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 
@@ -57,6 +57,7 @@ export default function OverallEmployeesPage() {
   const [query, setQuery] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('ALL');
   const [selectedActivityDate, setSelectedActivityDate] = useState('2026-11-28');
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
 
   const departments = Array.from(new Set(DEMO_OVERALL_EMPLOYEES.map((employee) => employee.department)));
   const normalizedQuery = query.trim().toLowerCase();
@@ -71,6 +72,7 @@ export default function OverallEmployeesPage() {
   const activeCount = DEMO_OVERALL_EMPLOYEES.filter((employee) => employee.status === 'Active').length;
   const dailyActivities = DEMO_EMPLOYEE_ACTIVITY.filter((entry) => entry.date === selectedActivityDate);
   const activityDates = Array.from(new Set(DEMO_EMPLOYEE_ACTIVITY.map((entry) => entry.date))).sort((a, b) => b.localeCompare(a));
+  const selectedEmployee = DEMO_OVERALL_EMPLOYEES.find((employee) => employee.id === selectedEmployeeId);
 
   return (
     <div className="space-y-5">
@@ -147,9 +149,10 @@ export default function OverallEmployeesPage() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredEmployees.map((employee) => (
-                  <tr key={employee.id}>
+                  <tr key={employee.id} onClick={() => setSelectedEmployeeId(employee.id)} className="cursor-pointer transition-colors hover:bg-violet-50/60 dark:hover:bg-violet-950/20">
                     <td className="px-5 py-3.5">
-                      <p className="font-bold text-slate-900 dark:text-white">{employee.name}</p>
+                      <button type="button" onClick={() => setSelectedEmployeeId(employee.id)} className="text-left font-bold text-slate-900 hover:text-violet-700 dark:text-white dark:hover:text-violet-300">{employee.name}</button>
+                      <button type="button" onClick={() => setSelectedEmployeeId(employee.id)} className="ml-2 text-[10px] font-semibold text-violet-600 hover:underline dark:text-violet-300">View profile</button>
                       <p className="mt-0.5 text-[10px] text-slate-500">{employee.email}</p>
                       <p className="mt-0.5 font-mono text-[10px] text-slate-400">{employee.id}</p>
                     </td>
@@ -234,6 +237,20 @@ export default function OverallEmployeesPage() {
           ))}
         </div>
       </section>
+      {selectedEmployee && <EmployeeProfileModal employee={selectedEmployee} onClose={() => setSelectedEmployeeId(null)} />}
+    </div>
+  );
+}
+
+function EmployeeProfileModal({ employee, onClose }: { employee: OverallEmployee; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm" onMouseDown={onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby="employee-profile-title" className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-2xl dark:border-slate-700 dark:bg-slate-950" onMouseDown={(event) => event.stopPropagation()}>
+        <div className="mb-5 flex items-start justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-wide text-violet-600">Employee profile</p><h2 id="employee-profile-title" className="mt-1 text-xl font-black text-slate-900 dark:text-white">{employee.name}</h2><p className="text-xs text-slate-500">{employee.email}</p></div><button type="button" onClick={onClose} className="rounded-lg px-3 py-1.5 text-xs font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800">Close</button></div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3"><section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 lg:col-span-2"><div className="grid grid-cols-2 gap-4">{[['Department', employee.department], ['Role', employee.title], ['Reporting manager', 'Not assigned'], ['Joining date', 'Not provided'], ['Status', employee.status.toUpperCase()], ['Location', employee.location]].map(([label, value]) => <div key={label}><p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{label}</p><p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">{value}</p></div>)}</div></section><section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900"><h3 className="text-sm font-bold">Workload</h3><p className="mt-3 text-3xl font-black text-violet-600">0%</p><p className="text-xs text-slate-500">0 open tasks</p><div className="mt-4 border-t border-slate-100 pt-4 dark:border-slate-800"><p className="text-[10px] font-bold uppercase text-slate-400">Attendance</p><p className="mt-1 text-lg font-bold">0%</p><p className="text-xs text-slate-500">0 report days logged</p></div></section></div>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">{[['Leave balance', '18 days', 'of 18 annual days'], ['Last report', 'Not submitted', 'No report yet'], ['Manager approval', 'No report submitted', 'Manager: Not assigned'], ['Assets assigned', 'No company assets assigned.', 'Company property currently in custody.']].map(([title, body, note]) => <section key={title} className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900"><h3 className="text-sm font-bold">{title}</h3><p className="mt-3 text-lg font-bold">{body}</p><p className="mt-1 text-xs text-slate-500">{note}</p></section>)}</div>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">{['Current tasks', 'Pending tasks', 'Leave history', 'Daily reports'].map((title) => <section key={title} className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900"><h3 className="text-sm font-bold">{title}</h3><p className="mt-3 text-xs text-slate-500">No records available for this employee.</p></section>)}</div>
+      </div>
     </div>
   );
 }

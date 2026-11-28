@@ -65,6 +65,11 @@ export default function AccountsAndFinancePage() {
     + recurringBills.filter((bill) => bill.paymentStatus !== 'Paid').reduce((total, bill) => total + bill.amount, 0);
   const pendingApprovalCount = expenseClaims.filter((claim) => claim.status === 'Submitted' || claim.status === 'Under Review').length;
   const overdueBillCount = recurringBills.filter((bill) => bill.paymentStatus === 'Overdue').length;
+  const demoIncome = 180000;
+  const demoBudget = 500000;
+  const demoCashBalance = 425000;
+  const demoNetProfit = demoIncome - recordedExpenditure;
+  const demoRemainingBudget = demoBudget - recordedExpenditure - outstandingExpenditure;
   const filteredClaims = expenseClaims.filter((claim) => {
     const matchesSearch = `${claim.id} ${claim.claimantName} ${claim.claimantId} ${claim.description}`.toLowerCase().includes(claimSearch.toLowerCase());
     const matchesStatus = claimStatus === 'All statuses' || claim.status === claimStatus;
@@ -193,14 +198,14 @@ export default function AccountsAndFinancePage() {
                 <BadgeDollarSign className="absolute -bottom-1 -right-1 w-7 h-7 p-1 rounded-full bg-violet-600 text-white" />
               </div>
             </div>
-            <DashboardMetricCard label="Total Income" value="Unavailable" subtext="No income records" icon={BadgeDollarSign} tone="blue" />
-            <DashboardMetricCard label="Net Profit" value="Unavailable" subtext="Requires income data" icon={TrendingUp} tone="emerald" />
+            <DashboardMetricCard label="Total Income" value={formatCurrency(demoIncome)} subtext="Demo income records" icon={BadgeDollarSign} tone="blue" />
+            <DashboardMetricCard label="Net Profit" value={formatCurrency(demoNetProfit)} subtext="Demo income less expenditure" icon={TrendingUp} tone="emerald" />
             <DashboardMetricCard label="Total Expenditure" value={formatCurrency(recordedExpenditure)} subtext="Paid claims and bills" icon={Receipt} tone="rose" />
-            <DashboardMetricCard label="Cash Balance" value="Unavailable" subtext="No bank balance records" icon={Wallet} tone="purple" />
+            <DashboardMetricCard label="Cash Balance" value={formatCurrency(demoCashBalance)} subtext="Demo closing balance" icon={Wallet} tone="purple" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <DashboardMetricCard label="Total Company Budget" value="Unavailable" subtext="No approved budget records" icon={Wallet} tone="purple" />
-            <DashboardMetricCard label="Remaining Budget" value="Unavailable" subtext="Requires an approved budget" icon={PiggyBank} tone="indigo" />
+            <DashboardMetricCard label="Total Company Budget" value={formatCurrency(demoBudget)} subtext="Demo approved budget" icon={Wallet} tone="purple" />
+            <DashboardMetricCard label="Remaining Budget" value={formatCurrency(demoRemainingBudget)} subtext="After expenditure and payables" icon={PiggyBank} tone="indigo" />
             <DashboardMetricCard label="Outstanding Payables" value={formatCurrency(outstandingExpenditure)} subtext="Approved claims and unpaid bills" icon={Landmark} tone="blue" />
             <DashboardMetricCard label="Pending Approvals" value={pendingApprovalCount.toLocaleString('en-IN')} subtext="Expense claims awaiting review" icon={Clock3} tone="amber" />
             <DashboardMetricCard label="Overdue Bills" value={overdueBillCount.toLocaleString('en-IN')} subtext="Unpaid bills past due" icon={CircleAlert} tone="rose" />
