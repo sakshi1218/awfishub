@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { BarChart3, BookOpen, BriefcaseBusiness, Users } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowLeft, BarChart3, BookOpen, BriefcaseBusiness, Users } from 'lucide-react';
 import ModulePage from '@/components/ui/ModulePage';
 import { AuthProvider } from '@/context/AuthContext';
 import TechnicalEmployeesContent from '@/components/technical/TechnicalEmployeesContent';
@@ -24,7 +25,7 @@ export default function TechnicalDashboardPage() {
   return (
     <AuthProvider>
       <ModulePage pathname="/technical/dashboard" hideQuickLinks>
-      <section aria-label="Technical Team workspace" className="w-full">
+      <section aria-label="Technical Team workspace" className="w-full"><Link href="/departments" className="mb-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"><ArrowLeft className="h-4 w-4" /> Back to departments</Link>
         <div role="tablist" aria-label="Technical Team sections" className="flex w-full gap-2 overflow-x-auto pb-1">
           {tabs.map(({ id, label, icon: Icon }) => {
             const selected = activeTab === id;

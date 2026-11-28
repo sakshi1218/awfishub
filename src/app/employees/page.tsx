@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Search, Users, RotateCcw, UserRound, X, UserPlus, Download, CalendarDays } from 'lucide-react';
+import { Search, Users, RotateCcw, UserRound, X, UserPlus, Download, CalendarDays, BarChart3, Package, FileText, ClipboardCheck } from 'lucide-react';
 import Image from 'next/image';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { MOCK_LEAVE_HISTORY } from '@/data/mock/leave-history';
+import { MOCK_ASSETS } from '@/data/mock/financeAssets';
+import { MOCK_DAILY_REPORTS } from '@/data/mock/tasks';
 
 type EmployeeRow = {
   id: string;
@@ -124,6 +126,16 @@ export default function EmployeesPage() {
   };
   const currentTaskGroups = groupTasks(currentTasks);
   const pendingTaskGroups = groupTasks(pendingTasks);
+  const assignedAssets = selectedEmployee ? MOCK_ASSETS.filter((asset) => asset.assignedToId === selectedEmployee.employeeId) : [];
+  const employeeReports = profile?.dailyReports?.length ? profile.dailyReports : selectedEmployee ? MOCK_DAILY_REPORTS.filter((report) => report.employeeId === selectedEmployee.employeeId).map((report) => ({ id: report.id, reportDate: report.date, status: report.status, tasksWorkedOn: report.tasksWorkedOn.join(', '), tasksCompleted: report.tasksCompleted.join(', '), tasksPending: report.tasksPending.join(', '), timeSpentHours: report.timeSpentHours, workDescription: report.workDescription })) : [];
+  const activeTaskCount = currentTasks.length + pendingTasks.length;
+  const workloadPercentage = Math.min(100, activeTaskCount * 20);
+  const lastReport = employeeReports[0];
+  const reportingHistory = profile?.reportingHistory || [];
+  const approvedLeaveDays = employeeLeaveRecords.filter((record) => record.status === 'Approved').reduce((sum, record) => sum + record.totalDays, 0);
+  const leaveBalance = Math.max(0, 18 - approvedLeaveDays);
+  const attendanceDays = employeeReports.filter((report) => report.status === 'Reviewed' || report.status === 'Submitted').length;
+  const attendancePercentage = Math.min(100, Math.round((attendanceDays / 22) * 100));
 
   const downloadEmployeeReport = () => {
     if (!profile) return;
@@ -140,7 +152,13 @@ export default function EmployeesPage() {
       ...employeeTasks.map((task) => [task.taskId, task.title, task.status, task.priority || '', task.deadline || '', String(task.progressPercentage || 0)]),
       [],
       ['Report date', 'Report status', 'Hours', 'Work description', 'Tasks completed', 'Tasks pending'],
-      ...(profile.dailyReports || []).map((report) => [report.reportDate, report.status, String(report.timeSpentHours || 0), report.workDescription || '', report.tasksCompleted || '', report.tasksPending || '']),
+      ...employeeReports.map((report) => [report.reportDate, report.status, String(report.timeSpentHours || 0), report.workDescription || '', report.tasksCompleted || '', report.tasksPending || '']),
+      [],
+      ['Assigned assets', 'Category', 'Status', 'Condition', 'Expected return'],
+      ...assignedAssets.map((asset) => [asset.name, asset.category, asset.status, asset.condition, asset.expectedReturnDate || '']),
+      [],
+      ['Leave balance', `${leaveBalance} days remaining`],
+      ['Attendance summary', `${attendancePercentage}% report attendance`],
     ];
     const csv = rows.map((row) => row.map(escapeCsv).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -239,6 +257,8 @@ export default function EmployeesPage() {
               ['Status', profile?.status || 'Not specified'],
             ].map(([label, value]) => <div key={label} className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3"><dt className="text-[10px] uppercase text-slate-500">{label}</dt><dd className="mt-1 text-sm font-medium text-slate-900 dark:text-white">{value}</dd></div>)}
           </dl>
+          {profile && <section className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Employee summary"><div className="rounded-xl border border-blue-200 bg-blue-50/70 p-3"><BarChart3 className="h-4 w-4 text-blue-700" /><p className="mt-2 text-[10px] uppercase text-slate-500">Workload</p><p className="text-lg font-bold text-slate-900">{workloadPercentage}%</p><p className="text-[10px] text-slate-500">{activeTaskCount} open tasks</p></div><div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3"><ClipboardCheck className="h-4 w-4 text-emerald-700" /><p className="mt-2 text-[10px] uppercase text-slate-500">Attendance</p><p className="text-lg font-bold text-slate-900">{attendancePercentage}%</p><p className="text-[10px] text-slate-500">report days logged</p></div><div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3"><CalendarDays className="h-4 w-4 text-amber-700" /><p className="mt-2 text-[10px] uppercase text-slate-500">Leave balance</p><p className="text-lg font-bold text-slate-900">{leaveBalance} days</p><p className="text-[10px] text-slate-500">of 18 annual days</p></div><div className="rounded-xl border border-violet-200 bg-violet-50/70 p-3"><FileText className="h-4 w-4 text-violet-700" /><p className="mt-2 text-[10px] uppercase text-slate-500">Last report</p><p className="text-sm font-bold text-slate-900">{lastReport?.reportDate ? new Date(lastReport.reportDate).toLocaleDateString() : 'Not submitted'}</p><p className="text-[10px] text-slate-500">{lastReport?.status || 'No report yet'}</p></div></section>}
+          {profile && <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2"><div className="rounded-2xl border border-slate-200 p-4 dark:border-slate-800"><div className="flex items-center justify-between"><div><h3 className="text-sm font-bold text-slate-900 dark:text-white">Manager approval</h3><p className="mt-1 text-[11px] text-slate-500">Latest daily report review status.</p></div><ClipboardCheck className="h-5 w-5 text-blue-600" /></div><p className="mt-3 text-sm font-semibold text-slate-800 dark:text-slate-200">{lastReport?.status === 'Reviewed' ? 'Approved by manager' : lastReport?.status === 'Submitted' ? 'Waiting for manager review' : 'No report submitted'}</p><p className="mt-1 text-xs text-slate-500">Manager: {profile.reportingManager?.name || 'Not assigned'}</p></div><div className="rounded-2xl border border-slate-200 p-4 dark:border-slate-800"><div className="flex items-center justify-between"><div><h3 className="text-sm font-bold text-slate-900 dark:text-white">Assets assigned</h3><p className="mt-1 text-[11px] text-slate-500">Company property currently in custody.</p></div><Package className="h-5 w-5 text-amber-600" /></div>{assignedAssets.length ? <div className="mt-3 space-y-2">{assignedAssets.map((asset) => <div key={asset.id} className="flex items-center justify-between gap-2 text-xs"><span className="truncate text-slate-700 dark:text-slate-300">{asset.name}</span><span className="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600">{asset.status}</span></div>)}</div> : <p className="mt-3 text-xs text-slate-500">No company assets assigned.</p>}</div></section>}
           {profile && (
             <section className="mt-5 space-y-4">
               {[
@@ -299,6 +319,7 @@ export default function EmployeesPage() {
               </div>
             )}
           </section>
+          <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2"><div><h3 className="text-sm font-bold text-slate-900 dark:text-white">Daily reports</h3>{employeeReports.length ? <div className="mt-2 space-y-2">{employeeReports.slice(0, 3).map((report) => <div key={report.id} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60"><div className="flex justify-between gap-2 text-xs"><b>{new Date(report.reportDate).toLocaleDateString()}</b><span className="text-slate-500">{report.status} · {report.timeSpentHours || 0}h</span></div><p className="mt-1 line-clamp-2 text-[11px] text-slate-500">{report.workDescription || 'No description provided.'}</p></div>)}</div> : <p className="mt-2 text-xs text-slate-500">No daily reports available.</p>}</div><div><h3 className="text-sm font-bold text-slate-900 dark:text-white">Recent activity</h3>{reportingHistory.length ? <div className="mt-2 space-y-2">{reportingHistory.slice(0, 3).map((item) => <div key={item.id} className="rounded-xl bg-slate-50 p-3 text-xs dark:bg-slate-800/60"><b>{new Date(item.changeDate).toLocaleDateString()}</b><p className="mt-1 text-slate-500">{item.reason || 'Reporting assignment updated.'}</p></div>)}</div> : <p className="mt-2 text-xs text-slate-500">No recent profile activity.</p>}</div></section>
         </section>
       </div>
     )}

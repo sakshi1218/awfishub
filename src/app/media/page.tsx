@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { Radio, BarChart2, Mic, Film, CheckCircle2, Clock, LayoutDashboard, Wallet, Target, CalendarDays } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { useApp } from '@/context/AppContext';
 import { PodcastEpisode, ReelItem } from '@/types';
@@ -32,6 +34,7 @@ export default function MediaPage() {
         title="Media Department Workspace"
         subtitle="Social media engagement analytics, MindLyft Leaders podcast guest pipeline, and reel editing Kanban."
         icon={Radio}
+        actions={<Link href="/departments" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"><ArrowLeft className="h-4 w-4" /> Back to departments</Link>}
       />
 
       <nav aria-label="Media workspace sections" className="max-w-full overflow-x-auto">

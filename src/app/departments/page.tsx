@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Building2, CheckSquare, Lock, ArrowRight, Activity, CalendarDays, Flag } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { PERMANENT_DEPARTMENTS } from '@/data/constants/departments';
@@ -292,6 +293,7 @@ function DepartmentEmployeeProfile({
 }
 
 export default function DepartmentsPage() {
+  const router = useRouter();
   const {
     employees,
     dailyReports,
@@ -316,6 +318,14 @@ export default function DepartmentsPage() {
   } = useApp();
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const departmentRoutes: Partial<Record<DepartmentType, string>> = {
+    Media: '/media/dashboard',
+    'Sales Department': '/sales',
+    TeleCaller: '/telecaller/dashboard',
+    Trainer: '/trainer/dashboard',
+    Counselor: '/counselor/dashboard',
+    'Technical Team': '/technical/dashboard',
+  };
 
   const allowedDirectorDepts =
     currentRole === 'DIRECTOR' ? getDirectorAllowedDepartments(currentEmployee.id) : null;
@@ -445,10 +455,15 @@ export default function DepartmentsPage() {
               type="button"
               key={department.id}
               onClick={() => {
+                const route = departmentRoutes[department.name];
+                if (route) {
+                  router.push(route);
+                  return;
+                }
                 setSelectedMemberId(null);
                 setSelectedDept(department.name);
               }}
-              aria-label={`Open ${department.name} details in this dashboard`}
+              aria-label={`Open ${department.name} workspace`}
               className="group w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 text-left shadow-sm transition duration-200 hover:-translate-y-1 hover:border-violet-300 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-slate-800 dark:bg-slate-900"
             >
               <div className={`h-1.5 bg-gradient-to-r ${department.color}`} />

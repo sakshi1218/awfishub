@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { PhoneCall, Plus, Search, Calendar, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { CallOutcome, TeleCallerRecord } from '@/types';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -53,9 +55,9 @@ export default function TeleCallerPage() {
         subtitle="Student calling list, call outcomes (Interested, Not Interested, Call Back, Not Reachable, Converted), and follow-up calendar."
         icon={PhoneCall}
         actions={
-          <button onClick={() => setShowAdd(true)} className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1.5">
+          <div className="flex flex-wrap gap-2"><Link href="/departments" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"><ArrowLeft className="h-4 w-4" /> Back</Link><button onClick={() => setShowAdd(true)} className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1.5">
             <Plus className="w-4 h-4" /> Add Call Record
-          </button>
+          </button></div>
         }
       />
 

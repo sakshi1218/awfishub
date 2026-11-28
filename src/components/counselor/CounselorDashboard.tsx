@@ -1,8 +1,10 @@
 'use client';
 
 import { useMemo, useState, type ReactNode } from 'react';
+import Link from 'next/link';
 import {
   ArrowDownWideNarrow,
+  ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   BadgeCheck,
@@ -544,9 +546,7 @@ export default function CounselorDashboard() {
               Prototype only. All people, enquiries, outcomes and analysis shown are sample records.
             </p>
           </div>
-          <button type="button" onClick={resetFilters} className="inline-flex w-fit items-center gap-2 rounded-xl border border-violet-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-violet-700 transition hover:border-violet-400 hover:bg-violet-50 dark:border-violet-800 dark:bg-slate-900 dark:text-violet-300 dark:hover:bg-violet-950/40">
-            <History className="h-4 w-4" /> Reset filters
-          </button>
+          <div className="flex w-fit flex-wrap gap-2"><Link href="/departments" className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-violet-700 transition hover:border-violet-400 hover:bg-violet-50 dark:border-violet-800 dark:bg-slate-900 dark:text-violet-300"><ArrowLeft className="h-4 w-4" /> Back to departments</Link><button type="button" onClick={resetFilters} className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-violet-700 transition hover:border-violet-400 hover:bg-violet-50 dark:border-violet-800 dark:bg-slate-900 dark:text-violet-300 dark:hover:bg-violet-950/40"><History className="h-4 w-4" /> Reset filters</button></div>
         </div>
         <div className="mt-6 grid gap-3 rounded-2xl border border-white/80 bg-white/80 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/70 sm:grid-cols-2 lg:grid-cols-4">
           <label className="text-[10px] font-semibold text-slate-500">Date range

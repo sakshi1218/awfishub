@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useMemo, useState, type ReactNode } from 'react';
 import {
   ArrowRight,
+  ArrowLeft,
   BarChart3,
   BookOpen,
   CalendarDays,
@@ -426,9 +427,7 @@ export default function TrainerDashboard() {
               Prototype only. Metrics, names and operational signals are illustrative, not live records.
             </p>
           </div>
-          <Link href="/trainer/schedule" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-violet-600 px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-violet-700">
-            <CalendarDays className="h-4 w-4" /> View schedule
-          </Link>
+          <div className="flex shrink-0 flex-wrap gap-2"><Link href="/departments" className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-violet-700 transition hover:border-violet-400 dark:border-violet-800 dark:bg-slate-900 dark:text-violet-300"><ArrowLeft className="h-4 w-4" /> Back to departments</Link><Link href="/trainer/schedule" className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-violet-700"><CalendarDays className="h-4 w-4" /> View schedule</Link></div>
         </div>
       </header>
 

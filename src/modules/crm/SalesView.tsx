@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import {
   TrendingUp,
   LayoutGrid,
@@ -12,6 +13,7 @@ import {
   FileCheck2,
   Clock,
   ChevronDown,
+  ArrowLeft,
 } from 'lucide-react';
 import {
   mockColleges,
@@ -399,6 +401,7 @@ export function SalesView({ defaultTab = 'DASHBOARD' }: { defaultTab?: SalesTabT
               <small className="text-xs text-[#667085] dark:text-[#98a2b3]">Colleges and clients</small>
             </div>
           </div>
+          <Link href="/departments" className="inline-flex items-center gap-2 rounded-xl border border-[#e4e7ec] px-3 py-2 text-xs font-semibold text-[#344054] hover:border-[#5b3df5] dark:border-[#2a3040] dark:text-[#eef0f5]"><ArrowLeft className="h-4 w-4" /> Back to departments</Link>
         </div>
 
         <nav className="flex flex-wrap items-center gap-1.5" aria-label="Sections">
