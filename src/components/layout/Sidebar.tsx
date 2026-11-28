@@ -14,6 +14,7 @@ import {
   BookOpen,
   Building2,
   CalendarDays,
+  BriefcaseBusiness,
   HardDrive,
   BadgeDollarSign,
   Bell,
@@ -57,6 +58,7 @@ export default function Sidebar({
     { label: 'Workshops', href: '/campaigns', icon: Megaphone, visible: true },
     { label: 'Media', href: '/media', icon: Film, visible: true },
     { label: 'LMS Dashboard', href: '/learning/dashboard', icon: BookOpen, visible: true },
+    { label: 'Placement Drives', href: '/placement-drives', icon: BriefcaseBusiness, visible: isChairperson },
     { label: 'Colleges & Experts', href: '/colleges', icon: Building2, visible: true },
     { label: 'Events & Expos', href: '/events', icon: CalendarDays, visible: true },
     {
