@@ -111,6 +111,19 @@ export default function AccountsAndFinancePage() {
 
   const chartColors = ['#4f46e5', '#0f9f9a', '#f59e0b', '#e76f51', '#3182ce', '#7c3aed'];
 
+  return (
+    <div className="space-y-6">
+      <PageHeader title="Accounts" subtitle="Accounts sections" icon={BadgeDollarSign} />
+      <div className="flex flex-wrap gap-1.5">
+        {(['OVERVIEW', 'BUDGETS', 'PURCHASES', 'ALLOWANCES', 'RENT_GST', 'CLAIMS', 'BILLS', 'APPROVALS', 'REPORTS', 'GST', 'TDS'] as const).map((id) => (
+          <button key={id} onClick={() => setTab(id)} className={`px-3.5 py-2 rounded-xl text-xs font-bold ${tab === id ? 'bg-violet-600 text-white' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'}`}>
+            {id.replace('_', ' ')}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   const exportFinanceExcel = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(expenseClaims), 'Expense Claims');

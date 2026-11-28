@@ -76,6 +76,22 @@ function MediaPageContent() {
 
   return (
     <div className="space-y-6">
+      <header className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <p className="text-xs font-semibold uppercase tracking-wide text-rose-700 dark:text-rose-300">Media workspace</p>
+        <h1 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-white">Media</h1>
+      </header>
+      <nav aria-label="Media sections" className="flex flex-wrap gap-1.5">
+        {(['OVERVIEW', 'SOCIAL', 'PODCAST', 'REELS', 'FUNDS', 'STRATEGIES', 'SCHEDULE'] as MediaTab[]).map((id) => (
+          <button key={id} onClick={() => setTab(id)} className={`rounded-xl px-3.5 py-2 text-xs font-bold ${tab === id ? 'bg-rose-600 text-white' : 'border border-slate-200 bg-white text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'}`}>
+            {id}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
       <header className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="grid gap-6 p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div className="max-w-2xl">
