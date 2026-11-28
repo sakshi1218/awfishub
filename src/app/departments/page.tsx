@@ -319,7 +319,7 @@ export default function DepartmentsPage() {
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const departmentRoutes: Partial<Record<DepartmentType, string>> = {
-    Media: '/media/dashboard',
+    Media: '/media',
     'Sales Department': '/sales',
     TeleCaller: '/telecaller',
     Trainer: '/trainer/dashboard',

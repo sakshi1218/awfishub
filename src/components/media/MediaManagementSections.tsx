@@ -164,7 +164,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="presentation" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onClose();
     }}>
-      <section role="dialog" aria-modal="true" aria-label={title} className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl p-5 space-y-4">
+      <section role="dialog" aria-modal="true" aria-label={title} className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl p-5 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-bold text-slate-900 dark:text-white">{title}</h2>
           <button type="button" onClick={onClose} className="px-2 py-1 rounded-lg border text-xs text-slate-500">Close</button>
@@ -175,28 +175,29 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   );
 }
 
-function Metric({ label, value, helper, icon: Icon, tone = 'violet' }: {
+function Metric({ label, value, helper, icon: Icon, tone = 'violet', className = '' }: {
   label: string;
   value: string;
   helper: string;
   icon: React.ElementType;
   tone?: 'violet' | 'blue' | 'emerald' | 'amber' | 'rose';
+  className?: string;
 }) {
   const tones = {
-    violet: 'bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300',
-    blue: 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300',
-    emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300',
-    amber: 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300',
-    rose: 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300',
+    violet: 'bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-200',
+    blue: 'bg-blue-50 text-blue-800 dark:bg-blue-950/50 dark:text-blue-200',
+    emerald: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200',
+    amber: 'bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200',
+    rose: 'bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-200',
   };
   return (
-    <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-      <div className="flex justify-between items-start gap-2">
-        <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{label}</span>
-        <span className={`p-1.5 rounded-lg ${tones[tone]}`}><Icon className="w-4 h-4" /></span>
+    <div className={`group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 transition-colors hover:border-rose-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-rose-900 ${className}`}>
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{label}</span>
+        <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${tones[tone]}`}><Icon className="h-4 w-4" /></span>
       </div>
-      <p className="mt-2 text-xl font-black text-slate-900 dark:text-white">{value}</p>
-      <p className="mt-1 text-[10px] text-slate-500">{helper}</p>
+      <p className="mt-5 text-2xl font-semibold tracking-tight tabular-nums text-slate-950 dark:text-white">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">{helper}</p>
     </div>
   );
 }
@@ -568,53 +569,63 @@ export default function MediaManagementSections(props: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="p-3 rounded-xl border border-violet-200 bg-violet-50 dark:bg-violet-950/20 dark:border-violet-900 text-[11px] text-violet-800 dark:text-violet-200">
+      <div className="p-3 rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/20 dark:border-rose-900 text-[11px] text-rose-800 dark:text-rose-200">
         UI preview: new entries are temporary and reset on refresh. Receipt fields keep a filename only; social publishing and approval actions are not connected.
       </div>
 
       {activeTab === 'OVERVIEW' && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-            <Metric label="Allocated Media Campaign Budget" value={formatCurrency(allocatedBudget)} helper="Existing campaign budget references" icon={Wallet} />
-            <Metric label="Actual Expenditure" value={formatCurrency(actualSpend)} helper="Campaign spend refs + approved UI entries" icon={BarChart3} tone="blue" />
-            <Metric label="Remaining Budget" value={formatCurrency(remainingBudget)} helper={`${utilization.toFixed(1)}% utilization`} icon={Target} tone={utilization > 100 ? 'rose' : 'emerald'} />
-            <Metric label="Budget Utilization" value={`${utilization.toFixed(1)}%`} helper="Based on tracked campaign references" icon={BarChart3} tone={utilization >= 80 ? 'amber' : 'violet'} />
-            <Metric label="Active Strategies" value={activeStrategyCount.toLocaleString('en-IN')} helper="Approved or in progress" icon={Target} tone="blue" />
-            <Metric label="Active Campaigns" value={activeCampaignCount.toLocaleString('en-IN')} helper="Media-participating campaigns" icon={CheckCircle2} tone="emerald" />
-            <Metric label="Upcoming Activities" value={upcomingActivities.length.toLocaleString('en-IN')} helper="Existing media dates and scheduled items" icon={CalendarDays} tone="violet" />
-            <Metric label="Pending Expense Approvals" value={expenses.filter((expense) => expense.status === 'PENDING_APPROVAL').length.toLocaleString('en-IN')} helper={formatCurrency(pendingExpenseTotal)} icon={Clock3} tone="amber" />
+        <div className="space-y-6">
+          <header className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-5 dark:border-slate-800 sm:flex-row sm:items-end">
+            <div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-rose-700 dark:text-rose-300">Media at a glance</p><h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">Executive Overview</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">Campaign investment, audience response and production activity from the records currently available.</p></div>
+            <p className="text-xs text-slate-500">{socialMetrics.length} social records <span className="px-1">·</span> {mediaCampaigns.length} campaigns</p>
+          </header>
+
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+            <section className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 text-white xl:col-span-8">
+              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/10 p-6 sm:p-7">
+                <div><p className="text-xs font-medium text-rose-300">Campaign investment</p><h3 className="mt-1 text-lg font-semibold tracking-tight">Budget against tracked spend</h3><p className="mt-1 text-xs text-slate-400">Reference budgets and campaign spend for Media campaigns.</p></div>
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-300">{budgetChartData.length} campaigns</span>
+              </div>
+              <div className="grid gap-5 p-6 sm:p-7 lg:grid-cols-[minmax(0,1fr)_170px]">
+                <div className="h-64 min-w-0">{budgetChartData.length ? <ResponsiveContainer width="100%" height="100%"><BarChart data={budgetChartData} margin={{ top: 8, right: 8, left: 0, bottom: 4 }}><CartesianGrid stroke="#334155" strokeDasharray="3 5" vertical={false} /><XAxis dataKey="project" tick={{ fontSize: 10, fill: '#cbd5e1' }} tickLine={false} axisLine={false} interval={0} /><YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} tickLine={false} axisLine={false} width={42} /><Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 10, color: '#f8fafc' }} /><Bar dataKey="budget" name="Allocated" fill="#e11d48" radius={[5, 5, 0, 0]} /><Bar dataKey="actual" name="Tracked spend" fill="#94a3b8" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer> : <div className="flex h-full items-center justify-center text-sm text-slate-400">No Media campaign budget references available.</div>}</div>
+                <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-4 lg:grid-cols-1 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
+                  <div><p className="text-[11px] text-slate-400">Allocated</p><p className="mt-1 text-xl font-semibold tabular-nums">{formatCurrency(allocatedBudget)}</p></div>
+                  <div><p className="text-[11px] text-slate-400">Tracked spend</p><p className="mt-1 text-xl font-semibold tabular-nums">{formatCurrency(actualSpend)}</p></div>
+                  <div><p className="text-[11px] text-slate-400">Remaining</p><p className={`mt-1 text-xl font-semibold tabular-nums ${remainingBudget < 0 ? 'text-rose-300' : 'text-emerald-300'}`}>{formatCurrency(remainingBudget)}</p></div>
+                  <div><div className="flex items-center justify-between text-[11px] text-slate-400"><span>Utilization</span><span className="tabular-nums text-white">{utilization.toFixed(1)}%</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10"><div className={`h-full rounded-full ${utilization >= 100 ? 'bg-rose-400' : 'bg-rose-500'}`} style={{ width: `${Math.min(utilization, 100)}%` }} /></div></div>
+                </div>
+              </div>
+            </section>
+            <section className="grid grid-cols-2 gap-3 xl:col-span-4 xl:grid-cols-1">
+              <OverviewStat label="Active campaigns" value={activeCampaignCount.toLocaleString('en-IN')} helper="Currently active" icon={CheckCircle2} tone="rose" />
+              <OverviewStat label="Active strategies" value={activeStrategyCount.toLocaleString('en-IN')} helper="Approved or in progress" icon={Target} tone="blue" />
+              <OverviewStat label="Upcoming activities" value={upcomingActivities.length.toLocaleString('en-IN')} helper="Scheduled dates ahead" icon={CalendarDays} tone="amber" />
+              <OverviewStat label="Pending expense approvals" value={expenses.filter((expense) => expense.status === 'PENDING_APPROVAL').length.toLocaleString('en-IN')} helper={formatCurrency(pendingExpenseTotal)} icon={Clock3} tone="slate" />
+            </section>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-            <section className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Campaign Budget vs Actual</h3>
-              <p className="text-[10px] text-slate-500 mb-3">Only existing campaigns that include Media.</p>
-              {budgetChartData.length ? <div className="h-64"><ResponsiveContainer width="100%" height="100%"><BarChart data={budgetChartData}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="project" tick={{ fontSize: 9 }} interval={0} /><YAxis tick={{ fontSize: 10 }} /><Tooltip formatter={(value) => formatCurrency(Number(value))} /><Bar dataKey="budget" name="Allocated" fill="#8b5cf6" radius={[4, 4, 0, 0]} /><Bar dataKey="actual" name="Actual" fill="#0d9488" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div> : <EmptyState text="No Media campaign budget references available." />}
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 xl:col-span-7 sm:p-6">
+              <div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-medium text-rose-700 dark:text-rose-300">Published content</p><h3 className="mt-1 text-lg font-semibold tracking-tight text-slate-950 dark:text-white">Audience by platform</h3><p className="mt-1 text-xs text-slate-500">{reachTotal.toLocaleString('en-IN')} reach <span className="px-1">·</span> {viewsTotal.toLocaleString('en-IN')} views <span className="px-1">·</span> {engagementTotal.toLocaleString('en-IN')} interactions</p></div><span className="text-xs text-slate-500">Reach / views</span></div>
+              {audienceByPlatform.length ? <div className="mt-4 h-64"><ResponsiveContainer width="100%" height="100%"><BarChart data={audienceByPlatform} margin={{ top: 8, right: 8, left: 0, bottom: 4 }}><CartesianGrid stroke="#e2e8f0" strokeDasharray="3 5" vertical={false} /><XAxis dataKey="platform" tick={{ fontSize: 10, fill: '#64748b' }} tickLine={false} axisLine={false} /><YAxis tick={{ fontSize: 10, fill: '#64748b' }} tickLine={false} axisLine={false} width={42} /><Tooltip formatter={(value) => Number(value).toLocaleString('en-IN')} /><Bar dataKey="reach" name="Reach" fill="#be123c" radius={[5, 5, 0, 0]} /><Bar dataKey="views" name="Views" fill="#cbd5e1" radius={[5, 5, 0, 0]} /></BarChart></ResponsiveContainer></div> : <EmptyState text="No social media metrics available." />}
+              <div className="mt-4 flex flex-wrap gap-5 border-t border-slate-100 pt-4 text-xs dark:border-slate-800"><span className="flex items-center gap-2 text-slate-600 dark:text-slate-300"><span className="h-2.5 w-2.5 rounded-sm bg-rose-700" />Reach</span><span className="flex items-center gap-2 text-slate-600 dark:text-slate-300"><span className="h-2.5 w-2.5 rounded-sm bg-slate-300" />Views</span><span className="ml-auto text-slate-500">{completedContent.toLocaleString('en-IN')} published records, including posted reels</span></div>
             </section>
-            <section className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Audience Performance</h3>
-              <p className="text-[10px] text-slate-500 mb-3">Reach and views from existing social content records.</p>
-              {audienceByPlatform.length ? <div className="h-64"><ResponsiveContainer width="100%" height="100%"><BarChart data={audienceByPlatform}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="platform" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} /><Tooltip formatter={(value) => Number(value).toLocaleString('en-IN')} /><Bar dataKey="reach" name="Reach" fill="#7c3aed" radius={[4, 4, 0, 0]} /><Bar dataKey="views" name="Views" fill="#2563eb" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div> : <EmptyState text="No social media metrics available." />}
-            </section>
-            <section className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Monthly Expenditure Trend</h3>
-              <p className="text-[10px] text-slate-500 mb-3">Monthly dates are shown only for expense entries created in this UI preview.</p>
-              {monthlySpend.length ? <div className="h-56"><ResponsiveContainer width="100%" height="100%"><LineChart data={monthlySpend}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="month" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 10 }} /><Tooltip formatter={(value) => formatCurrency(Number(value))} /><Line type="monotone" dataKey="amount" name="Approved expense" stroke="#7c3aed" strokeWidth={2} dot={{ r: 3 }} /></LineChart></ResponsiveContainer></div> : <EmptyState text="No dated approved expense entries yet." />}
-            </section>
-            <section className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Management Insights</h3>
-              <div className="grid grid-cols-2 gap-3 mt-3">
-                <Insight label="Total Reach" value={reachTotal.toLocaleString('en-IN')} />
-                <Insight label="Total Views" value={viewsTotal.toLocaleString('en-IN')} />
-                <Insight label="Engagement" value={engagementTotal.toLocaleString('en-IN')} />
-                <Insight label="Completed Content" value={completedContent.toLocaleString('en-IN')} />
-                <Insight label="Overdue Activities" value={overdueActivities.length.toLocaleString('en-IN')} />
-                <Insight label="Schedule Adherence" value={`${scheduleAdherence}%`} />
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 xl:col-span-5 sm:p-6">
+              <p className="text-xs font-medium text-rose-700 dark:text-rose-300">Operations</p><h3 className="mt-1 text-lg font-semibold tracking-tight text-slate-950 dark:text-white">Production pulse</h3><p className="mt-1 text-xs leading-5 text-slate-500">A quick read across content and scheduled activity records.</p>
+              <div className="mt-5 space-y-4">
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-slate-50 p-4 dark:bg-slate-800/70"><div><p className="text-xs text-slate-500">Completed or published activity</p><p className="mt-1 text-2xl font-semibold tabular-nums text-slate-950 dark:text-white">{scheduleAdherence}%</p></div><span className="rounded-lg bg-emerald-50 p-2.5 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"><CheckCircle2 className="h-5 w-5" /></span></div>
+                <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4 dark:border-slate-800"><span className="text-sm text-slate-600 dark:text-slate-300">Overdue activities</span><span className={`text-sm font-semibold tabular-nums ${overdueActivities.length ? 'text-rose-700 dark:text-rose-300' : 'text-slate-900 dark:text-white'}`}>{overdueActivities.length.toLocaleString('en-IN')}</span></div>
+                <div className="flex items-center justify-between gap-4"><span className="text-sm text-slate-600 dark:text-slate-300">Strategies awaiting approval</span><span className="text-sm font-semibold tabular-nums text-slate-900 dark:text-white">{pendingStrategyCount.toLocaleString('en-IN')}</span></div>
               </div>
             </section>
           </div>
 
-          <section className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 xl:col-span-7 sm:p-6"><div><p className="text-xs font-medium text-slate-500">Approved local entries</p><h3 className="mt-1 text-base font-semibold text-slate-950 dark:text-white">Monthly expenditure trend</h3><p className="mt-1 text-xs text-slate-500">Based on expenses entered in this page preview.</p></div>{monthlySpend.length ? <div className="mt-3 h-52"><ResponsiveContainer width="100%" height="100%"><LineChart data={monthlySpend}><CartesianGrid stroke="#e2e8f0" strokeDasharray="3 5" vertical={false} /><XAxis dataKey="month" tick={{ fontSize: 10, fill: '#64748b' }} tickLine={false} axisLine={false} /><YAxis tick={{ fontSize: 10, fill: '#64748b' }} tickLine={false} axisLine={false} /><Tooltip formatter={(value) => formatCurrency(Number(value))} /><Line type="monotone" dataKey="amount" name="Approved expense" stroke="#be123c" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} /></LineChart></ResponsiveContainer></div> : <div className="mt-4 rounded-xl border border-dashed border-slate-200 px-5 py-8 text-center dark:border-slate-700"><p className="text-sm font-medium text-slate-700 dark:text-slate-200">No approved expense entries yet</p><p className="mt-1 text-xs text-slate-500">Approved expenses with dates will appear here.</p></div>}</section>
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900 xl:col-span-5 sm:p-6"><div><p className="text-xs font-medium text-rose-700 dark:text-rose-300">Audience summary</p><h3 className="mt-1 text-base font-semibold text-slate-950 dark:text-white">Content output</h3></div><div className="mt-4 divide-y divide-slate-100 dark:divide-slate-800"><Insight label="Total interactions" value={engagementTotal.toLocaleString('en-IN')} /><Insight label="Published content records" value={completedContent.toLocaleString('en-IN')} /><Insight label="Active platforms" value={audienceByPlatform.length.toLocaleString('en-IN')} /></div></section>
+          </div>
+
+          <section className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Management Alerts</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {utilization >= 80 && <Alert text={`Media campaign budget utilization is ${utilization.toFixed(1)}%.`} danger={utilization >= 100} />}
@@ -641,28 +652,28 @@ export default function MediaManagementSections(props: Props) {
           <div className="flex flex-wrap justify-between items-center gap-2">
             <div><h2 className="text-sm font-bold text-slate-900 dark:text-white">Media Funds</h2><p className="text-[10px] text-slate-500">Campaign-specific budget references only; company Accounts data is not displayed.</p></div>
             <div className="flex gap-2">
-              <button onClick={() => setShowBudgetForm(true)} className="px-3 py-2 rounded-xl border border-violet-200 text-violet-700 dark:text-violet-300 text-xs font-bold">Edit budgets</button>
-              <button onClick={() => { setEditingExpenseId(null); setShowExpenseForm(true); }} className="px-3 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold flex items-center gap-1"><Plus className="w-3.5 h-3.5" /> Add expense</button>
+              <button onClick={() => setShowBudgetForm(true)} className="px-3 py-2 rounded-xl border border-rose-200 text-rose-700 dark:text-rose-300 text-xs font-bold">Edit budgets</button>
+              <button onClick={() => { setEditingExpenseId(null); setShowExpenseForm(true); }} className="px-3 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold flex items-center gap-1"><Plus className="w-3.5 h-3.5" /> Add expense</button>
               <button onClick={() => exportCsv('media-expenses.csv', filteredExpenses.map((expense) => ({ ...expense, campaign: campaignById(expense.campaignId)?.title || '' })))} className="px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-1"><Download className="w-3.5 h-3.5" /> Export CSV</button>
             </div>
           </div>
 
-          <section className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
+          <section className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
             <div className="p-4 border-b border-slate-100 dark:border-slate-800"><h3 className="text-xs font-bold">Project / Campaign Budget Utilization</h3></div>
             <table className="w-full text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-800/60 text-[10px] uppercase text-slate-500"><tr><th className="p-3 text-left">Campaign</th><th className="p-3 text-right">Allocated</th><th className="p-3 text-right">Actual spend</th><th className="p-3 text-right">Remaining</th><th className="p-3">Utilization</th><th className="p-3">Alert</th></tr></thead>
+              <thead className="bg-slate-50 dark:bg-slate-800/60 text-[10px] font-medium text-slate-500"><tr><th className="p-3 text-left">Campaign</th><th className="p-3 text-right">Allocated</th><th className="p-3 text-right">Actual spend</th><th className="p-3 text-right">Remaining</th><th className="p-3">Utilization</th><th className="p-3">Alert</th></tr></thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {budgetChartData.map((item, index) => {
                   const campaign = mediaCampaigns[index];
                   const percentage = item.budget ? item.actual / item.budget * 100 : 0;
-                  return <tr key={campaign.id}><td className="p-3 font-semibold">{campaign.title}</td><td className="p-3 text-right">{formatCurrency(item.budget)}</td><td className="p-3 text-right">{formatCurrency(item.actual)}</td><td className="p-3 text-right">{formatCurrency(item.budget - item.actual)}</td><td className="p-3 min-w-36"><div className="flex items-center gap-2"><div className="h-2 flex-1 rounded-full bg-slate-100 dark:bg-slate-800"><div className={`h-2 rounded-full ${percentage >= 100 ? 'bg-rose-500' : percentage >= 80 ? 'bg-amber-500' : 'bg-violet-500'}`} style={{ width: `${Math.min(percentage, 100)}%` }} /></div><span className="text-[10px]">{percentage.toFixed(0)}%</span></div></td><td className="p-3">{percentage >= 100 ? <StatusBadge label="Exceeded" variant="danger" /> : percentage >= 80 ? <StatusBadge label="80%+ used" variant="warning" /> : <StatusBadge label="On track" variant="success" />}</td></tr>;
+                  return <tr key={campaign.id}><td className="p-3 font-semibold">{campaign.title}</td><td className="p-3 text-right">{formatCurrency(item.budget)}</td><td className="p-3 text-right">{formatCurrency(item.actual)}</td><td className="p-3 text-right">{formatCurrency(item.budget - item.actual)}</td><td className="p-3 min-w-36"><div className="flex items-center gap-2"><div className="h-2 flex-1 rounded-full bg-slate-100 dark:bg-slate-800"><div className={`h-2 rounded-full ${percentage >= 100 ? 'bg-rose-500' : percentage >= 80 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${Math.min(percentage, 100)}%` }} /></div><span className="text-[10px]">{percentage.toFixed(0)}%</span></div></td><td className="p-3">{percentage >= 100 ? <StatusBadge label="Exceeded" variant="danger" /> : percentage >= 80 ? <StatusBadge label="80%+ used" variant="warning" /> : <StatusBadge label="On track" variant="success" />}</td></tr>;
                 })}
                 {!budgetChartData.length && <tr><td className="p-8 text-center text-slate-500" colSpan={6}>No Media campaign budget references available.</td></tr>}
               </tbody>
             </table>
           </section>
 
-          <section className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <section className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
             <h3 className="text-xs font-bold">Category-wise Approved Expenses</h3>
             <p className="text-[10px] text-slate-500 mb-3">Based on expenses approved in this temporary UI preview.</p>
             {expenseByCategory.length ? (
@@ -679,7 +690,7 @@ export default function MediaManagementSections(props: Props) {
             ) : <EmptyState text="No approved expenses to report by category." />}
           </section>
 
-          <section className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
+          <section className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-wrap justify-between gap-2 items-center">
               <div><h3 className="text-xs font-bold">Expense Management</h3><p className="text-[10px] text-slate-500">New entries are page-local; approvals are not enabled in this UI-only preview.</p></div>
               <div className="flex flex-wrap gap-2">
@@ -691,7 +702,7 @@ export default function MediaManagementSections(props: Props) {
               </div>
             </div>
             <table className="w-full text-xs min-w-[850px]">
-              <thead className="bg-slate-50 dark:bg-slate-800/60 text-[10px] uppercase text-slate-500"><tr><th className="p-3 text-left">Expense</th><th className="p-3">Category</th><th className="p-3">Campaign</th><th className="p-3 text-right">Amount</th><th className="p-3">Date / submitter</th><th className="p-3">Receipt</th><th className="p-3">Approval</th><th className="p-3">Actions</th></tr></thead>
+              <thead className="bg-slate-50 dark:bg-slate-800/60 text-[10px] font-medium text-slate-500"><tr><th className="p-3 text-left">Expense</th><th className="p-3">Category</th><th className="p-3">Campaign</th><th className="p-3 text-right">Amount</th><th className="p-3">Date / submitter</th><th className="p-3">Receipt</th><th className="p-3">Approval</th><th className="p-3">Actions</th></tr></thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredExpenses.map((expense) => <tr key={expense.id}>
                   <td className="p-3"><b>{expense.title}</b><p className="text-[10px] text-slate-500">{expense.description}</p></td>
@@ -711,11 +722,11 @@ export default function MediaManagementSections(props: Props) {
 
       {activeTab === 'STRATEGIES' && (
         <div className="space-y-4">
-          <div className="flex flex-wrap justify-between items-center gap-2"><div><h2 className="text-sm font-bold text-slate-900 dark:text-white">Media Strategies</h2><p className="text-[10px] text-slate-500">Plan campaign outcomes and compare manually entered targets with actuals.</p></div><button onClick={() => { setEditingStrategyId(null); setShowStrategyForm(true); }} className="px-3 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold flex items-center gap-1"><Plus className="w-3.5 h-3.5" /> New strategy</button></div>
+          <div className="flex flex-wrap justify-between items-center gap-2"><div><h2 className="text-sm font-bold text-slate-900 dark:text-white">Media Strategies</h2><p className="text-[10px] text-slate-500">Plan campaign outcomes and compare manually entered targets with actuals.</p></div><button onClick={() => { setEditingStrategyId(null); setShowStrategyForm(true); }} className="px-3 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold flex items-center gap-1"><Plus className="w-3.5 h-3.5" /> New strategy</button></div>
           {strategies.map((strategy) => {
             const campaign = campaignById(strategy.campaignId);
             const progress = (actual: number, target: number) => target ? Math.min(100, actual / target * 100) : 0;
-            return <article key={strategy.id} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            return <article key={strategy.id} className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
               <div className="flex flex-wrap justify-between gap-3">
                 <div><div className="flex items-center gap-2"><h3 className="text-sm font-bold">{strategy.name}</h3><StatusBadge label={strategy.status} variant={statusVariant(strategy.status)} /></div><p className="text-[10px] text-slate-500 mt-1">{campaign?.title || 'No linked campaign'} · Owner: {employeeById(strategy.ownerId)?.name || currentEmployee.name} · {strategy.startDate} – {strategy.endDate}</p></div>
                 <div className="flex gap-2"><button onClick={() => { setEditingStrategyId(strategy.id); setShowStrategyForm(true); }} className="px-2.5 py-1.5 rounded-lg border text-[10px]">Edit</button>{strategy.status === 'DRAFT' && <button onClick={() => setStrategies((items) => items.filter((item) => item.id !== strategy.id))} className="px-2.5 py-1.5 rounded-lg border text-[10px] text-rose-600">Delete draft</button>}</div>
@@ -740,10 +751,10 @@ export default function MediaManagementSections(props: Props) {
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div><h2 className="text-sm font-bold text-slate-900 dark:text-white">Media Schedule</h2><p className="text-[10px] text-slate-500">Existing podcast, campaign, event and published-content dates plus local schedule entries.</p></div>
-            <div className="flex gap-2"><div className="flex rounded-xl border bg-white dark:bg-slate-900 p-1">{(['MONTH', 'WEEK', 'AGENDA'] as const).map((view) => <button key={view} onClick={() => setCalendarView(view)} className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold ${calendarView === view ? 'bg-violet-600 text-white' : 'text-slate-500'}`}>{view === 'MONTH' ? 'Month' : view === 'WEEK' ? 'Week' : 'Agenda'}</button>)}</div><button onClick={() => setShowScheduleForm(true)} className="px-3 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold flex items-center gap-1"><Plus className="w-3.5 h-3.5" /> Add activity</button></div>
+            <div className="flex gap-2"><div className="flex rounded-xl border bg-white dark:bg-slate-900 p-1">{(['MONTH', 'WEEK', 'AGENDA'] as const).map((view) => <button key={view} onClick={() => setCalendarView(view)} className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold ${calendarView === view ? 'bg-rose-600 text-white' : 'text-slate-500'}`}>{view === 'MONTH' ? 'Month' : view === 'WEEK' ? 'Week' : 'Agenda'}</button>)}</div><button onClick={() => setShowScheduleForm(true)} className="px-3 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold flex items-center gap-1"><Plus className="w-3.5 h-3.5" /> Add activity</button></div>
           </div>
 
-          <section className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-wrap gap-2">
+          <section className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-wrap gap-2">
             <select value={scheduleEmployeeFilter} onChange={(event) => setScheduleEmployeeFilter(event.target.value)} className="p-2 rounded-lg border text-[10px] bg-transparent"><option>All employees</option>{employees.filter((employee) => employee.department === 'Media').map((employee) => <option key={employee.permanentId} value={employee.permanentId}>{employee.name}</option>)}</select>
             <select value={schedulePlatformFilter} onChange={(event) => setSchedulePlatformFilter(event.target.value)} className="p-2 rounded-lg border text-[10px] bg-transparent"><option>All platforms</option>{Array.from(new Set(derivedActivities.map((activity) => activity.platform))).filter(Boolean).map((platform) => <option key={platform}>{platform}</option>)}</select>
             <select value={scheduleTypeFilter} onChange={(event) => setScheduleTypeFilter(event.target.value)} className="p-2 rounded-lg border text-[10px] bg-transparent"><option>All activity types</option>{Array.from(new Set(derivedActivities.map((activity) => activity.type))).filter(Boolean).map((type) => <option key={type}>{type}</option>)}</select>
@@ -755,7 +766,7 @@ export default function MediaManagementSections(props: Props) {
           {calendarView === 'AGENDA' ? (
             <ActivityTable activities={filteredActivities} campaigns={mediaCampaigns} employees={employees} onStatusChange={changeActivityStatus} onDelete={(id) => setActivities((items) => items.filter((item) => item.id !== id))} />
           ) : (
-            <section className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <section className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
               <div className="flex items-center justify-between gap-3 mb-3">
                 <button onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1))} className="px-2.5 py-1.5 rounded-lg border text-xs">Previous</button>
                 <h3 className="text-xs font-bold">{calendarView === 'WEEK' ? `Week of ${dateKey(startOfWeek(calendarDate))}` : calendarDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</h3>
@@ -768,8 +779,8 @@ export default function MediaManagementSections(props: Props) {
                   const inMonth = date.getMonth() === calendarDate.getMonth() || calendarView === 'WEEK';
                   const dayActivities = calendarActivities(key);
                   return <div key={key} className={`min-h-24 p-1.5 border-r border-b border-slate-200 dark:border-slate-700 ${inMonth ? '' : 'bg-slate-50/70 dark:bg-slate-800/40'}`}>
-                    <span className={`text-[10px] ${key === actualToday ? 'px-1.5 py-0.5 rounded-full bg-violet-600 text-white' : inMonth ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400'}`}>{date.getDate()}</span>
-                    <div className="mt-1 space-y-1">{dayActivities.slice(0, 2).map((activity) => <div key={activity.id} title={activity.title} className="truncate rounded px-1 py-0.5 bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-200 text-[9px]">{activity.title}</div>)}{dayActivities.length > 2 && <span className="text-[9px] text-slate-500">+{dayActivities.length - 2} more</span>}</div>
+                    <span className={`text-[10px] ${key === actualToday ? 'px-1.5 py-0.5 rounded-full bg-rose-600 text-white' : inMonth ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400'}`}>{date.getDate()}</span>
+                    <div className="mt-1 space-y-1">{dayActivities.slice(0, 2).map((activity) => <div key={activity.id} title={activity.title} className="truncate rounded px-1 py-0.5 bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-200 text-[9px]">{activity.title}</div>)}{dayActivities.length > 2 && <span className="text-[9px] text-slate-500">+{dayActivities.length - 2} more</span>}</div>
                   </div>;
                 })}
               </div>
@@ -782,7 +793,7 @@ export default function MediaManagementSections(props: Props) {
             <Metric label="Completed / published" value={derivedActivities.filter((activity) => ['COMPLETED', 'PUBLISHED'].includes(activity.status)).length.toLocaleString('en-IN')} helper="From existing content records" icon={CheckCircle2} tone="emerald" />
           </div>
 
-          <section className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <section className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
             <h3 className="text-xs font-bold mb-3">Schedule Reminders</h3>
             {[...overdueActivities, ...upcomingActivities].slice(0, 6).length ? (
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -800,10 +811,10 @@ export default function MediaManagementSections(props: Props) {
 
       {showBudgetForm && activeTab === 'FUNDS' && <Modal title="Set Media Budget References" onClose={() => setShowBudgetForm(false)}>
         <form onSubmit={saveBudget} className="space-y-3">
-          <div className="p-3 rounded-xl bg-violet-50 dark:bg-violet-950/30 text-[10px] text-violet-700 dark:text-violet-200">Temporary UI values only. Existing campaign records are not changed.</div>
+          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/30 text-[10px] text-rose-700 dark:text-rose-200">Temporary UI values only. Existing campaign records are not changed.</div>
           <label className="block text-xs font-semibold">Overall Media budget (optional)<input name="overallBudget" type="number" min="0" defaultValue={overallBudget ?? ''} placeholder={formatCurrency(baseAllocated)} className={`${INPUT_CLASS} mt-1`} /></label>
           <div className="space-y-2">{mediaCampaigns.map((campaign) => <label key={campaign.id} className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center text-xs"><span>{campaign.title}<small className="block text-[10px] text-slate-500">Current: {formatCurrency(projectBudgets.find((item) => item.campaignId === campaign.id)?.amount ?? campaign.budgetRef)}</small></span><input name={`budget-${campaign.id}`} type="number" min="0" placeholder="Keep current reference" className={INPUT_CLASS} /></label>)}</div>
-          <div className="flex justify-end gap-2"><button type="button" onClick={() => setShowBudgetForm(false)} className="px-3 py-2 rounded-lg border text-xs">Cancel</button><button className="px-3 py-2 rounded-lg bg-violet-600 text-white text-xs font-bold">Save temporary values</button></div>
+          <div className="flex justify-end gap-2"><button type="button" onClick={() => setShowBudgetForm(false)} className="px-3 py-2 rounded-lg border text-xs">Cancel</button><button className="px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-bold">Save temporary values</button></div>
         </form>
       </Modal>}
 
@@ -853,7 +864,23 @@ function EmptyPanel({ title, text }: { title: string; text: string }) {
 }
 
 function Insight({ label, value }: { label: string; value: string }) {
-  return <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800"><p className="text-[10px] uppercase text-slate-500">{label}</p><p className="text-base font-bold mt-1">{value}</p></div>;
+  return <div className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"><p className="text-sm text-slate-600 dark:text-slate-300">{label}</p><p className="text-sm font-semibold tabular-nums text-slate-950 dark:text-white">{value}</p></div>;
+}
+
+function OverviewStat({ label, value, helper, icon: Icon, tone }: {
+  label: string;
+  value: string;
+  helper: string;
+  icon: React.ElementType;
+  tone: 'rose' | 'blue' | 'amber' | 'slate';
+}) {
+  const tones = {
+    rose: 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300',
+    blue: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+    amber: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+    slate: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+  };
+  return <article className="group flex min-h-28 items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition-colors hover:border-rose-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-rose-900"><div className="min-w-0"><p className="text-xs font-medium text-slate-600 dark:text-slate-400">{label}</p><p className="mt-3 text-2xl font-semibold tracking-tight tabular-nums text-slate-950 dark:text-white">{value}</p><p className="mt-1 truncate text-[11px] text-slate-500">{helper}</p></div><span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:-translate-y-0.5 ${tones[tone]}`}><Icon className="h-4 w-4" /></span></article>;
 }
 
 function Alert({ text, danger = false }: { text: string; danger?: boolean }) {
@@ -862,11 +889,11 @@ function Alert({ text, danger = false }: { text: string; danger?: boolean }) {
 
 function ProgressItem({ label, actual, target, percent, currency = false }: { label: string; actual: number; target: number; percent: number; currency?: boolean }) {
   const display = (amount: number) => currency ? formatCurrency(amount) : amount.toLocaleString('en-IN');
-  return <div><div className="flex justify-between gap-2 text-[10px] mb-1"><span className="text-slate-500">{label}</span><span className="font-semibold">{display(actual)} / {display(target)}</span></div><div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800"><div className="h-1.5 rounded-full bg-violet-500" style={{ width: `${percent}%` }} /></div></div>;
+  return <div><div className="flex justify-between gap-2 text-[10px] mb-1"><span className="text-slate-500">{label}</span><span className="font-semibold">{display(actual)} / {display(target)}</span></div><div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800"><div className="h-1.5 rounded-full bg-rose-500" style={{ width: `${percent}%` }} /></div></div>;
 }
 
 function Detail({ label, value }: { label: string; value: string }) {
-  return <div><dt className="text-[10px] uppercase text-slate-500">{label}</dt><dd className="mt-1 font-semibold text-slate-800 dark:text-slate-100">{value}</dd></div>;
+  return <div><dt className="text-[10px] font-medium text-slate-500">{label}</dt><dd className="mt-1 font-semibold text-slate-800 dark:text-slate-100">{value}</dd></div>;
 }
 
 function ExpenseForm({ expense, campaigns, onSubmit, onCancel }: {
@@ -883,7 +910,7 @@ function ExpenseForm({ expense, campaigns, onSubmit, onCancel }: {
     <label className="text-xs font-semibold">Expense date<input name="expenseDate" type="date" required defaultValue={expense?.expenseDate} className={`${INPUT_CLASS} mt-1`} /></label>
     <label className="text-xs font-semibold sm:col-span-2">Description<textarea name="description" rows={2} defaultValue={expense?.description} className={`${INPUT_CLASS} mt-1`} /></label>
     <label className="text-xs font-semibold sm:col-span-2">Receipt / bill filename<input name="receipt" type="file" accept=".pdf,.png,.jpg,.jpeg" className={`${INPUT_CLASS} mt-1`} /></label>
-    <div className="sm:col-span-2 flex justify-end gap-2"><button type="button" onClick={onCancel} className="px-3 py-2 rounded-lg border text-xs">Cancel</button>{!expense && <button name="saveAsDraft" value="true" className="px-3 py-2 rounded-lg border text-xs font-bold">Save draft</button>}<button className="px-3 py-2 rounded-lg bg-violet-600 text-white text-xs font-bold">{expense ? 'Save draft' : 'Submit expense'}</button></div>
+    <div className="sm:col-span-2 flex justify-end gap-2"><button type="button" onClick={onCancel} className="px-3 py-2 rounded-lg border text-xs">Cancel</button>{!expense && <button name="saveAsDraft" value="true" className="px-3 py-2 rounded-lg border text-xs font-bold">Save draft</button>}<button className="px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-bold">{expense ? 'Save draft' : 'Submit expense'}</button></div>
   </form>;
 }
 
@@ -918,7 +945,7 @@ function StrategyForm({ strategy, campaigns, employees, currentEmployee, onSubmi
     <label className="text-xs font-semibold">Actual leads<input name="actualLeads" type="number" min="0" defaultValue={strategy?.actualLeads ?? 0} className={`${INPUT_CLASS} mt-1`} /></label>
     <label className="text-xs font-semibold">Actual spend<input name="actualSpend" type="number" min="0" defaultValue={strategy?.actualSpend ?? 0} className={`${INPUT_CLASS} mt-1`} /></label>
     <label className="text-xs font-semibold sm:col-span-2">Initial status<select name="submission" defaultValue={strategy?.status === 'PENDING_APPROVAL' ? 'PENDING_APPROVAL' : 'DRAFT'} className={`${INPUT_CLASS} mt-1`}><option value="DRAFT">Save as draft</option><option value="PENDING_APPROVAL">Submit for approval</option></select></label>
-    <div className="sm:col-span-2 flex justify-end gap-2"><button type="button" onClick={onCancel} className="px-3 py-2 rounded-lg border text-xs">Cancel</button><button className="px-3 py-2 rounded-lg bg-violet-600 text-white text-xs font-bold">Save strategy</button></div>
+    <div className="sm:col-span-2 flex justify-end gap-2"><button type="button" onClick={onCancel} className="px-3 py-2 rounded-lg border text-xs">Cancel</button><button className="px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-bold">Save strategy</button></div>
   </form>;
 }
 
@@ -942,7 +969,7 @@ function ScheduleForm({ campaigns, employees, onSubmit, onCancel }: {
     <label className="text-xs font-semibold">Deadline<input name="deadline" type="date" className={`${INPUT_CLASS} mt-1`} /></label>
     <label className="text-xs font-semibold sm:col-span-2">Description<textarea name="description" rows={2} className={`${INPUT_CLASS} mt-1`} /></label>
     <div className="sm:col-span-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-[10px] text-slate-500">Activities are scheduled locally. Publishing is manual; no social platform is connected.</div>
-    <div className="sm:col-span-2 flex justify-end gap-2"><button type="button" onClick={onCancel} className="px-3 py-2 rounded-lg border text-xs">Cancel</button><button className="px-3 py-2 rounded-lg bg-violet-600 text-white text-xs font-bold">Add to schedule</button></div>
+    <div className="sm:col-span-2 flex justify-end gap-2"><button type="button" onClick={onCancel} className="px-3 py-2 rounded-lg border text-xs">Cancel</button><button className="px-3 py-2 rounded-lg bg-rose-600 text-white text-xs font-bold">Add to schedule</button></div>
   </form>;
 }
 
@@ -955,9 +982,9 @@ function ActivityTable({ activities, campaigns, employees, onStatusChange, onDel
 }) {
   const campaignName = (id: string) => campaigns.find((campaign) => campaign.id === id)?.title || '—';
   const employeeName = (id: string) => employees.find((employee) => employee.permanentId === id)?.name || '—';
-  return <section className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
+  return <section className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
     <table className="w-full min-w-[780px] text-xs">
-      <thead className="bg-slate-50 dark:bg-slate-800/60 text-[10px] uppercase text-slate-500"><tr><th className="p-3 text-left">Activity</th><th className="p-3">Type / platform</th><th className="p-3">Campaign / owner</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3">Update</th><th className="p-3">Action</th></tr></thead>
+      <thead className="bg-slate-50 dark:bg-slate-800/60 text-[10px] font-medium text-slate-500"><tr><th className="p-3 text-left">Activity</th><th className="p-3">Type / platform</th><th className="p-3">Campaign / owner</th><th className="p-3">Date</th><th className="p-3">Status</th><th className="p-3">Update</th><th className="p-3">Action</th></tr></thead>
       <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
         {activities.map((activity) => <tr key={activity.id}>
           <td className="p-3"><b>{activity.title}</b><p className="text-[10px] text-slate-500">{activity.description}</p></td>
@@ -973,3 +1000,4 @@ function ActivityTable({ activities, campaigns, employees, onStatusChange, onDel
     </table>
   </section>;
 }
+
