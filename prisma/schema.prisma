@@ -78,6 +78,137 @@ model Employee {
   leaveApprovals       LeaveRequest[] @relation("LeaveApprover")
   notifications        Notification[]
   auditLogs            AuditLog[]
+  tdsCredential        TdsCredential?
+  tdsSession           TdsSession[]
+  tdsAccess            TdsAccess?
+  tdsAccessGrants      TdsAccess[] @relation("TdsAccessGrantor")
+  tdsFilingsAssigned   TdsFiling[] @relation("TdsFilingAssignee")
+  tdsFilingsDeductee   TdsFiling[] @relation("TdsEmployeeDeductee")
+  tdsFilingsCreated    TdsFiling[] @relation("TdsFilingCreator")
+  tdsFilingsUpdated    TdsFiling[] @relation("TdsFilingUpdater")
+  tdsStatusChanges     TdsStatusHistory[]
+  tdsAssignmentChanges TdsAssignmentHistory[] @relation("TdsAssignmentActor")
+  tdsAssignmentsMade   TdsAssignmentHistory[] @relation("TdsAssignmentAssignee")
+  tdsAssignmentsFrom   TdsAssignmentHistory[] @relation("TdsAssignmentFormer")
+}
+
+model TdsCredential {
+  id                String   @id @default(uuid())
+  employeeId        String   @unique
+  employee          Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  passwordHash      String?
+  setupTokenHash    String?  @unique
+  setupTokenExpiresAt DateTime?
+  failedLoginAttempts Int    @default(0)
+  lockedUntil       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model TdsSession {
+  id         String   @id @default(uuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([employeeId, expiresAt])
+}
+
+model TdsAccess {
+  id          String   @id @default(uuid())
+  employeeId  String   @unique
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  permission  String   // VIEW or MANAGE
+  grantedById String
+  grantedBy   Employee @relation("TdsAccessGrantor", fields: [grantedById], references: [id], onDelete: Restrict)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TdsFiling {
+  id                 String   @id @default(uuid())
+  deducteeName       String
+  deducteeNameKey    String
+  deducteeCategory   String
+  deducteeReference  String?
+  deducteeEmployeeId String?
+  deducteeEmployee   Employee? @relation("TdsEmployeeDeductee", fields: [deducteeEmployeeId], references: [id], onDelete: SetNull)
+  deducteeCollegeId  String?
+  deducteeCollege    College? @relation("TdsClientDeductee", fields: [deducteeCollegeId], references: [id], onDelete: SetNull)
+  panNumber          String?
+  tanNumber          String?
+  financialYear      String
+  quarter            String
+  returnType         String   @default("OTHER")
+  revision           Int      @default(0)
+  correctionReason   String?
+  correctionOfId     String?
+  correctionOf       TdsFiling? @relation("TdsCorrections", fields: [correctionOfId], references: [id], onDelete: SetNull)
+  corrections        TdsFiling[] @relation("TdsCorrections")
+  tdsAmount          Float
+  status             String   @default("PENDING")
+  dueDate            DateTime?
+  filingDate         DateTime?
+  acknowledgementRef String?
+  assignedToId       String?
+  assignedTo         Employee? @relation("TdsFilingAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  assignedAt         DateTime?
+  responsibilityStatus String @default("UNASSIGNED")
+  responsibilityRemarks String?
+  completedAt        DateTime?
+  remarks            String?
+  createdById        String
+  createdBy          Employee @relation("TdsFilingCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedById        String
+  updatedBy          Employee @relation("TdsFilingUpdater", fields: [updatedById], references: [id], onDelete: Restrict)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  history            TdsStatusHistory[]
+  assignmentHistory  TdsAssignmentHistory[]
+
+  @@index([status, dueDate])
+  @@index([assignedToId])
+  @@unique([deducteeCategory, deducteeNameKey, financialYear, quarter, returnType, revision])
+  @@index([correctionOfId])
+  @@index([deducteeEmployeeId])
+  @@index([deducteeCollegeId])
+  @@index([responsibilityStatus, assignedToId])
+}
+
+model TdsStatusHistory {
+  id          String   @id @default(uuid())
+  filingId    String
+  filing      TdsFiling @relation(fields: [filingId], references: [id], onDelete: Cascade)
+  actorId     String
+  actor       Employee @relation(fields: [actorId], references: [id], onDelete: Restrict)
+  action      String   // CREATED, UPDATED, STATUS_CHANGED
+  fromStatus  String?
+  toStatus    String?
+  details     String?
+  createdAt   DateTime @default(now())
+
+  @@index([filingId, createdAt])
+}
+
+model TdsAssignmentHistory {
+  id             String   @id @default(uuid())
+  filingId       String
+  filing         TdsFiling @relation(fields: [filingId], references: [id], onDelete: Cascade)
+  assignedToId   String?
+  assignedTo     Employee? @relation("TdsAssignmentAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  fromAssignedToId String?
+  fromAssignedTo Employee? @relation("TdsAssignmentFormer", fields: [fromAssignedToId], references: [id], onDelete: SetNull)
+  actorId        String
+  actor          Employee @relation("TdsAssignmentActor", fields: [actorId], references: [id], onDelete: Restrict)
+  fromStatus     String?
+  toStatus       String
+  remarks        String?
+  createdAt      DateTime @default(now())
+
+  @@index([filingId, createdAt])
+  @@index([assignedToId, createdAt])
 }
 
 model ReportingHistory {
@@ -248,6 +379,7 @@ model College {
   fdpSessions  FDPSession[]
   agreements   CollegeAgreement[]
   leads        SalesLead[]
+  tdsFilings   TdsFiling[] @relation("TdsClientDeductee")
 }
 
 model CollegeContact {
