@@ -185,26 +185,8 @@ function LmsShell({
 }) {
   return (
     <div className="space-y-6">
-      <header className="relative isolate overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-blue-50 p-5 shadow-sm dark:border-slate-800 dark:from-violet-950/50 dark:via-slate-900 dark:to-blue-950/30 sm:p-7">
-        <div className="pointer-events-none absolute -right-12 -top-20 -z-10 h-64 w-64 rounded-full border-[28px] border-violet-100/60 dark:border-violet-900/20" />
-        <nav aria-label="Breadcrumb" className="mb-5 flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-          <Link href="/" className="hover:text-violet-700 dark:hover:text-violet-300">Home</Link>
-          <span aria-hidden="true">/</span>
-          <Link href="/learning/dashboard" className="hover:text-violet-700 dark:hover:text-violet-300">LMS Dashboard</Link>
-          <span aria-hidden="true">/</span>
-          <span aria-current="page" className="text-slate-800 dark:text-slate-200">{title}</span>
-        </nav>
-        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <div className="max-w-3xl">
-            <DemoLabel />
-            <h1 className="mt-3 text-2xl font-bold tracking-tight text-violet-950 dark:text-white sm:text-3xl">{title}</h1>
-            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{description}</p>
-            <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-              Preview interactions are temporary and reset when this page is refreshed.
-            </p>
-          </div>
-          {action && <div className="flex shrink-0 flex-wrap gap-2">{action}</div>}
-        </div>
+      <header className="flex flex-col gap-4 rounded-2xl border border-purple-200/80 bg-white p-5 shadow-sm dark:border-purple-900/50 dark:bg-[#130d26] sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3"><div className="shrink-0 rounded-xl bg-violet-100 p-2.5 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300"><BookOpen className="h-5 w-5" /></div><div><h1 className="text-lg font-black tracking-tight text-slate-900 dark:text-white lg:text-xl">{title}</h1><p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{description}</p></div></div><div className="flex flex-wrap items-center gap-2"><Link href="/departments" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"><ArrowLeft className="h-4 w-4" /> Back</Link>{action}</div>
       </header>
       {children}
     </div>
@@ -218,6 +200,7 @@ function MetricCard({
   icon: Icon,
   tone = 'violet',
   href,
+  compact = false,
 }: {
   label: string;
   value: string | number;
@@ -225,6 +208,7 @@ function MetricCard({
   icon: typeof Users;
   tone?: 'violet' | 'blue' | 'emerald' | 'amber';
   href?: string;
+  compact?: boolean;
 }) {
   const tones = {
     violet: 'bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300',
@@ -234,21 +218,54 @@ function MetricCard({
   };
 
   const card = (
-    <div className={`rounded-xl border border-slate-200 bg-white p-3 transition dark:border-slate-800 dark:bg-slate-900 sm:p-4 ${href ? 'cursor-pointer hover:border-violet-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500' : ''}`}>
-      <div className="flex items-center justify-between gap-3">
+    <div className={`flex h-full ${compact ? 'min-h-[156px] p-4' : 'min-h-[132px] p-3 sm:p-4'} flex-col rounded-xl border border-slate-200 bg-white transition dark:border-slate-800 dark:bg-slate-900 ${href ? 'cursor-pointer hover:border-violet-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500' : ''}`}>
+      <div className={`flex items-start justify-between gap-3 ${compact ? 'min-h-[64px]' : 'min-h-[58px]'}`}>
         <div>
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
-          <p className="mt-1 text-xl font-bold tracking-tight text-slate-950 dark:text-white">{value}</p>
+          <p className={`${compact ? 'min-h-0' : 'min-h-[32px]'} text-xs font-medium leading-4 text-slate-500 dark:text-slate-400`}>{label}</p>
+          <p className={`${compact ? 'mt-3 text-2xl' : 'mt-1 text-xl'} font-bold tracking-tight text-slate-950 dark:text-white`}>{value}</p>
         </div>
-        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${tones[tone]}`}>
+        <span className={`flex shrink-0 items-center justify-center rounded-lg ${compact ? 'h-10 w-10' : 'h-8 w-8'} ${tones[tone]}`}>
           <Icon className="h-4 w-4" />
         </span>
       </div>
-      <p className="mt-2 truncate text-[10px] text-slate-500 dark:text-slate-400">{detail}</p>
+      <p className="mt-auto truncate pt-3 text-[11px] text-slate-500 dark:text-slate-400">{detail}</p>
     </div>
   );
 
-  return href ? <Link href={href} aria-label={`Open ${label}`} className="block">{card}</Link> : card;
+  return href ? <Link href={href} aria-label={`Open ${label}`} className="block h-full">{card}</Link> : card;
+}
+
+function MetricSummary({
+  items,
+}: {
+  items: Array<{ label: string; value: string | number; icon: typeof Users; tone?: 'violet' | 'blue' | 'emerald' | 'amber'; href?: string }>;
+}) {
+  const tones = {
+    violet: 'text-violet-600',
+    blue: 'text-blue-600',
+    emerald: 'text-emerald-600',
+    amber: 'text-amber-600',
+  };
+
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900" aria-label="Summary">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:divide-x sm:divide-slate-200 dark:sm:divide-slate-800">
+        {items.map(({ label, value, icon: Icon, tone = 'violet', href }) => (
+          <div key={label} className="sm:flex-1 sm:px-4 first:sm:pl-0 last:sm:pr-0">
+            {href ? <Link href={href} className="flex items-center gap-2.5 rounded-lg px-1 py-1 transition hover:bg-slate-50 dark:hover:bg-slate-800/60">
+              <Icon className={`h-4 w-4 shrink-0 ${tones[tone]}`} aria-hidden="true" />
+              <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
+              <strong className="ml-auto text-lg text-slate-950 dark:text-white">{value}</strong>
+            </Link> : <div className="flex items-center gap-2.5 px-1 py-1">
+            <Icon className={`h-4 w-4 shrink-0 ${tones[tone]}`} aria-hidden="true" />
+            <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
+            <strong className="ml-auto text-lg text-slate-950 dark:text-white">{value}</strong>
+            </div>}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function Panel({
@@ -759,16 +776,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
         </DashboardTabs>
 
         {activeLmsTab === 'overview' && <>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8">
-          <MetricCard label="Programmes" value={courseCatalogue.length} detail="Across programme providers" icon={BookOpen} tone="violet" href="/learning/programmes" />
-          <MetricCard label="Courses" value={allCourses.length} detail="Across programme providers" icon={BookOpen} href="/learning/courses" />
-          <MetricCard label="Active batches" value={activeCount} detail={`${batches.length} batches in total`} icon={CalendarDays} tone="blue" href="/learning/batches" />
-          <MetricCard label="Students" value={students.length} detail="Demo learner records" icon={Users} tone="emerald" href="/learning/students" />
-          <MetricCard label="Faculty" value={faculty.length} detail={`${faculty.filter((member) => member.status === 'Assigned').length} currently assigned`} icon={Users} tone="violet" href="/learning/faculty" />
-          <MetricCard label="Avg. attendance" value={`${averageAttendance}%`} detail={`${lowAttendanceCount} students below 80%`} icon={CheckCircle2} tone="blue" href="/learning/attendance" />
-          <MetricCard label="Avg. progress" value={`${averageProgress}%`} detail={`${dueAssessments.length} assessments due`} icon={Target} tone="amber" href="/learning/progress" />
-          <MetricCard label="Placements" value={offersReceived} detail={`${placementInProgress} applications in progress`} icon={GraduationCap} tone="emerald" href="/learning/completion-reports" />
-        </div>
+        <MetricSummary items={[{ label: 'Programmes', value: courseCatalogue.length, icon: BookOpen, href: '/learning/programmes' }, { label: 'Courses', value: allCourses.length, icon: BookOpen, href: '/learning/courses' }, { label: 'Active batches', value: activeCount, icon: CalendarDays, tone: 'blue', href: '/learning/batches' }, { label: 'Students', value: students.length, icon: Users, tone: 'emerald', href: '/learning/students' }, { label: 'Faculty', value: faculty.length, icon: Users, href: '/learning/faculty' }, { label: 'Avg. attendance', value: `${averageAttendance}%`, icon: CheckCircle2, tone: 'blue', href: '/learning/attendance' }, { label: 'Avg. progress', value: `${averageProgress}%`, icon: Target, tone: 'amber', href: '/learning/progress' }, { label: 'Placements', value: offersReceived, icon: GraduationCap, tone: 'emerald', href: '/learning/completion-reports' }]} />
 
         <div className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
           <Panel title="Enrollment trend" subtitle="Learners added across the last six months">
@@ -1071,11 +1079,25 @@ function LearningManagement({ pathname }: { pathname: string }) {
           </div>
         }
       >
-        <div className="grid gap-3 sm:grid-cols-3">
-          <MetricCard label="Total batches" value={batches.length} detail="Sample cohorts in this preview" icon={CalendarDays} />
-          <MetricCard label="Active" value={batches.filter((batch) => batch.status === 'Active').length} detail="Current sample cohorts" icon={CheckCircle2} tone="emerald" />
-          <MetricCard label="Upcoming" value={batches.filter((batch) => batch.status === 'Upcoming').length} detail="Scheduled sample cohorts" icon={Clock3} tone="blue" />
-        </div>
+        <section className="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900" aria-label="Batch overview">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:divide-x sm:divide-slate-200 dark:sm:divide-slate-800">
+            <div className="flex items-center gap-2.5 sm:flex-1 sm:px-4 sm:first:pl-0">
+              <CalendarDays className="h-4 w-4 shrink-0 text-violet-600" aria-hidden="true" />
+              <span className="text-xs text-slate-500 dark:text-slate-400">Total batches</span>
+              <strong className="ml-auto text-lg text-slate-950 dark:text-white">{batches.length}</strong>
+            </div>
+            <div className="flex items-center gap-2.5 sm:flex-1 sm:px-4">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
+              <span className="text-xs text-slate-500 dark:text-slate-400">Active</span>
+              <strong className="ml-auto text-lg text-slate-950 dark:text-white">{batches.filter((batch) => batch.status === 'Active').length}</strong>
+            </div>
+            <div className="flex items-center gap-2.5 sm:flex-1 sm:px-4 sm:last:pr-0">
+              <Clock3 className="h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
+              <span className="text-xs text-slate-500 dark:text-slate-400">Upcoming</span>
+              <strong className="ml-auto text-lg text-slate-950 dark:text-white">{batches.filter((batch) => batch.status === 'Upcoming').length}</strong>
+            </div>
+          </div>
+        </section>
         <Panel title="Batch directory" subtitle={`${filteredBatches.length} matching demo batches`}>
           <div className="p-4 sm:px-5">{filterControls(true, false, ['All statuses', 'Active', 'Upcoming', 'Completed'])}</div>
           <div className="grid gap-3 border-t border-slate-100 p-4 dark:border-slate-800 sm:grid-cols-2 xl:grid-cols-3">
@@ -1310,11 +1332,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
   function renderFaculty() {
     return (
       <LmsShell title="Faculty" description={pageDetails.faculty.description} action={<button type="button" className={buttonClass} onClick={() => openFacultyDialog()}><Plus className="h-4 w-4" /> Assign faculty</button>}>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <MetricCard label="Faculty profiles" value={faculty.length} detail="Sample directory entries" icon={Users} />
-          <MetricCard label="Assigned" value={faculty.filter((member) => member.status === 'Assigned').length} detail="At least one demo batch" icon={ClipboardCheck} tone="blue" />
-          <MetricCard label="Available" value={faculty.filter((member) => member.status === 'Available').length} detail="No current sample assignment" icon={CheckCircle2} tone="emerald" />
-        </div>
+        <MetricSummary items={[{ label: 'Faculty profiles', value: faculty.length, icon: Users }, { label: 'Assigned', value: faculty.filter((member) => member.status === 'Assigned').length, icon: ClipboardCheck, tone: 'blue' }, { label: 'Available', value: faculty.filter((member) => member.status === 'Available').length, icon: CheckCircle2, tone: 'emerald' }]} />
         <Panel title="Faculty directory" subtitle={`${filteredFaculty.length} demo profiles`}>
           <div className="p-4 sm:px-5"><SearchBox value={query} onChange={setQuery} placeholder="Search name or expertise..." /></div>
           {filteredFaculty.length ? (
@@ -1345,11 +1363,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
   function renderStudents() {
     return (
       <LmsShell title="Students" description={pageDetails.students.description} action={<button type="button" className={buttonClass} onClick={openStudentDialog}><Plus className="h-4 w-4" /> Enroll demo student</button>}>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <MetricCard label="Learners" value={students.length} detail="Sample learner records" icon={Users} />
-          <MetricCard label="Active learners" value={students.filter((student) => student.status === 'Active').length} detail="Assigned to active demo batches" icon={CheckCircle2} tone="emerald" />
-          <MetricCard label="Needs attention" value={students.filter((student) => student.status === 'At risk').length} detail="Illustrative status only" icon={Target} tone="amber" />
-        </div>
+        <MetricSummary items={[{ label: 'Learners', value: students.length, icon: Users }, { label: 'Active learners', value: students.filter((student) => student.status === 'Active').length, icon: CheckCircle2, tone: 'emerald' }, { label: 'Needs attention', value: students.filter((student) => student.status === 'At risk').length, icon: Target, tone: 'amber' }]} />
         <Panel title="Student directory" subtitle={`${filteredStudents.length} matching demo learners`}>
           <div className="p-4 sm:px-5">{filterControls(false, true, studentStatuses)}</div>
           <StudentTable rows={pagedStudents} onSort={toggleStudentSort} sortKey={sortKey} ascending={sortAscending} onStudentClick={openStudentRecord} />
@@ -1451,11 +1465,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
   function renderAssessments() {
     return (
       <LmsShell title="Assessments" description={pageDetails.assessments.description} action={<button type="button" className={buttonClass} onClick={openAssessmentDialog}><Plus className="h-4 w-4" /> Create assessment</button>}>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <MetricCard label="Assessments" value={assessments.length} detail="Sample assessment entries" icon={ClipboardCheck} />
-          <MetricCard label="To review" value={assessments.filter((item) => item.status === 'Reviewing').length} detail="Illustrative pending review" icon={Clock3} tone="amber" />
-          <MetricCard label="Scheduled" value={assessments.filter((item) => item.status === 'Scheduled').length} detail="Sample upcoming assessments" icon={CalendarDays} tone="blue" />
-        </div>
+        <MetricSummary items={[{ label: 'Assessments', value: assessments.length, icon: ClipboardCheck }, { label: 'To review', value: assessments.filter((item) => item.status === 'Reviewing').length, icon: Clock3, tone: 'amber' }, { label: 'Scheduled', value: assessments.filter((item) => item.status === 'Scheduled').length, icon: CalendarDays, tone: 'blue' }]} />
         <Panel title="Assessment register" subtitle={`${filteredAssessments.length} matching demo assessments`}>
           <div className="p-4 sm:px-5">{filterControls(false, true, assessmentStatuses)}</div>
           <div className="space-y-3 border-t border-slate-100 p-4 dark:border-slate-800">
@@ -1485,11 +1495,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
     const average = progressStudents.length ? Math.round(progressStudents.reduce((total, student) => total + student.progress, 0) / progressStudents.length) : 0;
     return (
       <LmsShell title="Student Progress" description={pageDetails.progress.description}>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <MetricCard label="Average progress" value={`${average}%`} detail="Current filter · demo data" icon={Target} />
-          <MetricCard label="On track" value={progressStudents.filter((student) => student.progress >= 60).length} detail="60% or higher progress" icon={CheckCircle2} tone="emerald" />
-          <MetricCard label="Needs attention" value={progressStudents.filter((student) => student.status === 'At risk').length} detail="Illustrative risk status" icon={Clock3} tone="amber" />
-        </div>
+        <MetricSummary items={[{ label: 'Average progress', value: `${average}%`, icon: Target }, { label: 'On track', value: progressStudents.filter((student) => student.progress >= 60).length, icon: CheckCircle2, tone: 'emerald' }, { label: 'Needs attention', value: progressStudents.filter((student) => student.status === 'At risk').length, icon: Clock3, tone: 'amber' }]} />
         <Panel title="Learner progress" subtitle="Filter by batch and learner status">
           <div className="p-4 sm:px-5">{filterControls(false, true, studentStatuses)}</div>
           <div className="space-y-1 border-t border-slate-100 p-4 dark:border-slate-800 sm:p-5">
@@ -1510,11 +1516,7 @@ function LearningManagement({ pathname }: { pathname: string }) {
         action={<button type="button" className={secondaryButtonClass} onClick={() => { setReportPreview(true); showToast('Completion report preview generated.'); }}><Download className="h-3.5 w-3.5" /> Generate preview</button>}
       >
         {reportPreview && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-medium text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300">Demo report preview ready. No file was generated or saved.</div>}
-        <div className="grid gap-3 sm:grid-cols-3">
-          <MetricCard label="Learners completed" value={completed} detail="Sample records only" icon={GraduationCap} tone="emerald" />
-          <MetricCard label="Completion rate" value={`${completionRate}%`} detail="Based on visible demo records" icon={Target} />
-          <MetricCard label="Batches with completions" value={batches.filter((batch) => batch.status === 'Completed').length} detail="Sample cohort status" icon={CheckCircle2} tone="blue" />
-        </div>
+        <MetricSummary items={[{ label: 'Learners completed', value: completed, icon: GraduationCap, tone: 'emerald' }, { label: 'Completion rate', value: `${completionRate}%`, icon: Target }, { label: 'Batches with completions', value: batches.filter((batch) => batch.status === 'Completed').length, icon: CheckCircle2, tone: 'blue' }]} />
         <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <Panel title="Progress by batch" subtitle="Average completion percentage · demo data">
             <div className="h-72 p-4">

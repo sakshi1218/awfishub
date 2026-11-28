@@ -321,7 +321,7 @@ export default function DepartmentsPage() {
   const departmentRoutes: Partial<Record<DepartmentType, string>> = {
     Media: '/media/dashboard',
     'Sales Department': '/sales',
-    TeleCaller: '/telecaller/dashboard',
+    TeleCaller: '/telecaller',
     Trainer: '/trainer/dashboard',
     Counselor: '/counselor/dashboard',
     'Technical Team': '/technical/dashboard',

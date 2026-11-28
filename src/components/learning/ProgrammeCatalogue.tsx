@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import { ArrowUpRight, BookOpen, GraduationCap } from 'lucide-react';
 import ModulePage from '@/components/ui/ModulePage';
 import { allCourses, courseCatalogue } from '@/lib/course-catalogue';
@@ -9,6 +12,11 @@ interface ProgrammeCatalogueProps {
 
 export default function ProgrammeCatalogue({ pathname }: ProgrammeCatalogueProps) {
   const isProgrammeView = pathname === '/learning/programmes';
+  const [selectedProvider, setSelectedProvider] = useState('All providers');
+  const providers = useMemo(() => ['All providers', ...Array.from(new Set(allCourses.map((course) => course.provider)))], []);
+  const filteredCourses = selectedProvider === 'All providers'
+    ? allCourses
+    : allCourses.filter((course) => course.provider === selectedProvider);
 
   if (isProgrammeView) {
     return (
@@ -110,14 +118,12 @@ export default function ProgrammeCatalogue({ pathname }: ProgrammeCatalogueProps
       description="Browse the supplied course catalogue and open an initial course detail page. Course and provider information is not connected to a live system."
     >
       <div>
-        <div className="mb-4">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Available course catalogue</h2>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            {allCourses.length} listed courses · Demo catalogue, not enrollment data
-          </p>
+        <div className="mb-4"><p className="text-xs text-slate-500 dark:text-slate-400">{filteredCourses.length} listed courses · Demo catalogue</p></div>
+        <div className="mb-5 flex flex-wrap gap-2" aria-label="Filter courses by provider">
+          {providers.map((provider) => <button key={provider} type="button" onClick={() => setSelectedProvider(provider)} className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${selectedProvider === provider ? 'border-violet-600 bg-violet-600 text-white shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'}`}>{provider}</button>)}
         </div>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {allCourses.map((item) => (
+          {filteredCourses.map((item) => (
             <Link
               key={item.slug}
               href={`/learning/courses/${item.slug}`}

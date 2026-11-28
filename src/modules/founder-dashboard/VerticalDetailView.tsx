@@ -39,6 +39,9 @@ export default function VerticalDetailView({ pillar, onBack }: VerticalDetailVie
   const completedProjects = pillar.projects.filter((p) => p.status === 'Completed');
   const pendingTasks = pillar.tasks.filter((t) => t.status === 'Pending' || t.status === 'In Progress');
   const overdueTasks = pillar.tasks.filter((t) => t.status === 'Overdue');
+  const selectedEmployeeActiveTasks = selectedEmployee
+    ? pillar.tasks.filter((task) => task.assignedTo === selectedEmployee.name && (task.status === 'In Progress' || task.status === 'Overdue'))
+    : [];
 
   const downloadAgreement = (project: VerticalProject) => {
     if (!project.agreement) return;
@@ -471,7 +474,7 @@ export default function VerticalDetailView({ pillar, onBack }: VerticalDetailVie
       {/* EMPLOYEE DETAIL MODAL */}
       {selectedEmployee && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#141824] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-xl relative">
+          <div className="bg-white dark:bg-[#141824] border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-xl relative">
             <button
               onClick={() => setSelectedEmployee(null)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -503,6 +506,34 @@ export default function VerticalDetailView({ pillar, onBack }: VerticalDetailVie
                 <span className="text-slate-500">Pillar</span>
                 <span className="font-semibold text-slate-800 dark:text-slate-200">{pillar.name}</span>
               </div>
+            </div>
+
+            <div className="mt-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">Active tasks</h4>
+                  <p className="mt-1 text-[11px] text-slate-500">Tasks currently in progress or overdue for {selectedEmployee.name}.</p>
+                </div>
+                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">{selectedEmployeeActiveTasks.length} tasks</span>
+              </div>
+              {selectedEmployeeActiveTasks.length ? (
+                <div className="mt-3 space-y-2">
+                  {selectedEmployeeActiveTasks.map((task) => (
+                    <article key={task.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-slate-900 dark:text-white">{task.title}</p>
+                          <p className="mt-1 text-[10px] text-slate-500">{task.id} · Due {task.dueDate}</p>
+                        </div>
+                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${task.status === 'Overdue' ? 'bg-rose-100 text-rose-700' : task.status === 'In Progress' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>{task.status}</span>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500"><span>Priority: <b className="text-slate-700 dark:text-slate-300">{task.priority}</b></span><span>{task.status === 'Overdue' ? 'Needs immediate attention' : task.status === 'In Progress' ? 'Currently being worked on' : 'Not started'}</span></div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-3 rounded-xl border border-dashed border-slate-200 p-3 text-xs text-slate-500 dark:border-slate-700">No task details are assigned to this team member.</p>
+              )}
             </div>
 
             <div className="mt-4 flex justify-end">

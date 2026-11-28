@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, BarChart3, BookOpen, BriefcaseBusiness, Users } from 'lucide-react';
-import ModulePage from '@/components/ui/ModulePage';
+import { ArrowLeft, BarChart3, BookOpen, BriefcaseBusiness, Code2, Users } from 'lucide-react';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { AuthProvider } from '@/context/AuthContext';
 import TechnicalEmployeesContent from '@/components/technical/TechnicalEmployeesContent';
 import TechnicalProjectsContent from '@/components/technical/TechnicalProjectsContent';
@@ -24,8 +24,7 @@ export default function TechnicalDashboardPage() {
 
   return (
     <AuthProvider>
-      <ModulePage pathname="/technical/dashboard" hideQuickLinks>
-      <section aria-label="Technical Team workspace" className="w-full"><Link href="/departments" className="mb-4 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"><ArrowLeft className="h-4 w-4" /> Back to departments</Link>
+      <div className="space-y-6"><PageHeader title="Technical Team Workspace" subtitle="Technical employees, projects, documentation and delivery reports." icon={Code2} actions={<Link href="/departments" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"><ArrowLeft className="h-4 w-4" /> Back</Link>} /><section aria-label="Technical Team workspace" className="w-full">
         <div role="tablist" aria-label="Technical Team sections" className="flex w-full gap-2 overflow-x-auto pb-1">
           {tabs.map(({ id, label, icon: Icon }) => {
             const selected = activeTab === id;
@@ -62,8 +61,7 @@ export default function TechnicalDashboardPage() {
           {activeTab === 'documentation' && <TechnicalDocumentationContent />}
           {activeTab === 'reports' && <TechnicalReportsContent />}
         </div>
-      </section>
-      </ModulePage>
+      </section></div>
     </AuthProvider>
   );
 }

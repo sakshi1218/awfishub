@@ -25,6 +25,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import DashboardTabs from '@/components/shared/DashboardTabs';
+import { PageHeader } from '@/components/shared/PageHeader';
 import {
   Bar,
   BarChart,
@@ -195,6 +196,11 @@ function MetricCard({
 
   if (onClick) return <button type="button" onClick={onClick} className={className}>{content}</button>;
   return <a href={href} className={className}>{content}</a>;
+}
+
+function CompactMetric({ label, value, detail, icon: Icon, tone, href }: { label: string; value: number | string; detail: string; icon: LucideIcon; tone: 'violet' | 'blue' | 'emerald' | 'amber' | 'rose'; href: string }) {
+  const toneClass = { violet: 'text-violet-600', blue: 'text-blue-600', emerald: 'text-emerald-600', amber: 'text-amber-600', rose: 'text-rose-600' }[tone];
+  return <a href={href} className="flex items-center gap-3 border-b border-slate-200 px-3 py-3 text-left transition hover:bg-slate-50 sm:border-r last:border-r-0 dark:border-slate-800 dark:hover:bg-slate-900"><Icon className={`h-4 w-4 shrink-0 ${toneClass}`} /><span className="min-w-0"><b className="block text-sm text-slate-900 dark:text-white">{value} <span className="font-semibold">{label}</span></b><span className="block truncate text-[10px] text-slate-500">{detail}</span></span></a>;
 }
 
 function EmptyState({ children }: { children: ReactNode }) {
@@ -531,23 +537,7 @@ export default function CounselorDashboard() {
 
   return (
     <div className="-m-4 min-h-full space-y-6 bg-[#f8f7ff] p-4 sm:p-6 lg:-m-8 lg:p-8 dark:bg-slate-950">
-      <header className="relative isolate overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-blue-50 p-5 shadow-sm dark:border-slate-800 dark:from-violet-950/50 dark:via-slate-900 dark:to-blue-950/30 sm:p-7">
-        <div className="pointer-events-none absolute -right-12 -top-20 -z-10 h-64 w-64 rounded-full border-[28px] border-violet-100/60 dark:border-violet-900/20" />
-        <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
-          <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-white/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-violet-700 dark:border-violet-800 dark:bg-slate-900/80 dark:text-violet-300">
-              <Users className="h-3 w-3" /> Founder view · Illustrative demo data
-            </span>
-            <h1 className="mt-3 text-2xl font-bold tracking-tight text-violet-950 dark:text-white sm:text-3xl">Counselor Department Overview</h1>
-            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-              Review counselling activity, admission conversion and prospective-student follow-through.
-            </p>
-            <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-              Prototype only. All people, enquiries, outcomes and analysis shown are sample records.
-            </p>
-          </div>
-          <div className="flex w-fit flex-wrap gap-2"><Link href="/departments" className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-violet-700 transition hover:border-violet-400 hover:bg-violet-50 dark:border-violet-800 dark:bg-slate-900 dark:text-violet-300"><ArrowLeft className="h-4 w-4" /> Back to departments</Link><button type="button" onClick={resetFilters} className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-violet-700 transition hover:border-violet-400 hover:bg-violet-50 dark:border-violet-800 dark:bg-slate-900 dark:text-violet-300 dark:hover:bg-violet-950/40"><History className="h-4 w-4" /> Reset filters</button></div>
-        </div>
+      <PageHeader title="Counselor Workspace" subtitle="Counselling activity, admission conversion and student follow-through." icon={Users} actions={<><Link href="/departments" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"><ArrowLeft className="h-4 w-4" /> Back</Link><button type="button" onClick={resetFilters} className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-white px-3 py-2.5 text-xs font-semibold text-violet-700 hover:border-violet-400 dark:border-violet-800 dark:bg-slate-900 dark:text-violet-300"><History className="h-4 w-4" /> Reset filters</button></>} />
         <div className="mt-6 grid gap-3 rounded-2xl border border-white/80 bg-white/80 p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900/70 sm:grid-cols-2 lg:grid-cols-4">
           <label className="text-[10px] font-semibold text-slate-500">Date range
             <select value={dateRange} onChange={(event) => setDateRange(event.target.value as DateRange)} className="mt-1.5 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-800 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
@@ -568,24 +558,24 @@ export default function CounselorDashboard() {
             Current demo date: <strong className="ml-1 text-slate-700 dark:text-slate-200">{formatDate(COUNSELOR_DEMO_TODAY)}</strong>
           </div>
         </div>
-      </header>
 
       <DashboardTabs id="counselor-dashboard" ariaLabel="Counselor dashboard sections" tabs={dashboardTabs} value={activeDashboardTab} onChange={setActiveDashboardTab}>
       {activeDashboardTab === 'overview' && <>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" id="department-summary">
-        <MetricCard label="Active Counselors" value={filteredCounselors.filter((counselor) => counselor.active).length} detail="Counselors included by current filter" icon={Users} tone="violet" href="#counselor-summary" />
-        <MetricCard label="Student Enquiries" value={filteredEnquiries.length} detail="Current date and programme selection" icon={Search} tone="blue" onClick={() => setActiveDashboardTab('enquiries')} />
-        <MetricCard label="Admission Conversion" value={`${conversionRate.toFixed(1)}%`} detail={`${admittedRecords.length} admitted / ${filteredEnquiries.length} enquiries`} icon={ArrowUpRight} tone="emerald" onClick={() => setActiveDashboardTab('admissions')} />
-        <MetricCard label="Founder Attention" value={attentionItems.length} detail="Illustrative follow-up and reporting signals" icon={Clock3} tone="amber" onClick={() => setActiveDashboardTab('attention')} />
+      <div className="mx-4 my-4 grid overflow-hidden rounded-xl border border-slate-200 bg-slate-50/70 sm:grid-cols-2 lg:grid-cols-4 dark:border-slate-800 dark:bg-slate-900/50" id="department-summary">
+        <CompactMetric label="Active counselors" value={filteredCounselors.filter((counselor) => counselor.active).length} detail="Included by current filter" icon={Users} tone="violet" href="#counselor-activity" />
+        <CompactMetric label="Student enquiries" value={filteredEnquiries.length} detail="Current date and programme selection" icon={Search} tone="blue" href="#enquiries" />
+        <CompactMetric label="Admission conversion" value={`${conversionRate.toFixed(1)}%`} detail={`${admittedRecords.length} admitted / ${filteredEnquiries.length} enquiries`} icon={ArrowUpRight} tone="emerald" href="#conversion" />
+        <CompactMetric label="Founder attention" value={attentionItems.length} detail="Follow-up and reporting signals" icon={Clock3} tone="amber" href="#attention" />
       </div>
       <Panel title="Counselling activity" subtitle="Session volume, delivery status and counselor follow-through." id="counselor-activity">
-        <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
-          <MetricCard label="Active Counselors" value={filteredCounselors.filter((counselor) => counselor.active).length} detail="Across selected counselor scope" icon={Users} tone="violet" href="#counselor-summary" />
-          <MetricCard label="Total Counselling Sessions" value={filteredSessions.length} detail="Sessions in selected date range" icon={CalendarDays} tone="blue" onClick={() => setActiveDashboardTab('sessions')} />
-          <MetricCard label="Sessions Completed" value={completedSessions.length} detail="Completed outcomes only" icon={CheckCircle2} tone="emerald" onClick={() => setActiveDashboardTab('sessions')} />
-          <MetricCard label="Upcoming Sessions" value={upcomingSessions.length} detail="Scheduled or rescheduled into the future" icon={Clock3} tone="amber" onClick={() => setActiveDashboardTab('sessions')} />
-          <MetricCard label="Cancelled / Rescheduled" value={cancelledOrRescheduled.length} detail="Shown separately from completed sessions" icon={CalendarDays} tone="rose" onClick={() => setActiveDashboardTab('sessions')} />
-          <MetricCard label="Sessions Awaiting Outcome Reports" value={sessionsAwaitingReports.length} detail="Completed sessions missing recorded outcome" icon={FileCheck2} tone="amber" onClick={() => setActiveDashboardTab('sessions')} />
+        <div className="mx-4 my-4 grid overflow-hidden rounded-xl border border-slate-200 bg-slate-50/70 sm:grid-cols-2 lg:grid-cols-5 dark:border-slate-800 dark:bg-slate-900/50">
+          {[
+            { label: 'Total sessions', value: filteredSessions.length, detail: 'Selected range', icon: CalendarDays, tone: 'text-blue-600' },
+            { label: 'Completed', value: completedSessions.length, detail: 'Outcomes recorded', icon: CheckCircle2, tone: 'text-emerald-600' },
+            { label: 'Upcoming', value: upcomingSessions.length, detail: 'Scheduled next', icon: Clock3, tone: 'text-amber-600' },
+            { label: 'Cancelled', value: cancelledOrRescheduled.length, detail: 'Rescheduled included', icon: CalendarDays, tone: 'text-rose-600' },
+            { label: 'Reports pending', value: sessionsAwaitingReports.length, detail: 'Need outcome report', icon: FileCheck2, tone: 'text-amber-600' },
+          ].map((item) => { const Icon = item.icon; return <button key={item.label} type="button" onClick={() => setActiveDashboardTab('sessions')} className="flex items-center gap-3 border-b border-slate-200 px-3 py-3 text-left transition hover:bg-white sm:border-r last:border-r-0 lg:border-b-0 dark:border-slate-800 dark:hover:bg-slate-900"><Icon className={`h-4 w-4 shrink-0 ${item.tone}`} /><span className="min-w-0"><b className="block text-sm text-slate-900 dark:text-white">{item.value} <span className="font-semibold">{item.label}</span></b><span className="block truncate text-[10px] text-slate-500">{item.detail}</span></span></button>; })}
         </div>
         <div className="px-4 pb-5 sm:px-5">
           <div className="mb-3">
@@ -631,13 +621,13 @@ export default function CounselorDashboard() {
       }
 
       {activeDashboardTab === 'admissions' && <Panel title="Admission conversion" subtitle="Conversion denominator: admitted enquiry records divided by all enquiries in the selected cohort. A single enquiry counts once." id="conversion">
-        <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
-          <MetricCard label="Total Admissions" value={admittedRecords.length} detail="Enquiries in Admitted stage" icon={GraduationCap} tone="emerald" href="#pipeline" />
-          <MetricCard label="Admission Conversion Rate" value={`${conversionRate.toFixed(1)}%`} detail={`${admittedRecords.length} / ${filteredEnquiries.length} selected enquiries`} icon={ArrowUpRight} tone="violet" href="#pipeline" />
-          <MetricCard label="Admissions in Progress" value={admissionsInProgress.length} detail="Admission checklist underway" icon={Clock3} tone="blue" href="#pipeline" />
-          <MetricCard label="Pending Admission Decisions" value={admissionDecisionsPending.length} detail="Awaiting a recorded decision" icon={FileCheck2} tone="amber" href="#pipeline" />
-          <MetricCard label="Programme with Highest Admissions" value={topProgramme?.admissions ? topProgramme.programme : '—'} detail={`${topProgramme?.admissions ?? 0} admissions in the selected cohort`} icon={GraduationCap} tone="blue" href="#programme-analytics" />
-          <MetricCard label="Counselor with Highest Conversion" value={highestConversionCounselor?.counselor.name ?? '—'} detail={highestConversionCounselor ? `${highestConversionCounselor.conversion.toFixed(1)}% · ${highestConversionCounselor.admissions.length}/${highestConversionCounselor.enquiries.length} enquiries` : 'No conversion data'} icon={UserRoundCheck} tone="violet" href="#counselor-conversion" />
+        <div className="mx-4 my-4 grid overflow-hidden rounded-xl border border-slate-200 bg-slate-50/70 sm:grid-cols-2 lg:grid-cols-3 dark:border-slate-800 dark:bg-slate-900/50">
+          <CompactMetric label="Total admissions" value={admittedRecords.length} detail="Enquiries in Admitted stage" icon={GraduationCap} tone="emerald" href="#pipeline" />
+          <CompactMetric label="Conversion rate" value={`${conversionRate.toFixed(1)}%`} detail={`${admittedRecords.length} / ${filteredEnquiries.length} selected`} icon={ArrowUpRight} tone="violet" href="#pipeline" />
+          <CompactMetric label="In progress" value={admissionsInProgress.length} detail="Admission checklist underway" icon={Clock3} tone="blue" href="#pipeline" />
+          <CompactMetric label="Decisions pending" value={admissionDecisionsPending.length} detail="Awaiting a decision" icon={FileCheck2} tone="amber" href="#pipeline" />
+          <CompactMetric label="Top programme" value={topProgramme?.admissions ? topProgramme.programme : '—'} detail={`${topProgramme?.admissions ?? 0} admissions`} icon={GraduationCap} tone="blue" href="#programme-analytics" />
+          <CompactMetric label="Top counselor" value={highestConversionCounselor?.counselor.name ?? '—'} detail={highestConversionCounselor ? `${highestConversionCounselor.conversion.toFixed(1)}% conversion` : 'No conversion data'} icon={UserRoundCheck} tone="violet" href="#counselor-conversion" />
         </div>
         <div className="grid gap-4 p-4 pt-0 xl:grid-cols-2">
           <div id="pipeline" className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
@@ -682,13 +672,13 @@ export default function CounselorDashboard() {
       </Panel>}
 
       {activeDashboardTab === 'enquiries' && <Panel title="Student enquiry management" subtitle="Search and sort prospective students using masked demo contact details. Click an enquiry to view its history, sessions and follow-up timeline." id="enquiries">
-        <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
-          <MetricCard label="Total Enquiries" value={filteredEnquiries.length} detail="Current filtered cohort" icon={Search} tone="violet" href="#enquiry-table" />
-          <MetricCard label="New Enquiries" value={newEnquiries.length} detail="Awaiting first meaningful contact" icon={Users} tone="blue" href="#enquiry-table" />
-          <MetricCard label="Active Enquiries" value={activeEnquiries.length} detail="Excludes admitted and lost records" icon={UserRoundCheck} tone="emerald" href="#enquiry-table" />
-          <MetricCard label="Follow-ups Pending" value={followUpsPending.length} detail="Open follow-ups due today or later" icon={Clock3} tone="amber" href="#enquiry-table" />
-          <MetricCard label="Overdue Follow-ups" value={overdueFollowUps.length} detail="Open follow-ups past their due date" icon={CalendarDays} tone="rose" href="#enquiry-table" />
-          <MetricCard label="Inactive Enquiries" value={inactiveEnquiries.length} detail="Active records with no contact for over 14 days" icon={Users} tone="amber" href="#enquiry-table" />
+        <div className="mx-4 my-4 grid overflow-hidden rounded-xl border border-slate-200 bg-slate-50/70 sm:grid-cols-2 lg:grid-cols-3 dark:border-slate-800 dark:bg-slate-900/50">
+          <CompactMetric label="Total enquiries" value={filteredEnquiries.length} detail="Current filtered cohort" icon={Search} tone="violet" href="#enquiry-table" />
+          <CompactMetric label="New" value={newEnquiries.length} detail="Awaiting first contact" icon={Users} tone="blue" href="#enquiry-table" />
+          <CompactMetric label="Active" value={activeEnquiries.length} detail="Excludes admitted and lost" icon={UserRoundCheck} tone="emerald" href="#enquiry-table" />
+          <CompactMetric label="Follow-ups pending" value={followUpsPending.length} detail="Open follow-ups" icon={Clock3} tone="amber" href="#enquiry-table" />
+          <CompactMetric label="Overdue" value={overdueFollowUps.length} detail="Past due follow-ups" icon={CalendarDays} tone="rose" href="#enquiry-table" />
+          <CompactMetric label="Inactive" value={inactiveEnquiries.length} detail="No recent contact" icon={Users} tone="amber" href="#enquiry-table" />
         </div>
         <div id="enquiry-table" className="border-t border-slate-100 dark:border-slate-800">
           <div className="flex flex-col gap-3 p-4 sm:px-5">
@@ -723,12 +713,12 @@ export default function CounselorDashboard() {
 
       {activeDashboardTab === 'tasks' && <>
       <Panel title="Task transfer & delegation" subtitle="Illustrative transfer history only. Handoffs are shown for management visibility; this dashboard does not change shared task assignments." id="task-transfers">
-        <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-5">
-          <MetricCard label="Transferred Tasks" value={filteredTransfers.length} detail="Transfer history entries" icon={History} tone="violet" href="#transfer-history" />
-          <MetricCard label="Pending Acceptance" value={pendingTransfers.length} detail="Waiting for receiving counselor" icon={Clock3} tone="amber" href="#transfer-history" />
-          <MetricCard label="Accepted Transfers" value={acceptedTransfers.length} detail="Received by the new assignee" icon={BadgeCheck} tone="blue" href="#transfer-history" />
-          <MetricCard label="Overdue Transfers" value={overdueTransfers.length} detail="Open handoffs past due date" icon={CalendarDays} tone="rose" href="#transfer-history" />
-          <MetricCard label="Completed Transfers" value={completedTransfers.length} detail="Transfer work marked complete" icon={CheckCircle2} tone="emerald" href="#transfer-history" />
+        <div className="mx-4 my-4 grid overflow-hidden rounded-xl border border-slate-200 bg-slate-50/70 sm:grid-cols-2 lg:grid-cols-5 dark:border-slate-800 dark:bg-slate-900/50">
+          <CompactMetric label="Transferred" value={filteredTransfers.length} detail="Transfer history" icon={History} tone="violet" href="#transfer-history" />
+          <CompactMetric label="Pending" value={pendingTransfers.length} detail="Awaiting acceptance" icon={Clock3} tone="amber" href="#transfer-history" />
+          <CompactMetric label="Accepted" value={acceptedTransfers.length} detail="Received by assignee" icon={BadgeCheck} tone="blue" href="#transfer-history" />
+          <CompactMetric label="Overdue" value={overdueTransfers.length} detail="Past due handoffs" icon={CalendarDays} tone="rose" href="#transfer-history" />
+          <CompactMetric label="Completed" value={completedTransfers.length} detail="Marked complete" icon={CheckCircle2} tone="emerald" href="#transfer-history" />
         </div>
         <div className="px-4 pb-5 sm:px-5">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div><h3 className="text-xs font-bold text-slate-900 dark:text-white">Recent transfer history</h3><p className="mt-1 text-[10px] text-slate-500">Repeated task IDs indicate that the same work item has changed assignee more than once.</p></div><Badge tone="bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300">{repeatedTaskIds.size} repeatedly transferred task(s)</Badge></div>
@@ -739,12 +729,12 @@ export default function CounselorDashboard() {
       </Panel>
 
       <Panel title="AI-based task completion reports" subtitle="Simulated AI/demo analysis based only on the completion notes shown; no AI model is running and no external work is verified." id="ai-reports">
-        <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-5">
-          <MetricCard label="Recent Reports" value={filteredReports.length} detail="Reports linked to completed demo tasks" icon={Sparkles} tone="violet" href="#report-list" />
-          <MetricCard label="Awaiting Founder Review" value={awaitingFounderReview.length} detail="Review status is illustrative" icon={FileCheck2} tone="amber" href="#report-list" />
-          <MetricCard label="Tasks Completed Late" value={lateCompletionReports.length} detail="Completion date is after due date" icon={Clock3} tone="rose" href="#report-list" />
-          <MetricCard label="Require Further Action" value={furtherActionReports.length} detail="Based on the example report fields" icon={ArrowRight} tone="blue" href="#report-list" />
-          <MetricCard label="Repeated Handoffs" value={repeatedTaskIds.size} detail="Repeated task IDs in transfer log" icon={Handshake} tone="amber" href="#task-transfers" />
+        <div className="mx-4 my-4 grid overflow-hidden rounded-xl border border-slate-200 bg-slate-50/70 sm:grid-cols-2 lg:grid-cols-5 dark:border-slate-800 dark:bg-slate-900/50">
+          <CompactMetric label="Recent reports" value={filteredReports.length} detail="Completed task reports" icon={Sparkles} tone="violet" href="#report-list" />
+          <CompactMetric label="Awaiting review" value={awaitingFounderReview.length} detail="Founder review pending" icon={FileCheck2} tone="amber" href="#report-list" />
+          <CompactMetric label="Completed late" value={lateCompletionReports.length} detail="Past due completion" icon={Clock3} tone="rose" href="#report-list" />
+          <CompactMetric label="Further action" value={furtherActionReports.length} detail="Needs follow-up" icon={ArrowRight} tone="blue" href="#report-list" />
+          <CompactMetric label="Repeated handoffs" value={repeatedTaskIds.size} detail="Changed assignee more than once" icon={Handshake} tone="amber" href="#task-transfers" />
         </div>
         <div className="px-4 pb-5 sm:px-5">
           <div className="mb-3 rounded-xl border border-violet-100 bg-violet-50/70 p-3 text-[10px] leading-5 text-violet-900 dark:border-violet-900/50 dark:bg-violet-950/30 dark:text-violet-200">

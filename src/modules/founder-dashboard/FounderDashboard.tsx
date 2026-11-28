@@ -45,7 +45,7 @@ export default function FounderDashboard() {
               key={pillar.id}
               onClick={() => {
                 if (pillar.id === 'education') {
-                  router.push('/education');
+                  router.push('/tasks');
                   return;
                 }
                 setSelectedVertical(pillar.id);
@@ -56,7 +56,7 @@ export default function FounderDashboard() {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   if (pillar.id === 'education') {
-                    router.push('/education');
+                    router.push('/tasks');
                     return;
                   }
                   setSelectedVertical(pillar.id);

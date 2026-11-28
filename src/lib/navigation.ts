@@ -152,7 +152,7 @@ export const navigationSections: NavigationSection[] = [
           { label: 'Operations Reports', href: '/operations/reports', description: 'Operations reporting overview.' },
         ],
       },
-    ],
+    ].filter((entry) => !['Media', 'Sales Department', 'TeleCaller', 'Trainer', 'Counselor', 'Technical Team'].includes(entry.label)),
   },
   {
     label: 'Learning Management',

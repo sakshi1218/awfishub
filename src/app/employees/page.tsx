@@ -9,6 +9,13 @@ import { MOCK_LEAVE_HISTORY } from '@/data/mock/leave-history';
 import { MOCK_ASSETS } from '@/data/mock/financeAssets';
 import { MOCK_DAILY_REPORTS } from '@/data/mock/tasks';
 
+const DEMO_EMPLOYEES: EmployeeRow[] = [
+  { id: 'demo-counselor', employeeId: 'DEMO-C01', name: 'Meera Kulkarni', email: 'meera.kulkarni@mindlyft.in', designation: 'Student Counselor', role: 'EMPLOYEE', status: 'ACTIVE', avatarUrl: null, department: { id: 'demo-counselor-dept', name: 'Counselor' }, reportingManager: null },
+  { id: 'demo-media', employeeId: 'DEMO-M01', name: 'Ishita Roy', email: 'ishita.roy@mindlyft.in', designation: 'Content Producer', role: 'EMPLOYEE', status: 'ACTIVE', avatarUrl: null, department: { id: 'demo-media-dept', name: 'Media' }, reportingManager: null },
+  { id: 'demo-telecaller', employeeId: 'DEMO-T01', name: 'Gaurav Kulkarni', email: 'gaurav.kulkarni@mindlyft.in', designation: 'TeleCaller Executive', role: 'EMPLOYEE', status: 'ACTIVE', avatarUrl: null, department: { id: 'demo-telecaller-dept', name: 'TeleCaller' }, reportingManager: null },
+  { id: 'demo-intern', employeeId: 'DEMO-I01', name: 'Aarav Sharma', email: 'aarav.sharma@mindlyft.in', designation: 'Technology Intern', role: 'INTERN', status: 'ACTIVE', avatarUrl: null, department: { id: 'demo-intern-dept', name: 'Interns' }, reportingManager: null },
+];
+
 type EmployeeRow = {
   id: string;
   employeeId: string;
@@ -57,6 +64,7 @@ export default function EmployeesPage() {
   const [role, setRole] = useState('ALL');
   const [status, setStatus] = useState('ALL');
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const employeeDirectoryRef = React.useRef<HTMLDivElement>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeRow | null>(null);
   const [selectedEmployeeDetails, setSelectedEmployeeDetails] = useState<EmployeeDetails | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -70,7 +78,8 @@ export default function EmployeesPage() {
         const employeeData = await employeeResponse.json();
         const departmentData = departmentResponse.ok ? await departmentResponse.json() : [];
         if (active) {
-          setEmployees(employeeData);
+          const existingEmployeeIds = new Set(employeeData.map((employee: EmployeeRow) => employee.employeeId));
+          setEmployees([...employeeData, ...DEMO_EMPLOYEES.filter((employee) => !existingEmployeeIds.has(employee.employeeId))]);
           setDepartments(departmentData.filter((d: { isActive?: boolean }) => d.isActive !== false));
         }
       })
@@ -131,7 +140,6 @@ export default function EmployeesPage() {
   const activeTaskCount = currentTasks.length + pendingTasks.length;
   const workloadPercentage = Math.min(100, activeTaskCount * 20);
   const lastReport = employeeReports[0];
-  const reportingHistory = profile?.reportingHistory || [];
   const approvedLeaveDays = employeeLeaveRecords.filter((record) => record.status === 'Approved').reduce((sum, record) => sum + record.totalDays, 0);
   const leaveBalance = Math.max(0, 18 - approvedLeaveDays);
   const attendanceDays = employeeReports.filter((report) => report.status === 'Reviewed' || report.status === 'Submitted').length;
@@ -195,13 +203,11 @@ export default function EmployeesPage() {
               key={group.name}
               type="button"
               aria-pressed={selected}
-              onClick={() => setSelectedGroup(selected ? null : group.name)}
-              className={`rounded-2xl border p-4 text-left shadow-sm transition-colors ${selected ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30' : `${group.border} bg-white dark:bg-slate-900`}`}
+              onClick={() => { setSelectedGroup(selected ? null : group.name); window.setTimeout(() => employeeDirectoryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0); }}
+              className={`rounded-xl border p-3 text-left shadow-sm transition-colors ${selected ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30' : `${group.border} bg-white dark:bg-slate-900`}`}
             >
-              <span className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${group.accent}`}><Users className="h-5 w-5" /></span>
-              <span className="block text-sm font-bold text-slate-900 dark:text-white">{group.name}</span>
-              <span className="mt-1 block text-xs leading-5 text-slate-500">{group.description}</span>
-              <span className="mt-3 block w-fit rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">{count}</span>
+              <div className="flex items-center justify-between gap-2"><span className={`flex h-8 w-8 items-center justify-center rounded-lg ${group.accent}`}><Users className="h-4 w-4" /></span><span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200">{count}</span></div>
+              <span className="mt-3 block text-sm font-bold text-slate-900 dark:text-white">{group.name}</span>
             </button>
           );
         })}
@@ -218,11 +224,11 @@ export default function EmployeesPage() {
       <button onClick={clearFilters} className="inline-flex gap-1.5 items-center text-xs text-blue-700 dark:text-blue-300"><RotateCcw className="w-3.5 h-3.5"/>Clear filters</button>
     </section>
     {error && <div role="alert" className="p-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-sm">{error}</div>}
-    {loading ? <div className="p-12 text-center text-sm text-slate-500">Loading team members…</div> : !error && <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-x-auto">
+    {loading ? <div className="p-12 text-center text-sm text-slate-500">Loading team members…</div> : !error && <div ref={employeeDirectoryRef} className="scroll-mt-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-x-auto">
       <table className="w-full min-w-[980px] text-left text-xs">
         <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase text-slate-500"><tr>{['Team member', 'Designation', 'System role', 'Department', 'Email', 'Reporting manager', 'Status'].map((h) => <th className="py-3 px-4 font-bold" key={h}>{h}</th>)}</tr></thead>
         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">{filtered.map((employee) => <tr key={employee.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/30">
-          <td className="py-3 px-4"><button type="button" onClick={() => setSelectedEmployee(employee)} className="flex items-center gap-3 text-left"><div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 flex items-center justify-center overflow-hidden shrink-0">{employee.avatarUrl ? <Image src={employee.avatarUrl} alt="" width={36} height={36} unoptimized className="w-full h-full object-cover"/> : <UserRound className="w-4 h-4"/>}</div><span><span className="block font-bold text-slate-900 dark:text-white">{employee.name}</span><span className="block text-[10px] text-slate-500">{employee.employeeId}</span></span></button></td>
+          <td className="py-3 px-4"><button type="button" onClick={() => setSelectedEmployee(employee)} className="group flex items-center gap-3 text-left"><div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 flex items-center justify-center overflow-hidden shrink-0">{employee.avatarUrl ? <Image src={employee.avatarUrl} alt="" width={36} height={36} unoptimized className="w-full h-full object-cover"/> : <UserRound className="w-4 h-4"/>}</div><span><span className="block font-bold text-slate-900 group-hover:text-blue-700 dark:text-white dark:group-hover:text-blue-300">{employee.name}</span><span className="block text-[10px] text-slate-500">{employee.employeeId}</span><span className="mt-1 block text-[10px] font-semibold text-blue-600 opacity-80 group-hover:opacity-100">View profile →</span></span></button></td>
           <td className="py-3 px-4">{employee.designation || '—'}</td><td className="py-3 px-4"><span className="font-mono text-[10px]">{employee.role}</span></td><td className="py-3 px-4">{employee.department?.name || '—'}</td><td className="py-3 px-4"><a className="text-blue-700 dark:text-blue-300 hover:underline" href={`mailto:${employee.email}`}>{employee.email}</a></td><td className="py-3 px-4">{employee.reportingManager?.name || '—'}</td><td className="py-3 px-4"><StatusBadge label={employee.status === 'ACTIVE' ? 'Active' : 'Inactive'} variant={employee.status === 'ACTIVE' ? 'success' : 'danger'}/></td>
         </tr>)}{filtered.length === 0 && <tr><td colSpan={7} className="py-12 text-center text-slate-500">No team members match these filters.</td></tr>}</tbody>
       </table>
@@ -250,9 +256,7 @@ export default function EmployeesPage() {
             {[
               ['Email', profile?.email || 'Not provided'],
               ['Department', profile?.department?.name || 'Not assigned'],
-              ['System role', profile?.role || 'Not specified'],
               ['Reporting manager', profile?.reportingManager?.name || 'Not assigned'],
-              ['Reporting director', profile?.reportingDirector?.name || 'Not assigned'],
               ['Joining date', profile?.joiningDate ? new Date(profile.joiningDate).toLocaleDateString() : 'Not provided'],
               ['Status', profile?.status || 'Not specified'],
             ].map(([label, value]) => <div key={label} className="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3"><dt className="text-[10px] uppercase text-slate-500">{label}</dt><dd className="mt-1 text-sm font-medium text-slate-900 dark:text-white">{value}</dd></div>)}
@@ -319,7 +323,7 @@ export default function EmployeesPage() {
               </div>
             )}
           </section>
-          <section className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2"><div><h3 className="text-sm font-bold text-slate-900 dark:text-white">Daily reports</h3>{employeeReports.length ? <div className="mt-2 space-y-2">{employeeReports.slice(0, 3).map((report) => <div key={report.id} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60"><div className="flex justify-between gap-2 text-xs"><b>{new Date(report.reportDate).toLocaleDateString()}</b><span className="text-slate-500">{report.status} · {report.timeSpentHours || 0}h</span></div><p className="mt-1 line-clamp-2 text-[11px] text-slate-500">{report.workDescription || 'No description provided.'}</p></div>)}</div> : <p className="mt-2 text-xs text-slate-500">No daily reports available.</p>}</div><div><h3 className="text-sm font-bold text-slate-900 dark:text-white">Recent activity</h3>{reportingHistory.length ? <div className="mt-2 space-y-2">{reportingHistory.slice(0, 3).map((item) => <div key={item.id} className="rounded-xl bg-slate-50 p-3 text-xs dark:bg-slate-800/60"><b>{new Date(item.changeDate).toLocaleDateString()}</b><p className="mt-1 text-slate-500">{item.reason || 'Reporting assignment updated.'}</p></div>)}</div> : <p className="mt-2 text-xs text-slate-500">No recent profile activity.</p>}</div></section>
+          <section className="mt-5"><h3 className="text-sm font-bold text-slate-900 dark:text-white">Daily reports</h3>{employeeReports.length ? <div className="mt-2 space-y-2">{employeeReports.slice(0, 3).map((report) => <div key={report.id} className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60"><div className="flex justify-between gap-2 text-xs"><b>{new Date(report.reportDate).toLocaleDateString()}</b><span className="text-slate-500">{report.status} · {report.timeSpentHours || 0}h</span></div><p className="mt-1 line-clamp-2 text-[11px] text-slate-500">{report.workDescription || 'No description provided.'}</p></div>)}</div> : <p className="mt-2 text-xs text-slate-500">No daily reports available.</p>}</section>
         </section>
       </div>
     )}

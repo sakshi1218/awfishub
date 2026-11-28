@@ -18,6 +18,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import DashboardTabs from '@/components/shared/DashboardTabs';
+import { PageHeader } from '@/components/shared/PageHeader';
 import {
   Bar,
   BarChart,
@@ -245,6 +246,24 @@ function MetricCard({
   return <a href={href} className={className}>{content}</a>;
 }
 
+function MetricSummary({
+  items,
+}: {
+  items: Array<{ label: string; value: number | string; icon: LucideIcon; tone: 'violet' | 'blue' | 'emerald' | 'amber' | 'rose'; onClick?: () => void }>;
+}) {
+  const tones = { violet: 'text-violet-600', blue: 'text-blue-600', emerald: 'text-emerald-600', amber: 'text-amber-600', rose: 'text-rose-600' };
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900" aria-label="Trainer overview summary">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:divide-x sm:divide-slate-200 dark:sm:divide-slate-800">
+        {items.map(({ label, value, icon: Icon, tone, onClick }) => {
+          const content = <><Icon className={`h-4 w-4 shrink-0 ${tones[tone]}`} aria-hidden="true" /><span className="text-xs text-slate-500 dark:text-slate-400">{label}</span><strong className="ml-auto text-lg text-slate-950 dark:text-white">{value}</strong></>;
+          return <div key={label} className="sm:flex-1 sm:px-4 first:sm:pl-0 last:sm:pr-0">{onClick ? <button type="button" onClick={onClick} className="flex w-full items-center gap-2.5 rounded-lg px-1 py-1 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/60">{content}</button> : <div className="flex items-center gap-2.5 px-1 py-1">{content}</div>}</div>;
+        })}
+      </div>
+    </section>
+  );
+}
+
 function SessionRow({ session }: { session: (typeof demoTrainerSessions)[number] }) {
   const trainer = demoFaculty.find((member) => member.id === session.facultyId);
   const sessionNotHeld = session.status === 'Cancelled' || session.status === 'Rescheduled';
@@ -407,40 +426,11 @@ export default function TrainerDashboard() {
 
   return (
     <div className="-m-4 min-h-full space-y-6 bg-[#f8f7ff] p-4 sm:p-6 lg:-m-8 lg:p-8 dark:bg-slate-950">
-      <header className="relative isolate overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-blue-50 p-5 shadow-sm dark:border-slate-800 dark:from-violet-950/50 dark:via-slate-900 dark:to-blue-950/30 sm:p-7">
-        <div className="pointer-events-none absolute -right-12 -top-20 -z-10 h-64 w-64 rounded-full border-[28px] border-violet-100/60 dark:border-violet-900/20" />
-        <nav aria-label="Breadcrumb" className="mb-5 flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-          <Link href="/" className="hover:text-violet-700 dark:hover:text-violet-300">Home</Link>
-          <span aria-hidden="true">/</span><span>Department Workspaces</span>
-          <span aria-hidden="true">/</span><span>Trainer</span>
-        </nav>
-        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-          <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-white/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-violet-700 dark:border-violet-800 dark:bg-slate-900/80 dark:text-violet-300">
-              <BookOpen className="h-3 w-3" /> Founder overview · Illustrative demo data
-            </span>
-            <h1 className="mt-3 text-2xl font-bold tracking-tight text-violet-950 dark:text-white sm:text-3xl">Trainer Department Overview</h1>
-            <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-              Monitor trainer capacity, training delivery, batch health and learner outcomes.
-            </p>
-            <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-              Prototype only. Metrics, names and operational signals are illustrative, not live records.
-            </p>
-          </div>
-          <div className="flex shrink-0 flex-wrap gap-2"><Link href="/departments" className="inline-flex items-center justify-center gap-2 rounded-xl border border-violet-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-violet-700 transition hover:border-violet-400 dark:border-violet-800 dark:bg-slate-900 dark:text-violet-300"><ArrowLeft className="h-4 w-4" /> Back to departments</Link><Link href="/trainer/schedule" className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-violet-700"><CalendarDays className="h-4 w-4" /> View schedule</Link></div>
-        </div>
-      </header>
+      <PageHeader title="Trainer Workspace" subtitle="Training delivery, batch health, learner outcomes and trainer workload." icon={BookOpen} actions={<><Link href="/departments" className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"><ArrowLeft className="h-4 w-4" /> Back</Link><Link href="/trainer/schedule" className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-violet-700"><CalendarDays className="h-4 w-4" /> View schedule</Link></>} />
 
       <DashboardTabs id="trainer-dashboard" ariaLabel="Trainer dashboard sections" tabs={dashboardTabs} value={activeDashboardTab} onChange={setActiveDashboardTab}>
       {activeDashboardTab === 'team' && <>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        <MetricCard label="Active Trainers" value={activeTrainers} detail="In the team" icon={Users} tone="violet" href="#trainer-team" />
-        <MetricCard label="Active Batches" value={activeBatches.length} detail="Currently running" icon={BookOpen} tone="blue" onClick={() => setActiveDashboardTab('batches')} />
-        <MetricCard label="Learners" value={activeStudents.length} detail="In active batches" icon={GraduationCap} tone="emerald" onClick={() => setActiveDashboardTab('batches')} />
-        <MetricCard label="Today" value={todaySessions.length} detail="Sessions scheduled" icon={CalendarDays} tone="amber" onClick={() => setActiveDashboardTab('sessions')} />
-        <MetricCard label="Attendance" value={`${averageAttendance}%`} detail="Learner average" icon={CheckCircle2} tone="blue" onClick={() => setActiveDashboardTab('batches')} />
-        <MetricCard label="Pending Reports" value={pendingReports} detail="Need submission" icon={ClipboardCheck} tone="rose" onClick={() => setActiveDashboardTab('sessions')} />
-      </div>
+      <MetricSummary items={[{ label: 'Active trainers', value: activeTrainers, icon: Users, tone: 'violet' }, { label: 'Active batches', value: activeBatches.length, icon: BookOpen, tone: 'blue', onClick: () => setActiveDashboardTab('batches') }, { label: 'Learners', value: activeStudents.length, icon: GraduationCap, tone: 'emerald', onClick: () => setActiveDashboardTab('batches') }, { label: 'Today', value: todaySessions.length, icon: CalendarDays, tone: 'amber', onClick: () => setActiveDashboardTab('sessions') }, { label: 'Attendance', value: `${averageAttendance}%`, icon: CheckCircle2, tone: 'blue', onClick: () => setActiveDashboardTab('batches') }, { label: 'Pending reports', value: pendingReports, icon: ClipboardCheck, tone: 'rose', onClick: () => setActiveDashboardTab('sessions') }]} />
       <Panel
         title="Trainer Team Sessions"
         subtitle="Today’s training delivery at a glance."
