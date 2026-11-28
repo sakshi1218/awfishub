@@ -5,7 +5,6 @@ import Link from 'next/link';
 import {
   Menu,
   Bell,
-  Search,
   ChevronDown,
   ShieldCheck,
   Check,
@@ -18,30 +17,9 @@ import { RoleType } from '@/types';
 
 interface NavbarProps {
   onMenuClick: () => void;
-  isFounderLanding?: boolean;
 }
 
-const QUICK_ROUTES = [
-  { label: 'Overview Dashboard', href: '/dashboard', section: 'Overview' },
-  { label: 'My Tasks', href: '/my-tasks', section: 'Overview' },
-  { label: 'Task Management & Transfers', href: '/tasks', section: 'Operations' },
-  { label: 'Employees & Role Seats', href: '/employees', section: 'Organization' },
-  { label: 'Organization Chart', href: '/organization', section: 'Organization' },
-  { label: 'Campaigns', href: '/campaigns', section: 'Growth' },
-  { label: 'Media & Podcasts', href: '/media', section: 'Media' },
-  { label: 'Sales & CRM', href: '/sales', section: 'Sales' },
-  { label: 'TeleCaller', href: '/telecaller', section: 'Outreach' },
-  { label: 'Colleges & Experts', href: '/colleges', section: 'Partners' },
-  { label: 'Open Market', href: '/open-market', section: 'Sales' },
-  { label: 'Events & Expos', href: '/events', section: 'Events' },
-  { label: 'Company Assets', href: '/assets', section: 'Administration' },
-  { label: 'Accounts & Finance (Chairperson)', href: '/accounts', section: 'Finance' },
-  { label: 'Documents', href: '/documents', section: 'Administration' },
-  { label: 'Reports & Analytics', href: '/reports', section: 'Analytics' },
-  { label: 'Settings & Permissions', href: '/settings', section: 'System' },
-];
-
-export default function Navbar({ onMenuClick, isFounderLanding }: NavbarProps) {
+export default function Navbar({ onMenuClick }: NavbarProps) {
   const {
     currentRole,
     currentEmployee,
@@ -53,7 +31,6 @@ export default function Navbar({ onMenuClick, isFounderLanding }: NavbarProps) {
     markAllNotificationsRead,
     activeToast,
     dismissToast,
-    isChairperson,
   } = useApp();
 
   const userNotifications = useMemo(
@@ -63,20 +40,8 @@ export default function Navbar({ onMenuClick, isFounderLanding }: NavbarProps) {
 
   const [roleOpen, setRoleOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const [searchOpen, setSearchOpen] = useState(false);
 
   const unreadCount = userNotifications.filter((n) => !n.isRead).length;
-
-  const searchResults = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return [];
-    return QUICK_ROUTES.filter(
-      (r) =>
-        (r.href !== '/accounts' || isChairperson) &&
-        `${r.label} ${r.section}`.toLowerCase().includes(q)
-    ).slice(0, 6);
-  }, [search, isChairperson]);
 
   const roleOptions: {
     role: RoleType;
@@ -104,64 +69,15 @@ export default function Navbar({ onMenuClick, isFounderLanding }: NavbarProps) {
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 lg:px-6 bg-white dark:bg-[#111622] border-b border-slate-200 dark:border-slate-800">
-      {/* Left: Menu / Logo + Search */}
+      {/* Left: Menu */}
       <div className="flex items-center gap-3">
-        {isFounderLanding ? (
-          <Link href="/" className="flex items-center gap-2.5 mr-2">
-            <div className="w-8 h-8 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-bold text-sm shadow-sm">
-              A
-            </div>
-            <div className="leading-tight hidden sm:block">
-              <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                AWFIS HUB
-                <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                  Founder
-                </span>
-              </span>
-            </div>
-          </Link>
-        ) : (
-          <button
-            onClick={onMenuClick}
-            className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
-            aria-label="Toggle Menu"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-        )}
-
-        <div className="relative hidden sm:block">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 w-64 md:w-72">
-            <Search className="w-4 h-4 text-slate-400 shrink-0" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onFocus={() => setSearchOpen(true)}
-              onBlur={() => setTimeout(() => setSearchOpen(false), 160)}
-              placeholder="Jump to module..."
-              className="bg-transparent border-none outline-none w-full text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400"
-            />
-          </div>
-          {searchOpen && search.trim() && (
-            <div className="absolute left-0 top-full mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl p-1.5 z-50">
-              {searchResults.length > 0 ? (
-                searchResults.map((r) => (
-                  <Link
-                    key={r.href}
-                    href={r.href}
-                    className="block px-3 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 text-xs"
-                  >
-                    <p className="font-bold text-slate-900 dark:text-white">{r.label}</p>
-                    <p className="text-[10px] text-slate-400">{r.section}</p>
-                  </Link>
-                ))
-              ) : (
-                <p className="px-3 py-3 text-xs text-slate-400">No matching module found.</p>
-              )}
-            </div>
-          )}
-        </div>
+        <button
+          onClick={onMenuClick}
+          className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
+          aria-label="Toggle Menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Right: Theme Toggle, Notifications, Role Simulation Switcher */}

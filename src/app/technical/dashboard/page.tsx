@@ -11,7 +11,7 @@ import TechnicalDocumentationContent from '@/components/technical/TechnicalDocum
 import TechnicalReportsContent from '@/components/technical/TechnicalReportsContent';
 
 const tabs = [
-  { id: 'employees', label: 'Employees', icon: Users },
+  { id: 'employees', label: 'Tech Employees', icon: Users },
   { id: 'projects', label: 'Projects', icon: BriefcaseBusiness },
   { id: 'documentation', label: 'Technical Documentation', icon: BookOpen },
   { id: 'reports', label: 'Technical Reports', icon: BarChart3 },

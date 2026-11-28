@@ -112,14 +112,7 @@ const demoTasks: DemoTask[] = [
   };
 
   return (
-    <section className="space-y-5" aria-labelledby="technical-employees-heading">
-      <div>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">TECHNICAL TEAM</p>
-        <h2 id="technical-employees-heading" className="mt-1 text-lg font-bold tracking-tight text-slate-900 dark:text-white">Employees</h2>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Employee details, assigned tasks, and project assignment notes.</p>
-        {!loading && visibleEmployees.some((employee) => employee.isDemo) && <p className="mt-2 text-xs text-violet-700 dark:text-violet-300">Demo employee data is shown because no active employees were returned. Tasks assigned here stay in this demo view.</p>}
-      </div>
-
+    <section className="space-y-5" aria-label="Technical employees">
       {error && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-300">{error}</p>}
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">

@@ -625,8 +625,11 @@ function LearningManagement({ pathname }: { pathname: string }) {
   const addBatch = (draft: { name: string; courseSlug: string; facultyId: string; startDate: string; endDate: string; delivery: string }) => {
     const course = allCourses.find((item) => item.slug === draft.courseSlug);
     if (!course) return;
+    const existingBatchIds = new Set(batches.map((batch) => batch.id));
+    let nextBatchNumber = 104;
+    while (existingBatchIds.has(`LMS-${nextBatchNumber}`)) nextBatchNumber += 1;
     const batch: LearningBatch = {
-      id: `LMS-${104 + batches.length - demoBatches.length}`,
+      id: `LMS-${nextBatchNumber}`,
       name: draft.name,
       course: course.course,
       courseSlug: course.slug,
@@ -1037,25 +1040,25 @@ function LearningManagement({ pathname }: { pathname: string }) {
       >
         <Panel title="Available batches" subtitle="Batches and assigned trainers for this course.">
             {courseBatches.length ? (
-              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
                 {courseBatches.map((batch) => (
                   <Link
                     key={batch.id}
                     href={`/learning/batches/${batch.id}`}
-                    className="group flex items-center justify-between gap-3 px-5 py-4 transition-colors hover:bg-violet-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-500 dark:hover:bg-violet-950/20"
+                    className="group flex min-h-36 flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 transition-colors hover:border-violet-300 hover:bg-violet-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-800 dark:hover:bg-violet-950/20"
                   >
                     <span>
-                      <span className="block text-xs font-semibold text-slate-900 dark:text-white">{batch.name}</span>
+                      <span className="flex items-start justify-between gap-2">
+                        <span className="text-xs font-semibold text-slate-900 dark:text-white">{batch.name}</span>
+                        <StatusBadge value={batch.status} />
+                      </span>
                       <span className="mt-1 block text-[10px] text-slate-500">{batch.id} · {batch.delivery}</span>
-                      <span className="mt-2 block text-[11px] font-medium text-slate-700 dark:text-slate-200">Trainer: {faculty.find((member) => member.id === batch.facultyId)?.name ?? 'Unassigned'}</span>
+                      <span className="mt-3 block text-[11px] font-medium text-slate-700 dark:text-slate-200">Trainer: {faculty.find((member) => member.id === batch.facultyId)?.name ?? 'Unassigned'}</span>
                     </span>
-                    <span className="flex shrink-0 flex-col items-end gap-2">
-                      <StatusBadge value={batch.status} />
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-violet-700 dark:text-violet-300">
+                    <span className="mt-4 inline-flex items-center gap-1 text-[10px] font-semibold text-violet-700 dark:text-violet-300">
                         View batch
                         <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
                       </span>
-                    </span>
                   </Link>
                 ))}
               </div>

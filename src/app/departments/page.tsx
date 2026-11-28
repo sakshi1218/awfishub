@@ -333,7 +333,13 @@ export default function DepartmentsPage() {
   const visibleDepartments = (allowedDirectorDepts
     ? PERMANENT_DEPARTMENTS.filter((d) => allowedDirectorDepts.includes(d.name))
     : PERMANENT_DEPARTMENTS
-  ).filter((department) => department.name !== 'Interns' && department.name !== 'Operation Team');
+  ).filter((department) =>
+    department.name !== 'Media' &&
+    department.name !== 'Sales Department' &&
+    department.name !== 'Technical Team' &&
+    department.name !== 'Interns' &&
+    department.name !== 'Operation Team'
+  );
 
   const visibleTasks = getVisibleTasksForCurrentUser();
   const allConflicts = getPriorityConflicts();
